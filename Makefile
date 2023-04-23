@@ -1,21 +1,10 @@
-HEADER_SOURCE := header.adoc
-PDF_RESULT := example-spec.pdf
+spec-folder := specification
 
-all: build
+.PHONY: all spec clean
+all: spec
 
-build:
+spec: $(spec-folder)
+	$(MAKE) --directory=$^
 
-	@echo "Building asciidoc"
-	asciidoctor-pdf \
-    --attribute=mathematical-format=svg \
-    --attribute=pdf-fontsdir=docs-resources/fonts \
-    --attribute=pdf-style=docs-resources/themes/riscv-pdf.yml \
-    --failure-level=ERROR \
-    --require=asciidoctor-bibtex \
-    --require=asciidoctor-diagram \
-    --require=asciidoctor-mathematical \
-    --out-file=$(PDF_RESULT) \
-    $(HEADER_SOURCE)
-
-clean:
-	rm $(PDF_RESULT)
+clean: $(spec-folder)
+	$(MAKE) --directory=$? clean
