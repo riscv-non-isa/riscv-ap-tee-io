@@ -1,0 +1,2 @@
+[[coveio_abi]]
+== Confidential VM Extension (CoVE) IO ABI

@@ -59,7 +59,12 @@ Copyright 2023 by RISC-V International.
 
 [preface]
 include::contributors.adoc[]
-
 include::intro.adoc[]
+include::glossary.adoc[]
+include::arch_overview.adoc[]
+include::security_model.adoc[]
+include::theory_operations.adoc[]
+include::attestation.adoc[]
+include::coveio_abi.adoc[]
 include::index.adoc[]
 include::bibliography.adoc[]
