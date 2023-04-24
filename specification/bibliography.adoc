@@ -1,4 +1,11 @@
 [bibliography]
-== Bibliography
+== References
+
+- [[[CoVE]]] RISC-V Confidential VM Extension, https://github.com/riscv-non-isa/riscv-ap-tee
+- [[[CC]]] Confidential Computing, https://confidentialcomputing.io/about/
+- [[[PCI-SIG]]] PCI SIG, https://pcisig.com/
+- [[[DMTF]]] Distributed Management Task Force, https://www.dmtf.org/
+- [[[SPDM]]] Secure Protocol and Data Model, https://www.dmtf.org/dsp/DSP0274
+- [[[TDISP]]] TEE Device Interface Protocol https://members.pcisig.com/wg/PCI-SIG/document/18268?uploaded=1
 
 bibliography::[]

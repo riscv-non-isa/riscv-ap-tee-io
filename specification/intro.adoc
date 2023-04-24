@@ -1,4 +1,84 @@
+:imagesdir: ./images
+
 [[intro]]
 
 == Introduction
 
+The RISC-V Confidential VM Extension <<CoVE>> specification provides
+application and virtualized workloads with data confidentiality and integrity,
+addressing one of the major datacenter security challenge. By building a
+miminized Trusted Computing Base (TCB), the CoVE interfaces manage to isolate
+workloads from each others but also from untrusted domain software components
+like the host hypervisor. CoVE implementations create a
+Confidential Computing <<CC>> framework that allows for mitigating the risks that
+guest owners are exposed to when running their workloads on shared
+infrastructures like e.g. public clouds.
+
+The value of such hardarwe-based Trusted Execution Environments (TEEs) is
+acknowledged across the industry, and Confidential Computing providers are
+looking for ways to improve the technology's scalability and performance. With
+the growing need for securing data processing, expanding Confidential Computing
+guests TCBs with trusted devices is of particular interest. Data analytics and
+transformation, artificial intelligence, financial transactions processing are
+only a few examples of confidential workloads for which a secure and performant
+I/O architecture is key to their operations. By extending guests TCBs with
+trusted accelerators, NICs or GPUs, such workloads would fully take advantage of
+their infrastructure providers capacities while keeping their data protected.
+
+The CoVE interfaces provide TEE Virtual Machines (TVMs) memory with confidential
+attributes and allow TVM guests to share parts of their address space with an
+untrusted domain. Although this enables confidential guests to be assigned with
+devices, directly or not, through para-virtualized I/O implementation, it comes
+with a significant performance cost. Withouth additional protection, TVMs have
+no ways to trust host-assigned devices and must exclude them from their TCB by
+not allowing them to directly access confidential memory. Consequently, with the
+current CoVE specification, data flowing from a device to a TVM must first go
+through dedicated shared memory regions for the confidential guest to then move
+it over to its confidential address space. This systematic data copy between
+shared and confidential memory is called bounce-buffering and can have a
+major performance impact for confidential workloads.
+
+[[bounce_buffer]]
+.Bounce buffering between an untrusted device and a CoVE TVM
+image::bounce_buffer.svg[]
+
+As devices typically expose their programming interfaces through memory mapped
+registers, using a shared memory buffer requires additional protection of the
+communication between the device and the TVM (e.g. transport-level data
+encryption). Such additional security layers can be impractical, intrusive and
+may also degrade I/O performance even further.
+
+Ideally, a secure and performant CoVE I/O framework would rely on the ability
+for host-assigned devices to directly access TVMs confidential memory, while
+maintaining the guest confidentality and integrity protection already provided
+by the CoVE security model. Building such a framework requires enhancing both
+the host platform and the assigned devices with new protection mechanisms. In
+addition to the existing CoVE defined capabilities, the host must provide ways
+for TVM guests to establish trust with assigned devices before accepting them
+into their TCBs and giving them direct access to confidential memory regions.
+Devices, on the other side of the I/O link, must protect confidential guest
+workloads and their data from untrusted domain components controlling, accessing
+or tampering with them.
+
+This document describes a proposal for extending the CoVE specification with I/O
+specific flows, interfaces and intrinsics with the goal of implementing the
+above-described framework. The CoVE I/O interfaces aim at giving CoVE TVM guests
+the ability to securily:
+
+* Retrieve a device identity, configuration and security state in order
+  for them to establish trust with the device.
+* Verify that any untrusted domain component will not be able to intercept,
+  modify or control data flowing between a guest and its assigned devices.
+* Decide to accept devices into their TCB before allowing them to directly
+  access their confidential memory, and before being able to control and
+  configure said devices.
+
+The CoVE I/O framework builds on top of the industry supported and ratified
+<<PCI-SIG>> TEE Device Interface Security Protocol <<TDISP>> specification,
+which itself relies on the <<DMTF>> Secure Protocol and Data Model <<SPDM>>
+protocol.
+TDISP compliant devices, also known as TEE-IO devices, implement security
+protections for isolating guest workloads and confidential data from domains to
+which a device interface is not assigned to. It also requires TEE-IO devices to
+provide secure means for confidential guests to attest of any device interface
+trustworthiness and verify its security configuration.
