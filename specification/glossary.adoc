@@ -1,2 +1,54 @@
 [[glossary]]
 == Glossary
+
+|===
+| Hypervisor or Virtual Machine Monitor (VMM) | HS mode software
+that manages Virtual Machines by virtualizing hart, guest physical memory and IO
+resources. This document uses the term VMM and hypervisor interchangeably for
+this software entity.
+
+| VM | Virtual Machines hosted by a VMM
+
+| Host software | All software elements including type-1 or type-2 HS-mode VMM
+and OS; U mode user-space VMM tools; ordinary VMs hosted by the VMM that emulate
+devices. The hosting platform is typically a multi-tenant platform that hosts
+multiple mutually distrusting Tenants.
+
+| Trusted Computing Base (TCB) Also, System/ Platform TCB | The hardware,
+software and firmware elements that are trusted by a relying party to protect
+the confidentiality and integrity of the relying parties' workload data and
+execution against a defined adversary model. In a system with separate
+processing elements within a package on a socket, the TCB boundary is the
+package. In a multi-socket system the TCB extends across the socket-to-socket
+interface, and is managed as one system TCB.
+
+| Application Processor (AP) | APs can support commodity operating systems,
+hypervisors/VMMs and applications software workloads. The AP subsystem may
+contain several processing units, on-chip caches, and other controllers
+for interfacing with memory, accelerators, and other fixed-function logic.
+Multiple APs may be used within a logical system.
+
+| Confidential VM Extension (CoVE) | A set of non-ISA RISC-V extensions that
+enables confidential computing on RISC-V platforms.
+
+| AP-TEE | Application Processor- Trusted Execution Environment: An execution
+mode that provides HW-isolation for workload assets when in use (user/supervisor
+code/ data) and provides HW-attestable confidentiality and integrity protection
+against specific attack vectors per a specified adversary and threat model. The
+term CoVE, TEE and hardware-based TEE are also used as synonyms of AP-TEE in
+this document.
+
+| Confidential Computing | The protection of data in use by performing
+computation in a Hardware-based TEE.
+
+| TVM | TEE or Confidential VM - A VM instantiation of an confidential workload.
+
+| Attestation | The process by which a relying party can assess the security
+posture of the confidential workload based on verifying a set of HW-rooted
+cryptographically-protected evidence.
+
+| TEE Security Manager (TSM) | HS-mode software module that acts as the trusted
+(in TCB) intermediary between the VMM and the TVM. This module extends the TCB
+chain on the CoVE platform.
+
+|===
