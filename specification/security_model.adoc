@@ -1,0 +1,10 @@
+[[security_model]]
+== Security and Threat Model
+
+=== Adversary Model
+
+=== Scope and Threat Model
+
+=== Requirements
+
+List CoVE-IO security requirements to address the threat model.

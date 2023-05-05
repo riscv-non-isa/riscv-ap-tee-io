@@ -17,7 +17,7 @@
 // needs to be changed? bug discussion started
 //:WaveDromEditorApp: app/wavedrom-editor.app
 :imagesoutdir: images
-:bibtex-file: example.bib
+:bibtex-file: cove-io.bib
 :bibtex-order: alphabetical
 :bibtex-style: apa
 :icons: font
@@ -59,7 +59,13 @@ Copyright 2023 by RISC-V International.
 
 [preface]
 include::contributors.adoc[]
-
 include::intro.adoc[]
+include::glossary.adoc[]
+include::requirements.adoc[]
+include::arch_overview.adoc[]
+include::security_model.adoc[]
+include::theory_operations.adoc[]
+include::attestation.adoc[]
+include::coveio_abi.adoc[]
 include::index.adoc[]
 include::bibliography.adoc[]
