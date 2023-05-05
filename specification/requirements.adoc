@@ -1,0 +1,5 @@
+[[requirements]]
+== Requirements
+
+Hardware (platform and device) and software (host and guest) requirements to
+support CoVE-IO.
