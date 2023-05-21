@@ -1,5 +1,236 @@
 [[requirements]]
 == Requirements
 
-Hardware (platform and device) and software (host and guest) requirements to
-support CoVE-IO.
+In order to extend TVM TCBs with external and untrusted devices, both the host
+platform and the assigned devices, must meet a specific set of requirements.
+
+=== Device
+
+CoVE-IO compliant implementations support extending TVMs TCBs with devices if
+and only if they meet the following requirements:
+
+==== PCIe or CXL.io
+
+A CoVE-IO supported device must be a PCIe or CXL.io compliant device with
+optional SR-IOV capabilities. When supporting SR-IOV, the device can be split
+into multiple Virtual Functions (VFs). A TVM assigned interface can be the whole
+device, also known as the Physiscal Device (PF) or any of its VFs. In both
+cases, this unit of assignment is referred to as a TEE I/O Device Interface
+(TDI).
+
+A host enumerated TDI must provide the following PCIe capabilities:
+
+===== TEE Device Interface Protocol (TDISP)
+
+In order to interoperate with a RISC-V CoVE-IO implementation, PCIe devices must
+support the <<TDISP>> protocol version 1.0 or above, as defined in the latest
+TDISP ECN. CoVE-IO devices must support all required TDISP requests and may
+support the optional ones, as defined by the TDISP request code table.
+
+Moreover, CoVE-IO compatible device firmwares must run a Device Security Manager
+(DSM) to enforce the TDISP defined security attributes and policies.
+The DSM must support both full PCIe devices (PFs) and Virtual Functions (VFs)
+assignment to TVMs.
+
+====== Enumeration
+
+TDIs PCIe Device Capabilities Registers must have the TEE-IO bit set in order
+for the host to discover their TDISP capability.
+
+===== Data Object Exchange (DOE)
+
+The TDI implements the optional PCIe Data Object Exchange mechanism. The minimal
+supported version is 1.0.
+
+A CoVE-IO supported device must support the following DOE object types:
+
+|===
+| Vendor ID | Object Type | Description
+
+| 0001 | 00 | DOE Discovery
+| 0001 | 01 | CMA/SPDM
+| 0001 | 02 | Secure CMA/SPDM
+|===
+
+====== Secure Protocol and Data Model (SPDM)
+
+RISC-V CoVE-IO compliant hosts use the Secure Protocol and Data Model (<<SPDM>>)
+protocol to exchange TDISP and IDE Key Management (IDE_KM) messages with
+physical devices, over DOE mailboxes. CoVE-IO also relies on SPDM for
+gathering devices certificates and measurements.
+
+As a consequence, a CoVE-IO supported DSM must support the SPDM specification
+version 1.2 or above. It must also support sending and receiving SPDM Secured
+Messages as defined in the <<SecuredSPDM>> specification version 1.1 or above.
+
+TODO: List of required SPDM messages
+
+===== Integrity and Data Exchange (IDE)
+
+The data that flows between a TDI and a TVM must be confidential and both
+integrity and replay attack protected. PCIe IDE provides this protection for all
+Transport Layer Packets (TLPs) moving between those two endpoints. As a
+consequence, CoVE-IO compatible devices must implement and expose this PCIe
+capability.
+
+====== Selective Streams
+
+As all PCIe switches are excluded from a TVM's TCB, CoVE-IO compliant hosts
+TSMs exclusively establish selective IDE streams between the host PCIe Root Port
+and TEE-IO devices.
+
+====== Key Management
+
+To fully support IDE, CoVE-IO compatible devices must implement the IDE Key
+Management (IDE_KM) protocol. IDE_KM messages are initiated by the TSM and sent
+over SPDM to the DSM.
+
+=== Host
+
+In order to support TEE-IO devices with the above described capabilities, a
+CoVE implementation must meet software and hardware requirements, as described
+in the next sections.
+
+==== Ownership
+
+In a CoVE-IO context, the non-confidential host software stack is the sole
+platform resources owner. In particular, the physical devices to which TDIs
+belong are owned and managed by the host, typically through the device PF.
+Host software stack components, e.g. the VMM, assign, unassign and expose
+TDIs resp. to, from and to TVMs.
+
+==== Platform Hardware Components
+
+===== PCIe
+
+All CoVE-IO-compliant devices in a CoVE platform must be connected to the CoVE
+platform through a PCIe Root Port (RP) that is part of a PCIe Root Complex (RC).
+
+A CoVE-IO PCIe link can be direct or go via any topology or PCIe switches and
+bridges. Since those are excluded from a TVM's TCB, only selective IDE streams
+must be used between a CoVE-IO device and its corresponding PCIe Root Port.
+
+The TSM establishes one single selective IDE stream for each physical device
+from which TDIs may be attached to TVMs. All TDIs within a CoVE-IO device share
+the same IDE stream.
+
+For a given selective IDE stream, the TSM generates, owns and distributes the
+IDE keys to both the CoVE-IO device and its upstream PCIe Root Port.
+
+[[coveio_hierarchy]]
+.CoVE-IO PCIe Topology
+image::coveio_hierarchy.svg[align="center"]
+
+
+===== IO Translation Agent
+
+CoVE-IO-compliant platforms must have at least one IO translation agent, also
+known as an IOMMU. Platform IOMMUs must follow the RISC-V <<IOMMU>> architecture
+specification v1.0.
+
+In order to protect direct access to confidential memory, a CoVE-IO device must
+be attached to a PCIe Root Port that is bound to a platform IOMMU. All inbound
+traffic from a TDI must then be translated by the upstream IOMMU.
+
+As the confidential Domain Security Manager (DoSM), the TSM is responsible for
+setting TDI-specific DMA mapping, MSI page tables and also for configuring
+platform IOMMUs own MSIs. As a consequence, all IOMMUs on a CoVE-IO platform
+must provide a domain isolated Register Programming Interface (RPI) that is
+exclusively accessible to the TSM.
+
+===== Hardware Root-of-Trust
+
+As described in <<PCIe>>, the TSM generates and sets the IDE keys into both the
+CoVE-IO PCIe endpoint and its upstream Root Port, for all maintained selective
+IDE streams.
+
+When setting IDE keys into a CoVE-IO device, the TSM relies on the DSM IDE Key
+Management (`IDE_KM`) support, and its ability to receive IDE_KM messages over a
+Secured SPDM session. However, there are no architecturally-defined PCIe
+protocol for managing Root Port IDE keys.
+
+Instead of adding multiple vendor-specific `IDE_KM` implementations to the TSM,
+the TSM relies on the platform hardware Root-of-Trust (HROT) to implement the
+`IDE_KM` protocol and abstract the platform specific PCIe RP implementation away
+from the TSM. The TSM establishes a Secured SPDM session with the HROT over a
+host accessible DOE mailbox, and then sets platform RP IDE keys over that
+session.
+
+[[IDE_KM_RPT]]
+.PCIe Root Port IDE Key Management through Hardware Root-of-Trust
+image::rp_rot_idekm.svg[align="center"]
+
+As a consequence, a CoVE-IO-compliant platform must have at least one PCIe
+accessible HROT, with the following requirements:
+
+1. The HROT must support the DOE mechanism
+2. The HROT must support Secured SPDM sessions
+3. The HROT must support the IDE Key Management protocol
+
+===== CoVE-IO Manifest
+
+The TSM must be provisioned with a trusted piece of data describing the required
+CoVE-IO platform components. The hardware Root-of-Trust provides the TSM with a
+CoVE-IO manifest containing the following pieces of information:
+
+Trust anchor:: A list of root certificates that the TSM uses to verify DSM
+certificates received through SPDM.
+
+IOMMUs:: For each IOMMU present in the platform:
+* The IOMMU RPI MMIO base address. This is used as the IOMMU identifier.
+
+PCIe Root Ports:: For each PCIe Root Ports present in the platform:
+* A PCIe Segment:Bus:Device:Function identifier.
+* The IOMMU identifier the RP is bound to.
+* The list of all MMIO ranges routed throught that RP.
+* The RP ECAM base address.
+* All downstream PCIe Endpoints linked to that RP, identified by their PCIe RID
+(i.e. the device PCIe Bus:Device:Function triplet).
+
+TODO: More precise CoVE-IO manifest format.
+
+==== Software
+
+===== Host
+
+To support extending TVMs with CoVE-IO devices, the untrusted domain software
+stack must:
+
+* Implement the <<CoVE>> Host Extension (`COVH`).
+* Support the RISC-V <<IOMMU>> programming interface with an IOMMU driver.
+* Implement the CoVE-IO host ABI, as described in Chapter 8 of this document.
+
+===== TSM
+
+The trusted Domain Security Manager, i.e. the TSM, is the trusted intermediary
+between the untrusted domain and the TVM. To allow for securely assigning TDIs
+into TVMs, it must:
+
+* Support the <<CoVE>> Host Extension (`COVH`).
+* Implement the <<CoVE>> Guest Extension (`COVH` and `COVG`).
+* Support the RISC-V <<IOMMU>> programming interface with an IOMMU driver.
+* Support the CoVE-IO host ABI, as described in Chapter 8 of this document:
+  ** Implement the SPDM requester protocol and flows.
+  ** Implement the TDISP requester protocol and flows.
+  ** Implement the PCIe IDE Key Management protocol.
+* Implement the CoVE-IO guest ABI, as described in Chapter 8 of this document.
+
+=== Guest
+
+A TVM guest must verify and explictly accept any TDI into their TCBs. The TSM
+prevents both TDIs from directly accessing the TVM confidential memory and the
+TVM from doing memory mapped I/O with TDIs, unless the TVM guest accepts the
+TDI.
+
+By implementing the CoVE-IO guest ABI, the TSM allows for a TVM guest to verify
+the trustworthiness of an assigned TDI. The TVM also uses the same ABI to notify
+the TSM about its TDI acceptance decision.
+
+The TDI verification process from the TVM guest not only requires support from
+the TSM through the CoVE-IO guest ABI but may also include running local or
+remote attestation of the physical device the assigned TDI belongs to.
+In order to minimize the TVM guest software stack changes needed to support the
+CoVE-IO TDI verification, attestation and acceptance flows, the CoVE-IO guest
+must run a Trusted Device Manager (TDM) as a separate TVM guest process.
+Although the TDM can be architectured in a TEE-agnostic fashion, it must support
+the CoVE-IO guest ABI.

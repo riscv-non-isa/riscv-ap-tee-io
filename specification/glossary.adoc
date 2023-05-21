@@ -1,54 +1,112 @@
 [[glossary]]
 == Glossary
 
+[width=90%]
+[%header, cols="8,4,20"]
 |===
-| Application Processor (AP) | APs can support commodity operating systems,
+| Term            ^| Acronym | Definition
+
+| Application Processor | AP | APs can support commodity operating systems,
 hypervisors/VMMs and applications software workloads. The AP subsystem may
 contain several processing units, on-chip caches, and other controllers
 for interfacing with memory, accelerators, and other fixed-function logic.
 Multiple APs may be used within a logical system.
 
-| AP-TEE | Application Processor- Trusted Execution Environment: An execution
+| Application Processor- Trusted Execution Environment | AP-TEE |  An execution
 mode that provides HW-isolation for workload assets when in use (user/supervisor
 code/ data) and provides HW-attestable confidentiality and integrity protection
 against specific attack vectors per a specified adversary and threat model. The
 term CoVE, TEE and hardware-based TEE are also used as synonyms of AP-TEE in
 this document.
 
-| Attestation | The process by which a relying party can assess the security
-posture of the confidential workload based on verifying a set of HW-rooted
-cryptographically-protected evidence.
+| Attestation | N/A | The process by which a relying party can assess the
+security posture of the confidential workload based on verifying a set of
+HW-rooted cryptographically-protected evidence.
 
-| Confidential Computing | The protection of data in use by performing
+| Confidential Computing | N/A | The protection of data in use by performing
 computation in a Hardware-based TEE.
 
-| Confidential VM Extension (CoVE) | A set of non-ISA RISC-V extensions that
+| Confidential VM Extension | CoVE | A set of non-ISA RISC-V extensions that
 enables confidential computing on RISC-V platforms.
 
-| Host software | All software elements including type-1 or type-2 HS-mode VMM
-and OS; U mode user-space VMM tools; ordinary VMs hosted by the VMM that emulate
-devices. The hosting platform is typically a multi-tenant platform that hosts
-multiple mutually distrusting Tenants.
+| Device Interface | DI | TDISP term, Device Interface. Same as a TDI. A DI can
+be a Virtual Function (VF) or a Physical Function (PF).
 
-| Hypervisor or Virtual Machine Monitor (VMM) | HS mode software
+| Device Security Manager | DSM | A DSM is a logical entity on a TEE-IO device
+that enforces the TDISP security policies, attributes and states.
+
+| Direct Memory Access | DMA | The ability for a device to directly read and
+write into the host physical memory.
+
+| Host platform | N/A | The combination of the host software stack and the host
+hardware components. The host hardware components include all SoC components
+(CPU, memory controller, power management IP blocks, etc) and all discrete ones
+(Root of Trust, IOMMU, physical memory, etc).
+
+| Host software | N/A | All software elements including type-1 or type-2 HS-mode
+VMM and OS; U mode user-space VMM tools; ordinary VMs hosted by the VMM that
+emulate devices. The hosting platform is typically a multi-tenant platform that
+hosts multiple mutually distrusting Tenants.
+
+| Hypervisor or Virtual Machine Monitor | VMM | HS mode software
 that manages Virtual Machines by virtualizing hart, guest physical memory and IO
 resources. This document uses the term VMM and hypervisor interchangeably for
 this software entity.
 
-| TEE Security Manager (TSM) | HS-mode software module that acts as the trusted
+| Input/Output Memory Management Unit | IOMMU | A system agent that translates
+device virtual addresses to physical addresses.
+
+| Integrity and Data Encryption | IDE | Extended PCIe capability for integrity,
+confidentiality and replay protection of PCIe Transport Layer Packets (TLP).
+
+| I/O Translation Agent | N/A | Same as an IOMMU.
+
+| Platform TCB | TCB | Platform Trusted Computing Base, same as TCB.
+
+| Physical Device | N/A | The physical device to which DIs belong to. This is the
+actual physical PCIe device.
+
+| Root of Trust | ROT | Isolated HW/SW subsystem with an immutable ROM firmware
+and  isolated compute and memory elements that form the Trusted Compute Base
+of a TEE system. The RoT manages cryptographic keys and other security
+critical functions such as system lifecycle and debug authorization.
+The RoT provides trusted services to other software on the platform such
+as verified boot, key provisioning, and management, security lifecycle
+management, sealed storage, device management, crypto services,
+attestation etc. The RoT may be an integrated or discrete element, and may take
+on the role of a Device Identification Composition Engine (DICE).
+
+| Secure Protocol and Data Model | SPDM | A DMTF defined specification for
+exchanging messages between devices over a variety of transports and physical
+media. In the CoVE-IO context, SPDM is used to exchange TDISP and IDE
+Key Management messages over PCIe DOE mailboxes.
+
+| System TCB | TCB | System Trusted Computing Base, same as TCB.
+
+| TEE Device Interface Security Protocol | TDISP | An architecture for trusted
+I/O virtualization.
+
+| TEE I/O Device Interface | TDI | The unit of assignment for a trusted I/O
+capable device. For example, a TDI can be a Virtual Function (VF) or a Physical
+Function (PF).
+
+| TEE Security Manager | TSM | HS-mode software module that acts as the trusted
 (in TCB) intermediary between the VMM and the TVM. This module extends the TCB
 chain on the CoVE platform.
 
-| Trusted Computing Base (TCB) Also, System/ Platform TCB | The hardware,
-software and firmware elements that are trusted by a relying party to protect
-the confidentiality and integrity of the relying parties' workload data and
-execution against a defined adversary model. In a system with separate
-processing elements within a package on a socket, the TCB boundary is the
-package. In a multi-socket system the TCB extends across the socket-to-socket
-interface, and is managed as one system TCB.
+| Trusted Computing Base | TCB | The hardware, software and firmware elements
+that are trusted by a relying party to protect the confidentiality and integrity
+of the relying parties' workload data and execution against a defined adversary
+model. In a system with separate processing elements within a package on a
+socket, the TCB boundary is the package. In a multi-socket system the TCB
+extends across the socket-to-socket interface, and is managed as one system TCB.
 
-| TVM | TEE or Confidential VM - A VM instantiation of an confidential workload.
+| Trusted Device Manager | TDM | A CoVE-IO device manager, responsible for
+verifying, attesting and accepting CoVE-IO devices into a TVM TCB. This is a TVM
+guest software stack component.
 
-| VM | Virtual Machines hosted by a VMM
+| TEE VM | TVM | A VM instantiation of an confidential workload.
+
+| Virtual Machine | VM | Virtual Machines hosted by a VMM
 
 |===
