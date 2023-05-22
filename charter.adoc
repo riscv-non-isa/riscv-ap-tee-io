@@ -8,7 +8,8 @@ para-virtualized I/O using non-confidential memory regions, which has
 performance impacts due to memory copies and negates use of accelerators used
 for dense compute. This TG will define CoVE-IO ABI extensions to provide
 Confidential VM-assigned devices with secure direct access to confidential
-memory as well as MMIO, removing the dependence on para-virtualized I/O.
+memory as well as MMIO and Message Signal Interrupt (MSI), removing the
+dependence on para-virtualized I/O.
 
 The AP-TEE-IO TG will work on the following deliverables; where applicable, the
 ABI extensions are expected to extend the AP-TEE TEE-Host/TEE-Guest ABIs:
@@ -20,7 +21,7 @@ ABI extensions are expected to extend the AP-TEE TEE-Host/TEE-Guest ABIs:
 ** Enable TVMs to verify and attest to a device trustworthiness before accepting
    it into its TCB via the use of a Trusted Device Manager (TDM).
 * Requirements for IOMMU extensions (non-ISA) to support performant TEE-I/O
-  devices DMA to confidential memory and secure MMIO.
+  devices DMA to confidential memory, secure MMIO and trusted MSI.
 * Non-normative extensions to the AP-TEE security recommendations to describe
   the software flows and protocols that may be used for device attestation and
   updates.
