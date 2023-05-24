@@ -6,6 +6,8 @@
 - [[[PCI-SIG]]] PCI SIG, https://pcisig.com/
 - [[[DMTF]]] Distributed Management Task Force, https://www.dmtf.org/
 - [[[SPDM]]] Secure Protocol and Data Model, https://www.dmtf.org/dsp/DSP0274
-- [[[TDISP]]] TEE Device Interface Protocol https://members.pcisig.com/wg/PCI-SIG/document/18268?uploaded=1
+- [[[SecuredSPDM]]] SPDM Secured Messages, https://www.dmtf.org/sites/default/files/standards/documents/DSP0277_1.1.0.pdf
+- [[[TDISP]]] TEE Device Interface Protocol, https://members.pcisig.com/wg/PCI-SIG/document/18268?uploaded=1
+- [[[IOMMU]]] RISC-V IOMMU, https://github.com/riscv-non-isa/riscv-iommu/blob/main/riscv-iommu.pdf
 
 bibliography::[]
