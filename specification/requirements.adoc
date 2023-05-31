@@ -34,13 +34,14 @@ assignment to TVMs.
 
 ====== Enumeration
 
-TDIs PCIe Device Capabilities Registers must have the TEE-IO bit set in order
-for the host to discover their TDISP capability.
+TDIs PCIe Device Capabilities Registers must have the "TEE-IO Supported" bit in
+"Device Capabilities Register" set in order for the host to discover their TDISP
+capability.
 
 ===== Data Object Exchange (DOE)
 
 The TDI implements the optional PCIe Data Object Exchange mechanism. The minimal
-supported version is 1.0.
+supported version is 1.0 defined in <<PCIE>>.
 
 A CoVE-IO supported device must support the following DOE object types:
 
@@ -70,8 +71,8 @@ TODO: List of required SPDM messages
 The data that flows between a TDI and a TVM must be confidential and both
 integrity and replay attack protected. PCIe IDE provides this protection for all
 Transport Layer Packets (TLPs) moving between those two endpoints. As a
-consequence, CoVE-IO compatible devices must implement and expose this PCIe
-capability.
+consequence, CoVE-IO compatible devices must implement the IDE and expose this PCIe
+capability defined in <<PCIE>>.
 
 ====== Selective Streams
 
