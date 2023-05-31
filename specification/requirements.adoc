@@ -64,14 +64,25 @@ As a consequence, a CoVE-IO supported DSM must support the SPDM specification
 version 1.2 or above. It must also support sending and receiving SPDM Secured
 Messages as defined in the <<SecuredSPDM>> specification version 1.1 or above.
 
-TODO: List of required SPDM messages
+CoVE-IO compatible DSMs must support the following SPDM responder capabilities:
+`CERT_CAP`, `MEAS_CAP` (10b), `ENCRYPT_CAP`, `MAC_CAP`, `KEY_EX_CAP`.
+
+Moreover, CoVE-IO compatible DSMs must support below algorithms:
+1. For `BaseAsymAlgo`, one or more of the following ones: `TPM_ALG_RSASSA_3072`,
+   `TPM_ALG_ECDSA_ECC_NIST_P256`, `TPM_ALG_ECDSA_ECC_NIST_P384`.
+2. For `BaseHashAlgo`, one or more of the following ones: `TPM_ALG_SHA_256`,
+   `TPM_ALG_SHA_384`.
+3. For `MeasurementHashAlgo`, one or more of the following ones:
+   `TPM_ALG_SHA_256`, `TPM_ALG_SHA_384`.
+4. For `DHE Group`, one or more of the following ones: `secp256r1`, `secp384r1`.
+5. For `AEAD` Cipher Suite, `AES-256-GCM` with 16 Byte MAC.
 
 ===== Integrity and Data Exchange (IDE)
 
 The data that flows between a TDI and a TVM must be confidential and both
 integrity and replay attack protected. PCIe IDE provides this protection for all
 Transport Layer Packets (TLPs) moving between those two endpoints. As a
-consequence, CoVE-IO compatible devices must implement the IDE and expose this PCIe
+consequence, CoVE-IO compatible devices must implement IDE and expose this PCIe
 capability defined in <<PCIE>>.
 
 ====== Selective Streams
