@@ -105,6 +105,12 @@ extends across the socket-to-socket interface, and is managed as one system TCB.
 verifying, attesting and accepting CoVE-IO devices into a TVM TCB. This is a TVM
 guest software stack component.
 
+| Trusted Memory Mapped Input Output | Trusted MMIO | A TDI memory mapped I/O
+region that can only be accessed by a TVM that accepted the TDI in its TCB. TDIs
+describe their trusted MMIO regions through TDISP. The TVM, with the TSM
+support, is responsible for verifying that trusted MMIO ranges are correctly
+mapped into its address space.
+
 | TEE VM | TVM | A VM instantiation of an confidential workload.
 
 | Virtual Machine | VM | Virtual Machines hosted by a VMM
