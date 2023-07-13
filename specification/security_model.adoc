@@ -1,9 +1,76 @@
 [[security_model]]
-== Security and Threat Model
+== Security Model
+
+The CoVE-IO securiy model is built on the following assumptions:
+
+- Only the TVM owner can assess of a TDI trustworthiness. Based on that
+  assessment, it explicitly accepts or rejects a TDI into its TCB.
+- A TDI may access a TVM confidential memory only when the following conditions
+  are met:
+  1. The TVM owner has explicitly allowed the TDI to access its memory by
+     accepting it.
+  2. The TDI is exclusively assigned to the TVM, i.e. it must not be shared
+     other TVMs or any host software component.
+- A TVM may trust and access a TDI MMIO space if and only if the TDI is
+  exclusively assigned to the TVM.
+
+By means of the CoVE-IO guest ABI, TVMs are required to explicitly accept
+TDIs into their TCBs. Accepting or rejecting a TDI is a TVM specific decision,
+based on TVM specific set of verification policies and criteria. A TVM accepting
+a TDI does not imply that other TVMs on the same host platform would accept it
+as well.
+
+Multi-function, CoVE-IO-compliant devices may expose multiple TDIs assigned to
+different TVMs. It is the DSM responsibility to guarantee isolation between all
+assigned TDIs, on a per-TVM basis.
+
+TDIs must not be shared between TVMs, they must be exclusively assign to zero or
+at most one TVM.
+
+As a TVM TCB does not include PCIe switches and bridges, a selective PCIe IDE
+stream must be setup to guarantee end-to-end confidentiality and integrity
+protection between a TVM and a TDI. The host VMM is responsible for setting up a
+single selective IDE stream between the host platform and any physical device
+from which one or more TDIs are assigned to TVMs. All TDIs withing that physical
+device share the single PCIe IDE stream.
+
+The main security objective of the CoVE-IO security model is to protect a TVM
+confidential data integrity and confidentiality as long as TDIs are assigned to
+it. However, the model does not aim at guaranteeing availability of the assigned
+TDIs. As the platform resources owner, the host software components can cause a
+denial of TEE-IO services at any point of the TVM lifecycles, by e.g.
+unassigning a TDI from a TVM.
+
+== Threat Model
+
+=== Assets
+
+- TVM data, code and state
+- TDI MMIO space
 
 === Adversary Model
 
+- Privileged host software (host VMM)
+- Unprivileged host software
+- Privileged guest software (guest kernel)
+- Firmware (Other devices)
+
+- other TVMs
+- other devices
+- host VMM
+
+=== Threats
+
+- Host VMM programs TDI
+- Host VMM unassigns TDI
+- Other TDIs DMA (tee-io and non tee-io)
+- Other TVMs program TDI
+- Physical interposer
+-
+
 === Scope and Threat Model
+
+
 
 === Requirements
 
