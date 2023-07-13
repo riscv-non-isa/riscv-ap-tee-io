@@ -1,9 +1,439 @@
 [[security_model]]
-== Security and Threat Model
+== Security Model
+
+The CoVE-IO securiy model is built on the following assumptions:
+
+- The host platform physical devices are owned by untrusted domain software
+  components (e.g. the host VMM or the hypervisor) that are not part of any
+  TVM TCB and are thus untrusted by TVMs.
+- Only the TVM owner can assess of a TDI trustworthiness. Based on that
+  assessment, it explicitly accepts or rejects a TDI into its TCB.
+- A TDI may access a TVM confidential memory through DMA only when all the
+  following conditions are met:
+  * The TVM owner has explicitly allowed the TDI to access its confidential
+    memory by accepting it.
+  * The TDI is exclusively assigned to the TVM, i.e. it must not be shared
+    other TVMs or any host software component.
+- A TVM may access a TDI trusted MMIO space only when all the following
+  conditions are met:
+  * The TVM owner has explicitly accepted the TDI.
+  * The TDI is exclusively assigned to the TVM, i.e. it must not be shared
+    other TVMs or any host software component.
+- Until a TDI is accepted by the TVM:
+  * The TDI is not allowed to DMA into the TVM confidential memory.
+  * Trusted MMIO access to the TDI is blocked by TSM.
+  * Untrusted MMIO access to the TDI may still be allowed by the VMM for
+    ordinary VMs (if and only if the TDI is in the TDISP unlocked state).
+
+By means of the CoVE-IO guest ABI, TVMs are required to explicitly accept
+TDIs into their TCBs. Accepting or rejecting a TDI is a TVM specific decision,
+based on TVM specific set of verification policies and criteria. A TVM accepting
+a TDI does not imply that other TVMs on the same host platform would accept it
+as well.
+
+Shareable CoVE-IO-compliant devices may expose multiple TDIs, assigned to
+different TVMs. It is the DSM responsibility to guarantee isolation between all
+assigned TDIs, on a per-TVM basis.
+
+Each TDI must be exclusively assigned to no more than one TVM. However, a single
+TVM can simultaneously be assigned several TDIs, irrespective of whether they
+originate from the same physical device or not.
+
+As a TVM TCB does not include PCIe switches and bridges, a selective PCIe IDE
+stream must be setup to guarantee end-to-end confidentiality and integrity
+protection between a TVM and a TDI. The host VMM is responsible for reserving a
+single selective IDE stream per physical device from which one or more TDIs are
+assigned to TVMs. That single PCIe IDE stream is then shared by all all TDIs
+originating from the same corresponding physical device.
+Since the host VMM is not in the TCB, its role in the stream setup is limited to
+selecting an available stream ID and configuring the device IDE capability. The
+selective IDE stream keys, for both link endpoints, are managed and configured
+by TCB elements (the TSM, DSM and platform RoT).
+
+The main security objective of the CoVE-IO security model is to protect a TVM's
+confidential data integrity and confidentiality while TDIs are assigned to it.
+At the same time, availability of those assigned TDIs is out of this model scope
+as e.g. the host VMM could remove them from the TVM at any time it sees fit.
+Either the DSM or the TDI itself must clear and wipe all TVM confidential data
+in the TDI before the host software stack can fully reclaim an assigned TDI.
+
+== Threat Model
+
+=== Assets
+
+The CoVE-IO security model aims at protecting the following assets:
+
+1. The TVM confidential data, which includes its confidential main memory, code
+   and execution state. A TVM execution state includes both its CPUs
+   micro-architectural states and its assigned TDIs states.
+
+2. An assigned TDI trusted I/O space that is mapped into the TVM address space,
+   also known as a TDI trusted MMIO.
+
+==== Security Objectives
+
+The CoVE-IO security model objectives is to protect the above-described TVM
+assets *confidentiality* and *integrity* from components outside of the TCB.
+
+*Availability* of these assets is out of the CoVE-IO security model scope.
 
 === Adversary Model
 
-=== Scope and Threat Model
+The CoVE-IO security model aims at protecting the above-described TVM assets
+from the following adversaries:
+
+* _Privileged host software adversary_: This includes host software components
+  executing in S and M mode like the host firmware, kernel, hypervisor, VMM,
+  etc. As the system resource owner but also the TVMs lifecycle manager, those
+  components can access and control all devices on the system.
+
+* _Unprivileged host software adversary_: This includes host software components
+  executing in U mode like e.g. the userspace parts of the host VMM.
+
+* _Privileged guest software adversary_: This includes guest software components
+  executing in VS mode like e.g. the guest kernel.
+
+* _Unprivileged guest software adversary_: This includes guest software components
+  executing in VU mode like e.g. the guest application workload.
+
+* _Device firmware adversary_: This includes any firmware driving a device
+  within the system's PCIe topology. As PCIe transaction generators those device
+  firmware components can gain direct access to a TVM confidential memory.
+
+* _Simple hardware adversary_: This includes adversaries that are able to probe
+  visible buses on the motherboard, use JTAG based debuggers, power cycle the
+  system, subject the system to thermal radiation.
+
+* _Advanced hardware adversary_: This includes adversaries that, in addition to
+  the simple hardware adversary capabilities, can also probe high speed buses,
+  place interposers on visible buses, glitch clocks and voltage rails.
+
+=== Threats
+
+==== CoVE-IO-T001 -  Trusted MMIO Malicious Access
+
+.CoVE-IO-T001
+[options="header"]
+|===
+
+| Asset | Threat | Adversary | Scope | Result
+
+| TVM confidential data
+| Tamper and Disclosure
+| Privileged host software
+| In scope
+| Host component reads TVM confidential data
+
+5+^| **Description**
+5+| A privileged host software component programs a TDI that is assigned to a
+    TVM. By accessing the device MMIO space, the host component can program
+    direct memory access destination addresses to either its own address space
+    or unintended parts of the TVM address space. +
+    Device generated data intended to be copied to the TVM confidential memory
+    is respectively accessed by the host component instead or redirected to
+    unintended parts of the TVM address space.
+
+5+^| **Mitigations**
+5+a| The `CoVE-IO-T001` threat can be addressed by preventing untrusted domain
+     software components from accessing an assigned TDI, as follows:
+
+    - With TEE-I/O, a PCIe root port generates TLPs with the T-bit set only if
+      the MMIO access originates from the trusted domain. Untrusted domain MMIO
+      accesses must have the T-bit cleared.
+    - A TDI is assigned to a TVM when the TVM accepts it into its TCB, by
+      notifying the TSM about it.
+    - The TEE-I/O DSM enforces that:
+      * Before it is assigned to a TVM, a TDI must not directly access the TVM
+        confidential memory.
+      * Once assigned to a TVM, a TDI is in either the `LOCKED` or `RUN` TDISP
+        state.
+      * In both the `LOCKED` and `RUN` TDISP state, a TDI trusted MMIO space can
+        only be accessed by a trusted domain generated TLP (T-bit set), through
+        the TDI bound PCIe selective IDE stream.
+
+|===
+
+==== CoVE-IO-T002 - Trusted MMIO Remapping
+
+.CoVE-IO-T002
+[options="header"]
+|===
+
+| Asset | Threat | Adversary | Scope | Result
+
+| Device trusted MMIO
+| Tamper
+| Privileged host software
+| In scope
+| TVM programs a TDI that is unassigned to it
+
+5+^| **Description**
+5+| A privileged host software component remaps a TVM assigned TDI MMIO guest
+    physical address to an unassigned TDI MMIO host physical address. +
+    The TVM programs a different TDI than the one that is assigned to it.
+
+5+^| **Mitigations**
+5+a| The `CoVE-IO-T002` threat can be addressed as follows:
+
+     - The TSM maintains second stage page tables (from trusted domain physical
+       addresses to untrusted host domain physical addresses) in confidential
+       memory.
+     - The untrusted domain software component must not set the second stage
+       mappings for the TDI trusted MMIO. It can requests the TSM to do so on
+       its behalf, through the CoVE-IO host ABI.
+     - The TSM must not enable Trusted MMIO mappings for an assigned TDI until
+       the TVM accepts it.
+     - The TVM receives the TDI device interface report through TDISP, via the
+       the TSM CoVE-IO guest ABI. This report is trusted by the TVM and contains
+       the trusted MMIO ranges and order in which they must be mapped to the TVM
+       address space.
+     - The TVM must explicitly accept the reported MMIO ranges, and the TSM must
+       not enable them until they are accepted by the TVM.
+
+|===
+
+==== CoVE-IO-T003 - Trusted MMIO PCIe Redirection
+
+.CoVE-IO-T003
+[options="header"]
+|===
+
+| Asset | Threat | Adversary | Scope | Result
+
+| Device Trusted MMIO
+| Tamper
+| Privileged host software
+| In scope
+| TVM accesses an unassigned TDI trusted MMIO space
+
+5+^| **Description**
+5+| A privileged host software component configures PCIe switches to redirect
+    (or drop) MMIO accesses from the TVM to one of its assigned TDIs. +
+    The host software component can trick the TVM into tampering with an
+    untrusted device or an unassigned TDI MMIO.
+
+5+^| **Mitigations**
+5+a| The `CoVE-IO-T003` threat can be addressed as follows:
+
+     - PCIe switches must not be included in the TVM trust boundary. This is
+       achieved by only allowing PCIe selective IDE streams to be established
+       between a physical device and the untrusted host domain.
+     - Although the VMM can tamper with the device IDE extended capabilities,
+       the PCIe root port IDE settings must only be available to a TVM TCB
+       component, either the TSM or a hardware root-of-trust.
+
+|===
+
+==== CoVE-IO-T004 - Trusted MMIO PCIe Pre-Configuration
+
+.CoVE-IO-T004
+[options="header"]
+|===
+
+| Asset | Threat | Adversary | Scope | Result
+
+| TVM confidential data
+| Tamper and Disclosure
+| Privileged or unprivileged host software
+| In scope
+| Guest software reads and writes resp. from and to another TVM confidential
+  memory
+
+5+^| **Description**
+5+| The VMM maliciously pre-configures a TDI trusted MMIO and assigns it to a
+    TVM. If either the TVM accepts the TDI as-is into its TCB, or the TDI is
+    made operational before the TVM accepts it, the TDI can now access or tamper
+    with the TVM confidential data on behalf of the host software component.
+
+5+^| **Mitigations**
+5+a| TBD
+
+
+|===
+
+==== CoVE-IO-T005 - Trusted MMIO Unauthorized Access
+
+.CoVE-IO-T005
+[options="header"]
+|===
+
+| Asset | Threat | Adversary | Scope | Result
+
+| Device trusted MMIO
+| Tamper
+| Privileged host software
+| In scope
+| TVM accesses an unassigned TDI trusted MMIO space
+
+5+^| **Description**
+5+| A privileged host software component maps a TDI trusted MMIO space into TVM1
+    as part of the TDI assignement. Then it unassigns the TDI from TVM1 and
+    assigns it to TVM2, withouth unmapping the TDI trusted MMIO space from TVM1. +
+    TVM1 can tamper with a TDI trusted MMIO while it is not assigned to it.
+
+5+^| **Mitigations**
+5+a| TBD
+
+
+|===
+
+==== CoVE-IO-T006 - PCIe Link Man-In-The-Middle
+
+.CoVE-IO-T006
+[options="header"]
+|===
+
+| Asset | Threat | Adversary | Scope | Result
+
+| TVM confidential data
+| Tamper and Disclosure
+| Advanced hardware
+| In scope
+| A hardware adversary probes or places an interposer on the PCIe physical link
+  between a TVM and its assigned TDI
+
+5+^| **Description**
+5+| A skilled hardware adversary with system physical access probes or places an
+    interposer in the PCIe physical link. It can then eavesdrop, replay or event
+    tamper with a TVM confidential data.
+
+5+^| **Mitigations**
+5+a| TBD
+
+
+|===
+
+==== CoVE-IO-T007 - PCIe ID Spoofing
+
+.CoVE-IO-T007
+[options="header"]
+|===
+
+| Asset | Threat | Adversary | Scope | Result
+
+| TVM confidential data
+| Tamper and Disclosure
+| Device firmware
+| In scope
+| Host software reads and writes from and to a TVM confidential memory
+
+5+^| **Description**
+5+| A device firmware spoofs a PCIe Requester ID (RID) to generate PCIe packets
+    with an existing, assigned TDI RID and get direct memory access to the
+    corresponding TVM confidential memory.
+
+5+^| **Mitigations**
+5+a| TBD
+
+
+|===
+
+==== CoVE-IO-T008 - Confused Deputy DMA Remapping
+
+.CoVE-IO-T008
+[options="header"]
+|===
+
+| Asset | Threat | Adversary | Scope | Result
+
+| TVM confidential data
+| Tamper and Disclosure
+| Privileged guest software
+| In scope
+| Guest software reads and writes resp. from and to another TVM confidential
+  memory
+
+5+^| **Description**
+5+| TVM1 and TVM2 are assigned resp. TDI1 and TDI2. TDI1 and TDI2 belong to the
+    same physical device. TVM1 programs TDI1 with TVM2's address space. +
+    TVM2 confidential memory is accessed by an unassigned TDI.
+
+5+^| **Mitigations**
+5+a| TBD
+
+
+|===
+
+==== CoVE-IO-T009 - DMA Remapping
+
+.CoVE-IO-T009
+[options="header"]
+|===
+
+| Asset | Threat | Adversary | Scope | Result
+
+| TVM confidential data
+| Tamper and Disclosure
+| Privileged host software
+| In scope
+| Host software reads and writes from and to a TVM confidential memory
+
+5+^| **Description**
+5+| The privileged host software component manipulates an assigned TDI guest
+    physical address (GPA) to host physical address (HPA) mappings. +
+    The TDI direct memory access to and from the TVM confidential data is then
+    redirected to the host software component address space, allowing it to
+    eavesdrop or tamper with the TVM confidential data.
+
+5+^| **Mitigations**
+5+a| TBD
+
+
+|===
+
+==== CoVE-IO-T010 - DMA Remapping
+
+.CoVE-IO-T010
+[options="header"]
+|===
+
+| Asset | Threat | Adversary | Scope | Result
+
+| TVM confidential data
+| Tamper
+| Privileged host software
+| In scope
+| TDI writes into unintended portions of a TVM confidential memory
+
+5+^| **Description**
+5+| The privileged host software component manipulates the guest physical
+    address (GPA) to host physical address (HPA) mappings to create
+    inconsistencies between the TVM and its assigned TDI mappings for the same
+    GPA ranges. +
+    The TDI writes physical adresses that are different than the ones the TVM
+    programmed it with, and tampers the TVM confidential memory. +
+    Moreover, the TVM memory reads from the intended GPA return results that are
+    inconsistent with the actual device operation.
+
+5+^| **Mitigations**
+5+a| TBD
+
+
+|===
+
+==== CoVE-IO-T011 - TDI Denial of Service
+
+.CoVE-IO-T011
+[options="header"]
+|===
+| Asset | Threat | Adversary | Scope | Result
+
+| TVM confidential data
+| Denial of service
+| Privileged host software
+| **Not** in scope
+| TVM can not access a TDI that is assigned to it
+
+5+^| **Description**
+5+| A privileged host software component resets or powers down an assigned TDI
+    or its physical device, while the TDI is assigned to a TVM. +
+    The TVM is no longer able to directly access its assigned TDI.
+
+5+^| **Mitigations**
+5+a| TBD
+
+|===
+
 
 === Requirements
 
