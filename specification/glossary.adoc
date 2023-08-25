@@ -29,6 +29,12 @@ computation in a Hardware-based TEE.
 | Confidential VM Extension | CoVE | A set of non-ISA RISC-V extensions that
 enables confidential computing on RISC-V platforms.
 
+| CoVE Guest SBI Extension | COVG | CoVE SBI extensions serviced by the TSM
+and called by TVMs.
+
+| CoVE Host SBI Extension | COVH | CoVE SBI extensions serviced by the TSM
+and called by host software components.
+
 | Device Interface | DI | TDISP term, Device Interface. Same as a TDI. A DI can
 be a Virtual Function (VF) or a Physical Function (PF).
 
@@ -93,6 +99,8 @@ Function (PF).
 | TEE Security Manager | TSM | HS-mode software module that acts as the trusted
 (in TCB) intermediary between the VMM and the TVM. This module extends the TCB
 chain on the CoVE platform.
+
+| Transaction Layer Packet | TLP |
 
 | Trusted Computing Base | TCB | The hardware, software and firmware elements
 that are trusted by a relying party to protect the confidentiality and integrity
