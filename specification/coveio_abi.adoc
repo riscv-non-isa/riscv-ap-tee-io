@@ -1,2 +1,47 @@
 [[coveio_abi]]
 == Confidential VM Extension (CoVE) IO ABI
+
+=== CoVE IO Host Extension
+
+[#sbi_covh_register_iommu()]
+=== IOMMU Registration (FID TBD)
+[source, C]
+-----
+struct sbiret sbi_covh_register_iommu(unsigned long iommu_id,
+                                      unsigned long msi_cfg[3]);
+-----
+
+[#sbi_covh_notify_iommu_msi()]
+=== IOMMU MSI notification (FID TBD)
+[source, C]
+-----
+struct sbiret sbi_covh_notify_iommu_msi(unsigned long iommu_id);
+-----
+
+[#sbi_covh_register_rp()]
+=== PCIe Root Port Registration (FID TBD)
+[source, C]
+-----
+struct sbiret sbi_covh_register_rp(unsigned long rp_id,
+                                   unsigned long mmio_ranges);
+-----
+
+[#sbi_covh_connect_device()]
+=== Device Connection (FID TBD)
+[source, C]
+-----
+struct sbiret sbi_covh_connect_device()(unsigned long device_id,
+                                        unsigned long stream_id);
+-----
+
+Establishes a secure SPDM session between the TSM and a device identified by
+`device_id`, and configure the PCIe IDE link between that device and its
+upstream Root Port. The configured IDE link must use the selective IDE stream
+identified by `stream_id`.
+
+[#sbi_covh_disconnect_device()]
+=== Device Disconnection (FID TBD)
+[source, C]
+-----
+struct sbiret sbi_covh_disconnect_device()(unsigned long device_id);
+-----

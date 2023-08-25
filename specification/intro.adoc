@@ -38,7 +38,7 @@ major performance impact for confidential workloads.
 
 [[bounce_buffer]]
 .Bounce buffering between an untrusted device and a CoVE TVM
-image::bounce_buffer.svg[]
+image::images/bounce_buffer.svg[]
 
 As devices typically expose their programming interfaces through memory mapped
 registers, using a shared memory buffer requires additional protection of the
