@@ -1,4 +1,4 @@
-HEADER_SOURCE := header.adoc
+HEADER_SOURCE := 00-header.adoc
 PDF_RESULT := riscv-cove-io.pdf
 
 all: build

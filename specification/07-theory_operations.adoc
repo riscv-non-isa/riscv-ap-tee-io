@@ -108,7 +108,7 @@ thus happens between the TSM and the platform ROT. By having the ROT playing the
 RP DSM role, the RP vendor-specific IDE key management interface is abstracted
 by the ROT.
 
-[[IDE_KM_RPT]]
+[[IDE_KM_RPT_OP]]
 .PCIe Root Port IDE Key Management through Hardware Root-of-Trust
 image::images/rp_rot_idekm.svg[align="center"]
 
