@@ -288,6 +288,69 @@ must check that:
 The TSM establishes a secured SPDM session with the physical device DSM by going
 through the steps described in the Secured SPDM Session section.
 
+[source,mermaid]
+....
+%%{init: {'theme': 'neutral', 'themeVariables': {'darkMode': true}, "flowchart" : { "curve" : "basis" } } }%%
+sequenceDiagram
+
+autonumber
+
+participant DSM as Device DSM or ROT
+participant VMM as Host Supervisor Domain Manager (VMM)
+participant TSM
+
+VMM ->> TSM: [COVH] - sbi_covh_connect_device(device_id, stream_id)
+
+Note over TSM,DSM: TSM: SPDM Connection Setup
+
+TSM ->> TSM: Generate SPDM request: GET_VERSION
+TSM ->> VMM: [COVH] - spdm_req(GET_VERSION)
+VMM ->> DSM: [DOE] - SPDM_GET_VERSION
+DSM ->> VMM: [DOE] - SPDM_VERSION
+VMM ->> TSM: [COVH] - spdm_resp(VERSION)
+
+TSM ->> TSM: Generate SPDM request: GET_CAPABILITIES
+TSM ->> VMM: [COVH] - spdm_req(GET_CAPABILITIES)
+VMM ->> DSM: [DOE] - SPDM_GET_CAPABILITIES
+DSM ->> VMM: [DOE] - CAPABILITIES
+VMM ->> TSM: [COVH] - spdm_resp(CAPABILITIES)
+
+TSM ->> TSM: Generate SPDM request: NEGOTIATE_ALGORITHMS
+TSM ->> VMM: [COVH] - spdm_req(NEGOTIATE_ALGORITHMS)
+VMM ->> DSM: [DOE] - SPDM_NEGOTIATE_ALGORITHMS
+DSM ->> VMM: [DOE] - ALGORITHMS
+VMM ->> TSM: [COVH] - spdm_resp(ALGORITHMS)
+
+TSM ->> TSM: Generate SPDM request: GET_CERTIFICATE
+TSM ->> VMM: [COVH] - spdm_req(GET_CERTIFICATE)
+VMM ->> DSM: [DOE] - GET_CERTIFICATE
+DSM ->> VMM: [DOE] - CERTIFICATE
+VMM ->> TSM: [COVH] - spdm_resp(CERTIFICATE)
+TSM ->> TSM: Verify and store device certificate chain
+
+Note over TSM,DSM: TSM: SPDM Key Exchange
+
+TSM ->> TSM: Generate ephemeral SPDM session DHE key pair - DheKey0
+TSM ->> TSM: Generate SPDM request: KEY_EXCHANGE(DheKey0Pub)
+TSM ->> VMM: [COVH] - spdm_req(KEY_EXCHANGE)
+VMM ->> DSM: [DOE] - SPDM_KEY_EXCHANGE
+DSM ->> DSM: Generate ephemeral SPDM session DHE key pair - DheKey1
+DSM ->> VMM: [DOE] - KEY_EXCHANGE_RSP(DheKey1Pub)
+VMM ->> TSM: [COVH] - spdm_resp(KEY_EXCHANGE_RSP)
+TSM ->> TSM: Derive DHE secret
+TSM ->> TSM: Derive SPDM session handshake secrets
+TSM ->> TSM: Generate SPDM request: FINISH
+TSM ->> VMM: [COVH] - spdm_req(FINISH)
+VMM ->> DSM: [DOE] - SPDM_FINISH
+DSM ->> VMM: [DOE] - FINISH_RSP
+VMM ->> TSM: [COVH] - spdm_resp(FINISH_RSP)
+TSM ->> TSM: Derive SPDM session application secrets
+
+Note over TSM,DSM: TSM: SPDM Session Created
+
+....
+
+
 ==== IDE Link
 
 The SPDM session is a software link between the TSM and the DSM, secured after
@@ -298,9 +361,9 @@ the device and then running the TDI assignment flows.
 The last part of the device initialization is about securing the data link
 between the TSM and the device, and that must be done through the IDE Key
 Management protocol.
-Here again, the host supervisor domain manager initiates the PCI IDE link setup
-by calling the `sbi_covh_connect_device` COVH function, and relies on the TSM to
-generate and send IDE KM messages over SPDM.
+Here again, the host supervisor domain manager implictly initiates the PCI IDE
+link setup by calling the `sbi_covh_connect_device` COVH function, and relies
+on the TSM to generate and send IDE KM messages over SPDM.
 
 The TSM is responsible for:
 1. Configuring the PCIe root port IDE Extended Capability.
@@ -323,13 +386,18 @@ The IDE link initial setup must go through the following steps:
 1. The host supervisor domain manager finds an available stream ID and
    configures the device IDE Extended Capability accordingly.
 2. The host supervisor domain manager programs the device IDE extended
-   capability: All RIDs and all memory is allowed, IDE is enabled.
-3. The host supervisor domain manager initiates the IDE link setup by calling
-   the `sbi_covh_connect_device` COVH function.
-4. The TSM programs the Root Port IDE Extended Capability with the proper RID
-   range and the stream ID selected by the host supervisor domain manager in
-   step 1. The capability is only accessible to the TSM, i.e. any writes to it
-   with the C-bit set to 0 are dropped and reads return all 1s.
+   capability: All RIDs and all memory is allowed, IDE is disabled for the
+   selected stream.
+3. The host supervisor domain manager implicitly initiates the IDE link setup
+   by calling the `sbi_covh_connect_device` COVH function, and passing the
+   selected stream ID as an argument to it. The TSM must first establish a
+   secured SPDM session, as described in the previous section.
+4. After it establishes a secured SPDM session with the device, the TSM starts
+   setting the IDE link up and programs the Root Port IDE Extended Capability
+   with the proper RID range and the stream ID selected by the host supervisor
+   domain manager in step 1. IDE is disabled for that stream ID. The capability
+   is only accessible to the TSM, i.e. any writes to it with the C-bit set to 0
+   are dropped and reads return all 1s.
 5. The TSM generates an IDE key for each sub-stream for the stream ID.
 6. The TSM, for each Rx and Tx sub-stream (6 of them), programs the generated
    keys into the physical device:
@@ -362,8 +430,7 @@ The IDE link initial setup must go through the following steps:
         message is encapsulated into a vendor-defined SPDM request.
     b. Receives an `IDE_KM_KEY K_GOSTOP_ACK` from the DSM.
 
-
-.Device Connection
+.Device Connection - IDE Link Setup
 [source,mermaid]
 ....
 %%{init: {'theme': 'neutral', 'themeVariables': {'darkMode': true}, "flowchart" : { "curve" : "basis" } } }%%
@@ -371,63 +438,85 @@ sequenceDiagram
 
 autonumber
 
-participant DSM as Device DSM or ROT
+participant DSM as Device DSM
+participant Device as PCIe Device
+participant RootPort as PCIe Root Port
+participant RoT as RoT (RP DSM)
 participant VMM as Host Supervisor Domain Manager (VMM)
 participant TSM
 
-VMM ->> TSM: [COVH] - sbi_covh_connect_device()
+VMM ->> VMM: Find an available IDE stream ID
+VMM ->> Device: Program IDE extended capability (Allow all RIDs and memory, disable IDE).
 
-Note over TSM,DSM: TSM: SPDM Connection Setup
+VMM ->> TSM: [COVH] - sbi_covh_connect_device(device_id, stream_id)
 
-TSM ->> TSM: Generate SPDM request: GET_VERSION
-TSM ->> VMM: [COVH] - spdm_req(GET_VERSION)
-VMM ->> DSM: [DOE] - SPDM_GET_VERSION
-DSM ->> VMM: [DOE] - SPDM_VERSION
-VMM ->> TSM: [COVH] - spdm_resp(VERSION)
+Note over TSM,DSM: TSM: SPDM Connection Initialization
 
-TSM ->> TSM: Generate SPDM request: GET_CAPABILITIES
-TSM ->> VMM: [COVH] - spdm_req(GET_CAPABILITIES)
-VMM ->> DSM: [DOE] - SPDM_GET_CAPABILITIES
-DSM ->> VMM: [DOE] - CAPABILITIES
-VMM ->> TSM: [COVH] - spdm_resp(CAPABILITIES)
+Note over TSM,DSM: TSM: SPDM Connection Created
 
-TSM ->> TSM: Generate SPDM request: NEGOTIATE_ALGORITHMS
-TSM ->> VMM: [COVH] - spdm_req(NEGOTIATE_ALGORITHMS)
-VMM ->> DSM: [DOE] - SPDM_NEGOTIATE_ALGORITHMS
-DSM ->> VMM: [DOE] - ALGORITHMS
-VMM ->> TSM: [COVH] - spdm_resp(ALGORITHMS)
+TSM ->> RoT: Program RP IDE extended capability (Allow RID and memory for the device, IDE is disabled).
 
-TSM ->> TSM: Generate SPDM request: GET_CERTIFICATE
-TSM ->> VMM: [COVH] - spdm_req(GET_CERTIFICATE)
-VMM ->> DSM: [DOE] - GET_CERTIFICATE
-DSM ->> VMM: [DOE] - CERTIFICATE
-VMM ->> TSM: [COVH] - spdm_resp(CERTIFICATE)
-TSM ->> TSM: Verify and store device certificate chain
+TSM ->> TSM: Generate 6 IDE keys [(Rx, Tx) * sub-streams(P, NP, C)]
 
-Note over TSM,DSM: TSM: SPDM Key Exchange
+Loop 6 times - TSM programs IDE keys into Device (For the given stream ID)
+     TSM ->> TSM: Generate SPDM request IDE_KM_KEY_PROG
+     TSM ->> VMM: [COVEH] - spdm_req(IDE_KM_KEY_PROG)
+     VMM ->> DSM: [DOE] - SPDM_IDE_KM_KEY_PROG
+     DSM ->> Device: Program  IDE Key
+     DSM ->> VMM: [DOE] - SPDM_IDE_KM_KP_ACK
+     VMM ->> TSM: [COVEH] - spdm_resp(IDE_KM_KP_ACK)
+end
 
-TSM ->> TSM: Generate ephemeral SPDM keys K0
-TSM ->> TSM: Generate SPDM request: KEY_EXCHANGE(K0)
-TSM ->> VMM: [COVH] - spdm_req(KEY_EXCHANGE)
-VMM ->> DSM: [DOE] - SPDM_KEY_EXCHANGE
-DSM ->> VMM: [DOE] - KEY_EXCHANGE_RSP
-VMM ->> TSM: [COVH] - spdm_resp(KEY_EXCHANGE_RSP)
-TSM ->> TSM: Derive DHE secret
-TSM ->> TSM: Generate SPDM request: FINISH
-TSM ->> VMM: [COVH] - spdm_req(FINISH)
-VMM ->> DSM: [DOE] - SPDM_FINISH
-DSM ->> VMM: [DOE] - FINISH_RSP
-VMM ->> TSM: [COVH] - spdm_resp(FINISH_RSP)
+Loop 6 times - TSM programs IDE keys into Root Port through RoT (For the given stream ID)
+     TSM ->> TSM: Generate SPDM request IDE_KM_KEY_PROG
+     TSM ->> VMM: [COVEH] - spdm_req(IDE_KM_KEY_PROG)
+     VMM ->> RoT: [DOE] - SPDM_IDE_KM_KEY_PROG
+     RoT ->> RootPort: Program  IDE Key
+     RoT ->> VMM: [DOE] - SPDM_IDE_KM_KP_ACK
+     VMM ->> TSM: [COVEH] - spdm_resp(IDE_KM_KP_ACK)
+end
 
-Note over TSM,DSM: TSM: SPDM Session Created
+Loop 3 times (For each sub-stream)
+     TSM ->> TSM: Generate SPDM request IDE_KM_K_SET_GO
+     TSM ->> VMM: [COVEH] - spdm_req(IDE_KM_K_SET_GO)
+     VMM ->> DSM: [DOE] - SPDM_IDE_KM_K_SET_GO
+     DSM ->> Device: Trigger Tx IDE
+     DSM ->> VMM: [DOE] - SPDM_IDE_KM_K_GOSTOP_ACK
+     VMM ->> TSM: [COVEH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
+end
 
-%% TODO Add the IDE sequence...
-Note over TSM,DSM: IDE Link setup starts here...
+Loop 3 times (For each sub-stream)
+     TSM ->> TSM: Generate SPDM request IDE_KM_K_SET_GO
+     TSM ->> VMM: [COVEH] - spdm_req(IDE_KM_K_SET_GO)
+     VMM ->> RoT: [DOE] - SPDM_IDE_KM_K_SET_GO
+     RoT ->> Device: Trigger Tx IDE
+     RoT ->> VMM: [DOE] - SPDM_IDE_KM_K_GOSTOP_ACK
+     VMM ->> TSM: [COVEH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
+end
+
+Loop 3 times (For each sub-stream)
+     TSM ->> TSM: Generate SPDM request IDE_KM_K_SET_GO
+     TSM ->> VMM: [COVEH] - spdm_req(IDE_KM_K_SET_GO)
+     VMM ->> DSM: [DOE] - SPDM_IDE_KM_K_SET_GO
+     DSM ->> Device: Trigger Rx IDE
+     DSM ->> VMM: [DOE] - SPDM_IDE_KM_K_GOSTOP_ACK
+     VMM ->> TSM: [COVEH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
+end
+
+Loop 3 times (For each sub-stream)
+     TSM ->> TSM: Generate SPDM request IDE_KM_K_SET_GO
+     TSM ->> VMM: [COVEH] - spdm_req(IDE_KM_K_SET_GO)
+     VMM ->> RoT: [DOE] - SPDM_IDE_KM_K_SET_GO
+     RoT ->> Device: Trigger Rx IDE
+     RoT ->> VMM: [DOE] - SPDM_IDE_KM_K_GOSTOP_ACK
+     VMM ->> TSM: [COVEH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
+end
 
 TSM ->> VMM: [COVH] - spdm_covh_connect_device()
 
+VMM ->> Device: Enable IDE for the selected stream
+VMM ->> RootPort: Enable IDE for the selected stream
 ....
-
 
 === Interface Assignment
 
