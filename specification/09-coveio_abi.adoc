@@ -3,8 +3,10 @@
 
 === CoVE IO Host Extension
 
+==== IOMMU Management
+
 [#sbi_covh_register_iommu()]
-=== IOMMU Registration (FID TBD)
+===== IOMMU Registration (FID TBD)
 [source, C]
 -----
 struct sbiret sbi_covh_register_iommu(unsigned long iommu_id,
@@ -12,22 +14,26 @@ struct sbiret sbi_covh_register_iommu(unsigned long iommu_id,
 -----
 
 [#sbi_covh_notify_iommu_msi()]
-=== IOMMU MSI notification (FID TBD)
+===== IOMMU MSI notification (FID TBD)
 [source, C]
 -----
 struct sbiret sbi_covh_notify_iommu_msi(unsigned long iommu_id);
 -----
 
+==== Root Port Management
+
 [#sbi_covh_register_rp()]
-=== PCIe Root Port Registration (FID TBD)
+===== PCIe Root Port Registration (FID TBD)
 [source, C]
 -----
 struct sbiret sbi_covh_register_rp(unsigned long rp_id,
                                    unsigned long mmio_ranges);
 -----
 
+==== Physical Device Management
+
 [#sbi_covh_connect_device()]
-=== Device Connection (FID TBD)
+===== Device Connection (FID TBD)
 [source, C]
 -----
 struct sbiret sbi_covh_connect_device()(unsigned long device_id,
@@ -40,8 +46,62 @@ upstream Root Port. The configured IDE link must use the selective IDE stream
 identified by `stream_id`.
 
 [#sbi_covh_disconnect_device()]
-=== Device Disconnection (FID TBD)
+===== Device Disconnection (FID TBD)
 [source, C]
 -----
 struct sbiret sbi_covh_disconnect_device()(unsigned long device_id);
 -----
+
+==== Device Interface Assignment
+
+
+=== CoVE IO Guest Extension
+
+==== Physical Device Query
+
+[#sbi_covg_get_device_link()]
+===== Device Link Status (FID TBD)
+[source, C]
+-----
+struct sbiret sbi_covg_get_device_link(unsigned long device_id);
+-----
+
+[#sbi_covg_get_device_certificate()]
+===== Device Identity Certificate (FID TBD)
+[source, C]
+-----
+struct sbiret sbi_covg_get_device_certificate(unsigned long device_id);
+-----
+
+[#sbi_covg_get_device_measurements()]
+===== Device Measurements (FID TBD)
+[source, C]
+-----
+struct sbiret sbi_covg_get_device_measurements(unsigned long device_id);
+-----
+
+[#sbi_covg_get_device_spdm_attrs()]
+===== Device SPDM Session Attributes (FID TBD)
+[source, C]
+-----
+struct sbiret sbi_covg_get_device_spdm_attrs(unsigned long device_id);
+-----
+
+==== Device Interface Management
+
+[#sbi_covg_get_interface_report()]
+===== Device Interface Report (FID TBD)
+[source, C]
+-----
+struct sbiret sbi_covg_get_interface_report(unsigned long device_if_id);
+-----
+
+[#sbi_covg_map_interface_mmio()]
+===== Device Interface MMIO Mapping (FID TBD)
+[source, C]
+----
+struct sbiret sbi_covg_map_interface_mmio(unsigned long device_if_id
+                                          unsigned long gpa,
+                                          unsigned long hpa_offset,
+                                          unsigned long size);
+----
