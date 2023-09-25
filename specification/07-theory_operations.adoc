@@ -44,17 +44,17 @@ participate in TEE-IO and operates as described in the following steps:
    IOMMUs. Those vectors must point to the untrusted IOMMU driver as the TSM can
    not handle external interrupts.
 5. The host supervisor domain manager registers the IOMMUs with the TSM by
-   calling the `sbi_covh_register_iommu()` COVH function. The TSM gets the
+   calling the `sbi_covh_register_iommu()` `COVH` function. The TSM gets the
    allocated MSI vectors and configures the trusted IOMMU `s_msi_cfg_table`
    register accordingly.
 6. When a trusted IOMMU sends an MSI, the untrusted IOMMU driver handles it and
    notifies the TSM about a pending trusted IOMMU MSI by calling the
-   `sbi_covh_notify_iommu_msi()` COVH function.
+   `sbi_covh_notify_iommu_msi()` `COVH` function.
 7. The TSM verifies that there is a pending MSI by reading the IOMMU `s_ipsr`
    register, and handles the interrupts as needed.
 
 The host IOMMU driver may be malicious and attempt to trick the TSM by either
-invoking the `sbi_covh_notify_iommu_msi()` COVH function while there are no
+invoking the `sbi_covh_notify_iommu_msi()` `COVH` function while there are no
 pending MSI from the trusted IOMMU or not invoking it when there actually is one
 such pending interrupt. In the former case, the TSM can verify that there really
 is a pending MSI by checking the trusted IOMMU status registers. The latter case
@@ -90,7 +90,7 @@ As the TSM is responsible for setting both the RP IDE keys and PCI IDE
 capabilities, it must be the IDE operations owner for any downstream device for
 a given RP. As the overall platform resources owner, the host supervisor domain
 software stack must register a RP for TEE I/O and IDE ownership with the TSM, by
-calling the `sbi_covh_register_rp()` COVH function. This function associates a
+calling the `sbi_covh_register_rp()` `COVH` function. This function associates a
 RP id to its MMIO space (for the IDE capability configurations) and all the MMIO
 ranges that are routed through it. The TSM must compare these 2 arguments with
 the information it received from the platform ROT through the TEE I/O manifest.
@@ -114,7 +114,7 @@ image::images/rp_rot_idekm.svg[align="center"]
 
 // After the host supervisor domain manager successfully registers a root port with
 // the TSM, it requests the TSM to establish a secured SPDM session (together with
-// the IDE stream setup) with it by calling the COVH `sbi_covh_connect_device()`
+// the IDE stream setup) with it by calling the `COVH` `sbi_covh_connect_device()`
 // function. The same function is used for establishing SPDM sessions with PCIe
 // root ports and physical devices acting as SPDM responders. The Secured SPDM
 // Session section describes the protocol followed by the TSM and the SPDM
@@ -135,11 +135,11 @@ Whether the SPDM session is established with the ROT or the physical device, the
 TSM is the requester and it must reach and communicate with DOE mailboxes that
 are owned by the host supervisor domain manager. As a consequence, after
 requesting the TSM to establish an SPDM session with a device (through the
-`sbi_covh_connect_device()` COVH call), it acts as an untrusted SPDM messages
+`sbi_covh_connect_device()` `COVH` call), it acts as an untrusted SPDM messages
 proxy between the TSM and the device DSM.
 
 After a successful call to `sbi_covh_connect_device()`, host supervisor domain
-initiated CoVE-IO COVH calls that require SPDM requests to be sent to the device
+initiated CoVE-IO `COVH` calls that require SPDM requests to be sent to the device
 DOE mailbox follows the flow described below:
 
 .SPDM Flow With CoVE
@@ -168,7 +168,7 @@ VMM ->> TSM: [COVH] - sbi_covh_tee_io_action(RESP_2)
 TSM ->> VMM: [COVH] - SBI_ERROR_CODE(SPDM_REQUEST_COMPLETED)
 ....
 
-The TSM generates the SPDM request to support the initial CoVE-IO COVH call and
+The TSM generates the SPDM request to support the initial CoVE-IO `COVH` call and
 copies the request into the per-vcpu shared, non-confidential memory region that
 the host supervisor domain and the TSM share as per the CoVE specification. The
 TSM replies to the host supervisor domain manager request with the `SBI_SUCCESS`
@@ -176,9 +176,9 @@ error code and the `SPDM_PENDING_REQUEST (0x1)` value through the `sbiret`
 structure. The host supervisor domain manager then sends the pending SPDM
 request to the device DOE mailbox. It forwards the device SPDM response to the
 TSM, by copying it to the same SPDM buffer it fetches the SPDM request from and
-by calling again the same CoVE-IO COVH call.
+by calling again the same CoVE-IO `COVH` call.
 This process continues until the initial CoVE-IO call is completed. The TSM then
-replies to the last COVH call with the appropriate error code and the
+replies to the last `COVH` call with the appropriate error code and the
 `SPDM_REQUEST_COMPLETED (0x0)` value through the `sbiret` structure.
 
 The TSM only supports one pending SPDM transaction per device, and the CoVE NACL
@@ -234,7 +234,7 @@ mailbox, which could be either the ROT acting as a DSM for the PCIe root ports,
 or the physical device DSM. In either case the mailboxes are resources owned by
 the host security domain manager which thus initiates the SPDM session
 establishment. It acts as an untrusted proxy between the TSM and the DSM by
-requesting the TSM to generate SPDM requests through the CoVIO COVHTH ABI,
+requesting the TSM to generate SPDM requests through the CoVIO `COVH`TH ABI,
 sending those requests to the DOE mailbox and forwarding the SPDM responses back
 to the TSM, as described in the SPDM flow section.
 
@@ -260,7 +260,7 @@ through two device initialization steps:
    device DSM (The SPDM responder).
 2. Set the PCIe IDE stream up for encrypting the PCIe link.
 
-The CoVE-IO COVH extension supports those two initialization steps through one
+The CoVE-IO `COVH` extension supports those two initialization steps through one
 single function: `sbi_covh_connect_device()`.
 
 When the host supervisor domain manager calls `sbi_covh_connect_device()`, it
@@ -430,5 +430,104 @@ TSM ->> VMM: [COVH] - spdm_covh_connect_device()
 
 
 === Interface Assignment
+
+Once both the SPDM session and the IDE link are secured and established, the
+host supervisor domain manager may directly assign a TDI to a TVM, through the
+`COVH` interface. This is a four steps process:
+
+1. The host supervisor domain manager initiates the interface assignment flow by
+   having the TSM move the TDI into the TDISP `CONFIG_LOCKED` state.
+2. The TVM verifies and accepts the locked TDI into its TCB.
+3. The TVM asks the TSM to move the TDI to the TDISP `RUN` state.
+4. The TVM verifies that the TDI is in the TDISP `RUN` state and starts
+   using it.
+
+The next section describe in more details what step 2 covers, i.e. which steps
+a TVM should follow in order to be able to verify a locked TDI and accept or
+reject it into its TCB.
+
+==== TDI Acceptation
+
+It is the TVM responsibility to accept or reject the assigned TDI into its
+TCB, and to explicitly notify both the TSM and the host supervisor domain
+manager about its decision. The TVM should check for the following security
+attributes before being able to decide whether or not it can safely add a TDI
+into its TCB:
+
+1. **SPDM session establishment**: A secured SPDM session must be established
+   between the TDI’s DSM and the TSM. TVM verifies that attribute from the TSM,
+   through the `sbi_covg_get_device_link()` `COVG` ABI.
+2. **IDE link**: The PCIe physical link between the Root Port and the physical
+   device must be confidentiality and integrity protected through IDE. As for
+   the SPDM session, the TVM calls into the `sbi_covg_get_device_link()` `COVG`
+   ABI to verify that attribute from the TSM.
+3. **TDISP and SPDM configuration**: The TVM must verify that the TDI TDISP
+   configuration and the SPDM session attributes comply with its security policy.
+   For example, the TVM could check for the allowed device firmware update
+   policy by combining the TDI TDISP report `NO_FW_UPDATE` setting with the SPDM
+   session measurement freshness capabilities (`MEAS_FRESH_CAP`). It is then the
+   TVM choice to accept or reject a TDI depending on the inferred physical
+   device firmware update policy. The TDI interface report and the SPDM session
+   attributes are provided by respectively the `sbi_covg_get_interface_report()`
+   and the `sbi_covg_get_device_spdm_attrs()` `COVG` ABI.
+4. **TDI state**: Before accepting a TDI into its TCB, a TVM must verify that
+   its configuration is immutable, and in particular that the host can not
+   modify it without having all in-flight transactions being discarded. TEE-IO
+   capable physical devices follow the TDISP specification and can guarantee
+   that immutability state once the TDI has been moved to the TDISP
+   `CONFIG_LOCKED` state. The transition from TDISP `CONFIG_UNLOCKED` to
+   `CONFIG_LOCKED` is triggered by the host supervisor domain manager through
+   the `COVH` ABI. As such, the TVM can query the TSM for the TDI state through
+   the `sbi_covg_get_interface_state()` `COVG` ABI. A TVM must not accept a TDI
+   if it’s in any other TDISP state than `CONFIG_LOCKED`.
+5. **Device trustworthiness**: Verifying that the TDI is in an immutable state
+   across a secured SPDM and physical link is mandatory but not sufficient. The
+   TVM must also attest to the physical device trustworthiness in order to
+   decide if it can accept one of its TDIs into its TCB. A TVM can trust a PCIe
+   device by first authentictating it. Once authenticated, the TVM challenges
+   the device and then verifies its measurements:
+   a. First the TVM must first verify the authenticity of the device by getting
+      its certificate chain from the TSM, through the
+      `sbi_covg_get_device_certificate()` `COVG` ABI. The TVM should then verify
+      the chain against a provisioned and measured trust anchor list.
+   b. Once the device certificate authenticity is verified, the TVM must then
+      challenge it by having it sign a piece of data, making sure that the
+      device actually owns the private key bound to its certificate. This is
+      achieved by getting the TDI measurements from the TSM through the
+      `sbi_covg_get_device_measurement()` `COVG` ABI. This set of device-signed
+      measurements, also knonw as the device attestation evidence, must be
+      verified against the TDI certificate acquired in the previous step.
+   c. Finally, the TVM should attest to the device configuration trustworthiness
+      (code, SVN, state, etc) by verifying the previously fetched device
+      attestation evidence. This is typically done through a remote or local
+      attestation procedure.
+6. **TDI IO ranges**: The TVM will likely interact with and program the TDI
+   through a set of memory mapped IO ranges (e.g. a PCI BAR defined memory
+   range). However, when discovering the TDI in its address space, the TVM only
+   sees guest physical addresses (GPA) for those ranges, as exposed by the
+   host supervisor domain manager  PCI emulation. When communicating with the
+   TDI, the TVM will use those GPAs and must rely on their corresponding
+   translations to host physical addresses (HPA) to be properly set. In
+   particular, it must rely on the fact that the TDI MMIO ranges GPAs do not map
+   to non-confidential memory that could be otherwise accessed by a host domain
+   component. To verify that security attribute, the TVM must retrieve the TDISP
+   report for the TDI, through the `sbi_covg_get_interface_report()`. The TDISP
+   report, among other things, contains the list of MMIO ranges for the TDI
+   sorted by BAR indexes. First, the TVM must verify that the host VMM exposed
+   BARs have the same sizes as the TDISP reported ones. To further validate
+   those ranges, the TVM must check from the TSM that they’re correctly mapped
+   to host physical ranges. Prior to the TVM being able to accept a TDI, the
+   host VMM must have requested the TSM to map all the TDI MMIO ranges to TVM
+   GPA ranges, through `sbi_covh_add_tvm_region()` `COVH` calls. The TVM then
+   verifies from the TSM that a GPA exposed TDI MMIO range will be mapped to
+   the TDISP reported range through the TSM managed G-stage page tables, by
+   calling into the `sbi_covg_map_interface_mmio()` `COVG` ABI. The TVM can
+   accept a TDI only if the TSM confirms the validity of all MMIO range
+   mappings, in the TDISP reported order (i.e. BAR #N in the TVM address space
+   will be mapped to the TDISP reported MMIO range #N).
+
+Once the TVM has verified the above security attributes, it lets the TSM and the
+TVM know that it is ready to use the TDI, by calling into the
+`sbi_covg_run_interface()` `COVG` ABI.
 
 === Interface Unassignment
