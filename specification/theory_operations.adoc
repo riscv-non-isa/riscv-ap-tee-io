@@ -35,8 +35,8 @@ process is driven by the untrusted domain manager for all IOMMUs that
 participate in TEE-IO and operates as described in the following steps:
 
 1. The TSM is loaded into a supervisor domain and provisioned with a CoVE-IO
-   manifest. It is recommended that the TSM is measured by the platform
-   root-of-trust for subsequent attestation.
+   manifest. It is recommended that the TSM is measured by the root-of-trust for
+   measurement (RTM) for subsequent attestation.
 2. The host supervisor domain manager (e.g. the host VMM) enumerates all
    platform IOMMUs as PCIe devices.
 3. The host IOMMU driver is loaded and probed.
