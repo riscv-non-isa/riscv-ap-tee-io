@@ -314,6 +314,8 @@ The TSM is responsible for:
 The host VMM is responsible for:
 1. Generating and managing system wide PCIe stream IDs.
 2. Setting the device PCIe device IDE PCI Extended Capability.
+3. Programing the PCIe switch between the device and PCIe root port, such as
+   IDE Control Register - Flow-Through IDE Stream Enabled.
 4. Initiating the IDE link setup.
 
 The IDE link initial setup must go through the following steps:
