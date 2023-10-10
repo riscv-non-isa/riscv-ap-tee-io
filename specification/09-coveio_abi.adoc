@@ -52,7 +52,52 @@ identified by `stream_id`.
 struct sbiret sbi_covh_disconnect_device()(unsigned long device_id);
 -----
 
-==== Device Interface Assignment
+==== TVM Memory Management
+
+[#sbi_covh_add_tvm_device_region()]
+===== Device Interface Memory Region Mapping into the TVM Address Space (FID TBD)
+[source, C]
+-----
+struct sbiret sbi_covh_add_tvm_interface_region(unsigned long tvm_id,
+                                                unsigned long device_if_id,
+                                                unsigned long base_addr,
+                                                unsigned long num_pages);
+-----
+
+===== Device Interface Memory Region Reclaiming (FID TBD)
+[source, C]
+-----
+struct sbiret sbi_covh_reclaim_tvm_interface_region(unsigned long tvm_id,
+                                                    unsigned long device_if_id,
+                                                    unsigned long base_addr,
+                                                    unsigned long num_pages);
+-----
+
+Reclaims a device interface MMIO region previously added to a TVM address space.
+The host supervisor domain manager may call this function when the `tvm_id` TVM
+stops `device_if_id` device interface, in order for the TSM to unmap the device
+interface MMIO ranges from the TVM address space.
+
+If `device_if_id` is still bound to `tvm_id` when this call is made, the TSM
+unbinds the device interface from the TVM first.
+
+==== Device Interface Management
+
+[#sbi_covh_bind_interface()]
+===== Device Interface Binding (FID TBD)
+[source, C]
+-----
+struct sbiret sbi_covh_bind_interface()(unsigned long tvm_id,
+                                        unsigned long device_if_id);
+-----
+
+[#sbi_covh_unbind_interface()]
+===== Device Interface Unbinding (FID TBD)
+[source, C]
+-----
+struct sbiret sbi_covh_unbind_interface()(unsigned long tvm_id,
+                                          unsigned long device_if_id);
+-----
 
 === CoVE IO Guest Extension
 
@@ -89,10 +134,17 @@ struct sbiret sbi_covg_get_device_spdm_attrs(unsigned long device_id);
 ==== Device Interface Management
 
 [#sbi_covg_get_interface_report()]
-===== Device Interface Report (FID TBD)
+===== Device Interface TDISP Report (FID TBD)
 [source, C]
 -----
 struct sbiret sbi_covg_get_interface_report(unsigned long device_if_id);
+-----
+
+[#sbi_covg_get_interface_state()]
+===== Device Interface State (FID TBD)
+[source, C]
+-----
+struct sbiret sbi_covg_get_interface_state(unsigned long device_if_id);
 -----
 
 [#sbi_covg_map_interface_mmio()]
@@ -103,4 +155,18 @@ struct sbiret sbi_covg_map_interface_mmio(unsigned long device_if_id
                                           unsigned long gpa,
                                           unsigned long hpa_offset,
                                           unsigned long size);
+----
+
+[#sbi_covg_start_interface()]
+===== Start Device Interface (FID TBD)
+[source, C]
+----
+struct sbiret sbi_covg_start_interface(unsigned long device_if_id);
+----
+
+[#sbi_covg_stop_interface()]
+===== Stop Device Interface (FID TBD)
+[source, C]
+----
+struct sbiret sbi_covg_stop_interface(unsigned long device_if_id);
 ----

@@ -235,7 +235,7 @@ to the TSM, as described in the SPDM flow section.
 After the IOMMU is registered with the TSM, the host supervisor domain manager
 must establish a logical connection with any device from which a TDI could be
 bound to a TVM. To do so, it must cooperate with the TSM to properly initialize
-sll such physical devicesany devices.
+all such physical devices.
 
 The device initialization process aims at establishing secured,
 integrity-protected control and data planes between the TSM and the
@@ -266,7 +266,7 @@ The first step for initializing a TEE-IO capable device is to establish a
 secured SPDM session between the TSM an the device. The secured SPDM sessions
 will then be used to carry `TDISP` and `IDE_KM` messages, in order to
 respectively secure the physical link between the device and its PCIe root port,
-and for assigning or unassigning TDIs from a TVM.
+and for binding or unbinding TDIs to or from a TVM.
 
 The host supervisor domain manager requires the TSM to establish a secured SPDM
 session with the physical device by calling the `sbi_covh_connect_device()`
@@ -350,7 +350,7 @@ Note over TSM,DSM: TSM: SPDM Session Created
 The SPDM session is a software link between the TSM and the DSM, secured after
 both entities go through a DHE key exchange over the untrusted host supervisor
 domain manager proxy. SPDM is used as a control link for configuring the rest of
-the device and then running the TDI assignment flows.
+the device and then running the TDI binding flows.
 
 The last part of the device connection process is about securing the data link
 between the TSM and the device, and that must be done through the IDE Key
@@ -456,56 +456,56 @@ TSM ->> TSM: Generate 6 IDE keys [(Rx, Tx) * sub-streams(P, NP, C)]
 
 Loop 6 times - TSM programs IDE keys into Device (For the given stream ID)
      TSM ->> TSM: Generate SPDM request IDE_KM_KEY_PROG
-     TSM ->> VMM: [COVEH] - spdm_req(IDE_KM_KEY_PROG)
+     TSM ->> VMM: [COVH] - spdm_req(IDE_KM_KEY_PROG)
      VMM ->> DSM: [DOE] - SPDM_IDE_KM_KEY_PROG
      DSM ->> Device: Program  IDE Key
      DSM ->> VMM: [DOE] - SPDM_IDE_KM_KP_ACK
-     VMM ->> TSM: [COVEH] - spdm_resp(IDE_KM_KP_ACK)
+     VMM ->> TSM: [COVH] - spdm_resp(IDE_KM_KP_ACK)
 end
 
 Loop 6 times - TSM programs IDE keys into Root Port through RoT (For the given stream ID)
      TSM ->> TSM: Generate SPDM request IDE_KM_KEY_PROG
-     TSM ->> VMM: [COVEH] - spdm_req(IDE_KM_KEY_PROG)
+     TSM ->> VMM: [COVH] - spdm_req(IDE_KM_KEY_PROG)
      VMM ->> RoT: [DOE] - SPDM_IDE_KM_KEY_PROG
      RoT ->> RootPort: Program  IDE Key
      RoT ->> VMM: [DOE] - SPDM_IDE_KM_KP_ACK
-     VMM ->> TSM: [COVEH] - spdm_resp(IDE_KM_KP_ACK)
+     VMM ->> TSM: [COVH] - spdm_resp(IDE_KM_KP_ACK)
 end
 
 Loop 3 times (For each sub-stream)
      TSM ->> TSM: Generate SPDM request IDE_KM_K_SET_GO
-     TSM ->> VMM: [COVEH] - spdm_req(IDE_KM_K_SET_GO)
+     TSM ->> VMM: [COVH] - spdm_req(IDE_KM_K_SET_GO)
      VMM ->> DSM: [DOE] - SPDM_IDE_KM_K_SET_GO
      DSM ->> Device: Trigger Tx IDE
      DSM ->> VMM: [DOE] - SPDM_IDE_KM_K_GOSTOP_ACK
-     VMM ->> TSM: [COVEH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
+     VMM ->> TSM: [COVH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
 end
 
 Loop 3 times (For each sub-stream)
      TSM ->> TSM: Generate SPDM request IDE_KM_K_SET_GO
-     TSM ->> VMM: [COVEH] - spdm_req(IDE_KM_K_SET_GO)
+     TSM ->> VMM: [COVH] - spdm_req(IDE_KM_K_SET_GO)
      VMM ->> RoT: [DOE] - SPDM_IDE_KM_K_SET_GO
      RoT ->> Device: Trigger Tx IDE
      RoT ->> VMM: [DOE] - SPDM_IDE_KM_K_GOSTOP_ACK
-     VMM ->> TSM: [COVEH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
+     VMM ->> TSM: [COVH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
 end
 
 Loop 3 times (For each sub-stream)
      TSM ->> TSM: Generate SPDM request IDE_KM_K_SET_GO
-     TSM ->> VMM: [COVEH] - spdm_req(IDE_KM_K_SET_GO)
+     TSM ->> VMM: [COVH] - spdm_req(IDE_KM_K_SET_GO)
      VMM ->> DSM: [DOE] - SPDM_IDE_KM_K_SET_GO
      DSM ->> Device: Trigger Rx IDE
      DSM ->> VMM: [DOE] - SPDM_IDE_KM_K_GOSTOP_ACK
-     VMM ->> TSM: [COVEH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
+     VMM ->> TSM: [COVH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
 end
 
 Loop 3 times (For each sub-stream)
      TSM ->> TSM: Generate SPDM request IDE_KM_K_SET_GO
-     TSM ->> VMM: [COVEH] - spdm_req(IDE_KM_K_SET_GO)
+     TSM ->> VMM: [COVH] - spdm_req(IDE_KM_K_SET_GO)
      VMM ->> RoT: [DOE] - SPDM_IDE_KM_K_SET_GO
      RoT ->> Device: Trigger Rx IDE
      RoT ->> VMM: [DOE] - SPDM_IDE_KM_K_GOSTOP_ACK
-     VMM ->> TSM: [COVEH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
+     VMM ->> TSM: [COVH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
 end
 
 TSM ->> VMM: [COVH] - spdm_covh_connect_device()
@@ -516,29 +516,147 @@ VMM ->> RootPort: Enable IDE for the selected stream
 
 === Device Disconnection
 
-=== Interface Assignment
+=== Interface Binding
 
 Once both the SPDM session and the IDE link are secured and established, the
-host supervisor domain manager may directly assign a TDI to a TVM, through the
+host supervisor domain manager may bind a TDI and a TVM together, through the
 `COVH` interface. This is a four steps process:
 
-1. The host supervisor domain manager initiates the interface assignment flow by
-   having the TSM move the TDI into the TDISP `CONFIG_LOCKED` state.
-2. The TVM verifies and accepts the locked TDI into its TCB.
-3. The TVM asks the TSM to move the TDI to the TDISP `RUN` state.
+1. The host supervisor domain manager initiates the interface binding flow by
+   having the TSM move the TDI into the TDISP `CONFIG_LOCKED` state. This is
+   achieved through the `sbi_covh_bind_interface()` `COVH` ABI.
+2. The TVM xref:_tdi_acceptation[verifies and accepts the locked TDI] into its
+   TCB.
+3. The TVM asks the TSM to move the TDI to the TDISP `RUN` state, by calling the
+   `sbi_covg_start_interface()` `COVG` ABI.
 4. The TVM verifies that the TDI is in the TDISP `RUN` state and starts
-   using it.
+   using it. This verification is provided by the
+   `sbi_covg_get_interface_state()` `COVG` ABI.
 
-The next section describe in more details what step 2 covers, i.e. which steps
-a TVM should follow in order to be able to verify a locked TDI and accept or
-reject it into its TCB.
+The next two sections respectively give a detailed description of the overall
+process for binding an interface to a TVM, and one if its most critical steps:
+the TVM decision of accepting or rejecting the TDI into its TCB.
 
-==== TDI Acceptation
+==== Binding Flow
+
+Binding an interface and a TVM together goes through the following steps:
+
+1. For the binding process to succeed, the host supervisor domain manager must
+   first pass each of the bound TDI MMIO ranges to the TVM. It does so by
+   calling the `sbi_covh_add_tvm_device_region()` `COVH` ABI. The TSM services
+   those requests by creating uncacheable G-stage mappings for each range, so
+   that the TVM outbound transaction will not trigger MMIO page faults. The TSM
+   must not enable the above mappings until the TVM accepts the TDI in its TCB,
+   by moving it to the TDISP `RUN` state.
+2. The host supervisor domain manager calls the `sbi_covh_bind_interface()`
+   `COVH` function to start binding the TDI and the TVM together. The TSM
+   rejects that request if a secured SPDM session is not established with the
+   DSM or if a stream IDE link is not set up.
+3. The TSM discovers and queries the TDI's TDISP version and capabilities by
+   respectively generating and sending the TDISP `GET_TDISP_VERSION` and
+   `GET_TDISP_CAPABILITIES` messages to the DSM. The respective `TDISP_VERSION`
+   and `TDISP_CAPABILITIES` responses let the TSM select a common TDISP version
+   and set of capabilities to be used in all future TDISP communication with the
+   DSM.
+4. The TSM locks the bound TDI by generating and sending a TDISP
+   `LOCK_INTERFACE_REQUEST` message to the DSM, which is encapsulated into a
+   vendor-defined SPDM request.
+5. The TSM receives the TDISP `LOCK_INTERFACE_RESPONSE` message, which contains
+   a device-generated nonce. The TSM stores the nonce. The TDI is now in the
+   TDISP `CONFIG_LOCKED` state.
+6. The TSM programs the DMA mappings into the trusted IOMMU space, in order for
+   the TDI inbound transactions to map into the TVM address space. The IOMMU
+   mappings are programmed but not validated. They will be validated only once
+   the TDI moves to the TDISP `RUN` state, i.e. when it accepts the TDI into
+   its TCB through the `sbi_covg_start_interface()` `COVG` ABI.
+7. Through regular discovery mechanisms (ACPI, PCI bus scanning), the TVM
+   detects the assigned TDI. It is important to note that the TDI configuration
+   space, including its BARs, is emulated by the host security domain manager.
+   The TDI MMIO ranges are mapped into the TVM address space by the the host
+   security domain manager, through the `sbi_covh_add_tvm_device_region()`
+   `COVH` ABI.
+8. Before using the TDI, the TVM must
+   xref:tdi-acceptation[accept it into its TCB]. Moreover, the TVM must not use
+   the TDI until it can verify from the TSM that it’s been put in the TDISP
+   `RUN` state (step 12 below). To notify the TSM about its decision to accept
+   or reject the bound TDI, the TVM respectively call into the
+   `sbi_covg_start_interface()` or `sbi_covg_stop_interface()` `COVG` ABI.
+9. Upon acceptation of the TDI by the TVM, the TSM generates and sends a TDISP
+   `START_INTERFACE_REQUEST` message that includes the `LOCK_INTERFACE_RESPONSE`
+   nonce received on step 5. The message is encapsulated into a vendor-defined
+   SPDM request.
+10. The TSM receives the TDISP `START_INTERFACE_RESPONSE`. The TDI is now in the
+    TDISP `RUN` state.
+11. The TSM enables the IOMMU and the TVM G-stage mappings configured on steps 6
+    and 1, for respectively enabling the DMA and MMIO operations with the bound
+    TDI.
+12. The TVM verifies that the TDI is in the TDISP `RUN` state by calling the
+    `sbi_covg_get_interface_state()` `COVG` ABI.
+13. The TVM can start using the device.
+
+.Device Interface Binding - Bind Interface
+[source,mermaid]
+....
+%%{init: {'theme': 'neutral', 'themeVariables': {'darkMode': true}, "flowchart" : { "curve" : "basis" } } }%%
+sequenceDiagram
+
+autonumber
+
+participant TDI as Device Interface
+participant DSM as Device DSM
+participant VMM as Host Supervisor Domain Manager (VMM)
+participant TSM
+participant IOMMU
+
+note over TDI: CONFIG_UNLOCKED
+
+loop For all the TDI MMIO regions exposed to the TVM
+     VMM ->> TSM: [COVH] sbi_covh_add_tvm_device_region()
+     TSM ->> TSM: Prepare G-stage mappings and mark them invalid
+     TSM ->> TSM: Store the interface MMIO gpa -> hpa mapping
+     TSM ->> VMM: [COVH] sbi_covh_add_tvm_device_region()
+end
+
+
+VMM ->> TSM: [COVH] sbi_covh_bind_interface()
+
+TSM ->> TSM: Generate TDISP GET_TDISP_VERSION
+TSM ->> VMM: [COVH] spdm_req(GET_TDISP_VERSION)
+VMM ->> DSM: [DOE] SPDM_GET_TDISP_VERSION
+DSM ->> VMM: [DOE] SPDM_TDISP_VERSION
+VMM ->> TSM: [COVH] spdm_resp(TDISP_VERSION)
+TSM ->> TSM: Decrypt TDISP_VERSION
+
+TSM ->> TSM: Generate TDISP GET_TDISP_CAPABILITIES
+TSM ->> VMM: [COVH] spdm_req(GET_TDISP_CAPABILITIES)
+VMM ->> DSM: [DOE] SPDM_GET_TDISP_CAPABILITIES
+DSM ->> VMM: [DOE] SPDM_TDISP_CAPABILITIES
+VMM ->> TSM: [COVH] spdm_resp(TDISP_CAPABILITIES)
+TSM ->> TSM: Decrypt TDISP_CAPABILITIES
+
+TSM ->> TSM: Generate TDISP LOCK_INTERFACE_REQUEST
+TSM ->> VMM: [COVH] spdm_req(LOCK_INTERFACE_REQUEST)
+VMM ->> DSM: [DOE] SPDM_LOCK_INTERFACE_REQUEST
+DSM ->> TDI: LOCK
+note over TDI: CONFIG_LOCKED
+DSM ->> VMM: [DOE] SPDM_LOCK_INTERFACE_RESPONSE
+VMM ->> TSM: [COVH] spdm_resp(LOCK_INTERFACE_RESPONSE)
+TSM ->> TSM: Decrypt LOCK_INTERFACE_RESPONSE
+TSM ->> TSM: Store LOCK_Nonce
+TSM ->> IOMMU: Disable IOMMU translation for devif_id
+TSM ->> IOMMU: Configure C-IOMMU mappings to G-stage
+TSM ->> VMM: [COVH] sbi_covh_bind_interface()
+
+note over IOMMU,TDI: TVM verifies the device interface
+note over IOMMU,TDI: TVM accepts and uses the device interface
+....
+
+==== TDI Verification and Acceptation
 
 It is the TVM responsibility to accept or reject the assigned TDI into its
 TCB, and to explicitly notify both the TSM and the host supervisor domain
-manager about its decision. The TVM should check for the following security
-attributes before being able to decide whether or not it can safely add a TDI
+manager about its decision. The TVM should verify the following security
+attributes before being able to decide whether or not it can safely accept a TDI
 into its TCB:
 
 1. **SPDM session establishment**: A secured SPDM session must be established
@@ -605,16 +723,119 @@ into its TCB:
    those ranges, the TVM must check from the TSM that they’re correctly mapped
    to host physical ranges. Prior to the TVM being able to accept a TDI, the
    host VMM must have requested the TSM to map all the TDI MMIO ranges to TVM
-   GPA ranges, through `sbi_covh_add_tvm_region()` `COVH` calls. The TVM then
-   verifies from the TSM that a GPA exposed TDI MMIO range will be mapped to
-   the TDISP reported range through the TSM managed G-stage page tables, by
+   GPA ranges, through `sbi_covh_add_tvm_device_region()` `COVH` calls. The TVM
+   then verifies from the TSM that a GPA exposed TDI MMIO range will be mapped
+   to the TDISP reported range through the TSM managed G-stage page tables, by
    calling into the `sbi_covg_map_interface_mmio()` `COVG` ABI. The TVM can
    accept a TDI only if the TSM confirms the validity of all MMIO range
    mappings, in the TDISP reported order (i.e. BAR #N in the TVM address space
    will be mapped to the TDISP reported MMIO range #N).
 
-Once the TVM has verified the above security attributes, it lets the TSM and the
-TVM know that it is ready to use the TDI, by calling into the
-`sbi_covg_run_interface()` `COVG` ABI.
+Once the TVM has verified the above security attributes, it lets the TSM know
+that it is ready to use the TDI, by calling into the
+`sbi_covg_start_interface()` `COVG` ABI.
 
-=== Interface Unassignment
+.Device Interface Verification
+[source,mermaid]
+....
+%%{init: {'theme': 'neutral', 'themeVariables': {'darkMode': true}, "flowchart" : { "curve" : "basis" } } }%%
+sequenceDiagram
+
+autonumber
+
+participant DSM as Device DSM
+participant VMM as Host Supervisor Domain Manager (VMM)
+participant TSM
+participant TVM
+
+VMM ->> TSM: [COVH] sbi_covh_run_vcpu()
+
+note over TVM,TSM: Verify Device Link (Secured SPDM and IDE keys)
+    TVM ->> TSM: [COVG] sbi_covg_get_device_link()
+    TSM ->> TVM: [COVG] sbi_covg_get_device_link()
+    TVM ->> TVM: Verify that Secured SPDM and IDE are established
+
+note over TVM,TSM: Verify TDISP and SPDM Configuration
+    TVM ->> TSM: [COVG] sbi_covg_get_device_spdm_attrs()
+    TSM ->> TVM: [COVG] sbi_covg_get_device_spdm_attrs()
+    TVM ->> TSM: [COVG] sbi_covg_get_interface_report()
+    TSM ->> TSM: Generate TDISP request GET_DEVICE_INTERFACE_REPORT
+    TSM ->> VMM: [COVH] spdm_req(GET_DEVICE_INTERFACE_REPORT)
+    VMM ->> DSM: [DOE] SPDM_GET_DEVICE_INTERFACE_REPORT
+    DSM ->> VMM: [DOE] SPDM_DEVICE_INTERFACE_REPORT
+    VMM ->> TSM: [COVH] spdm_resp(DEVICE_INTERFACE_REPORT)
+    TSM ->> TSM: Decrypt DEVICE_INTERFACE_REPORT
+    TSM ->> TVM: [COVG] sbi_covg_get_interface_report()
+    TVM ->> TVM: Verify that the TDISP and SPDM configuration comply with the TVM policy
+
+note over TVM,TSM: Verify Device Interface State (TDISP CONFIG_LOCKED)
+    TVM ->> TSM: [COVG] sbi_covg_get_interface_state()
+    TSM ->> TVM: [COVG] sbi_covg_get_interface_state()
+    TVM ->> TVM: Check that the interface state is CONFIG_LOCKED
+
+note over TVM,TSM: Verify Device Identity
+    TVM ->> TSM: [COVG] sbi_covg_get_device_certificate()
+    TSM ->> TVM: [COVG] sbi_covg_get_device_certificate()
+    TVM ->> TVM: Verify the returned device certificate chain
+
+note over TVM,DSM: Challenge Device
+    TVM ->> TSM: [COVG] sbi_covg_get_device_measurement()
+    TSM ->> TSM: Generate SPDM GET_MEASUREMENTS request
+    TSM ->> VMM: [COVH] spdm_req(GET_MEASUREMENTS(Nonce))
+    VMM ->> DSM: [COVH] SPDM_GET_MEASUREMENTS(Nonce)
+    DSM ->> VMM: [DOE] SPDM_MEASUREMENTS(Nonce)
+    VMM ->> TSM: [COVH] spdm_resp(MEASUREMENTS)
+    TSM ->> TSM: Decrypt SPDM MEASUREMENTS
+    TSM ->> TVM: [COVG] sbi_covg_get_device_measurement()
+    TVM ->> TVM: Verify the device measurements with cert chain
+    TVM ->> TVM: Device attestation (Local or remote)
+
+note over TVM,TSM: Check Device Interface MMIO mappings
+    TVM ->> TVM: Re-use previously fetched TDISP interface report
+    loop For all TDISP reported MMIO ranges
+         TVM ->> TSM: [COVG] sbi_covg_map_interface_mmio(dev_id, gpa, offset_hpa, size)
+         TSM ->> TSM: Compare with the VMM donated MMIO regions (sbi_covh_add_tvm_device_region)
+         TSM ->> TSM: Compare with the RP IDE ranges
+         TSM ->> TVM: [COVG] sbi_covg_map_interface_mmio()
+    end
+....
+
+.Device Interface Acceptation
+[source,mermaid]
+....
+%%{init: {'theme': 'neutral', 'themeVariables': {'darkMode': true}, "flowchart" : { "curve" : "basis" } } }%%
+sequenceDiagram
+
+autonumber
+
+participant TDI as Device Interface
+participant DSM as Device DSM
+participant VMM as Host Supervisor Domain Manager (VMM)
+participant TSM
+participant TVM
+
+note over TDI: CONFIG_LOCKED
+note over TVM: Device interface verified
+
+VMM ->> TSM: [COVH] sbi_covh_run_vcpu()
+
+TVM ->> TSM: [COVG] sbi_covg_start_interface()
+TSM ->> TSM: Generate TDISP START_INTERFACE_REQ(LOCK_Nonce)
+TSM ->> VMM: [COVH] spdm_req(START_INTERFACE_REQ)
+VMM ->> DSM: [DOE] SPDM_START_INTERFACE_REQ
+DSM ->> TDI: START
+note over TDI: RUN
+DSM ->> VMM: [DOE] SPDM_START_INTERFACE_RESP
+VMM ->> TSM: [COVH] spdm_resp(START_INTERFACE_RESP)
+TSM ->> TSM: Decrypt START_INTERFACE_RESP
+TSM ->> TSM: Store device state
+TSM ->> TSM: Enable IOMMU translation for devif_id
+TSM ->> TSM: Enable G-stage MMIO mappings
+TSM ->> TVM: [COVG] sbi_covg_start_interface()
+TVM ->> TSM: [COVG] sbi_covg_get_interface_state()
+TSM ->> TVM: [COVG] sbi_covg_get_interface_state()
+TVM ->> TVM: Check that the interface state is RUN
+TVM ->> TVM: Use device interface
+....
+
+=== Interface Unbinding
