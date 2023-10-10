@@ -112,14 +112,6 @@ by the ROT.
 .PCIe Root Port IDE Key Management through Hardware Root-of-Trust
 image::images/rp_rot_idekm.svg[align="center"]
 
-// After the host supervisor domain manager successfully registers a root port with
-// the TSM, it requests the TSM to establish a secured SPDM session (together with
-// the IDE stream setup) with it by calling the `COVH` `sbi_covh_connect_device()`
-// function. The same function is used for establishing SPDM sessions with PCIe
-// root ports and physical devices acting as SPDM responders. The Secured SPDM
-// Session section describes the protocol followed by the TSM and the SPDM
-// responder to establish this secured session.
-
 === SPDM Transport
 
 SPDM is the main transport protocol for securely setting both the RP and the
@@ -362,10 +354,11 @@ The last part of the device initialization is about securing the data link
 between the TSM and the device, and that must be done through the IDE Key
 Management protocol.
 Here again, the host supervisor domain manager implictly initiates the PCI IDE
-link setup by calling the `sbi_covh_connect_device` COVH function, and relies
-on the TSM to generate and send IDE KM messages over SPDM.
+link setup by calling the `sbi_covh_connect_device()` `COVH` function, and
+relies on the TSM to generate and send IDE KM messages over SPDM.
 
 The TSM is responsible for:
+
 1. Configuring the PCIe root port IDE Extended Capability.
 2. Generating the IDE keys for all sub-streams for a given stream ID.
 3. Setting the PCIe root port IDE keys for a given stream ID, through IDE KM
@@ -374,7 +367,8 @@ The TSM is responsible for:
 5. Generating all IDE KM requests and encapsulating them into SPDM messages.
 6. Setting the PCIe device IDE keys through IDE KM requests.
 
-The host VMM is responsible for:
+The host supervisor domain manager is responsible for:
+
 1. Generating and managing system wide PCIe stream IDs.
 2. Setting the device PCIe device IDE PCI Extended Capability.
 3. Programing the PCIe switch between the device and PCIe root port, such as
@@ -389,7 +383,7 @@ The IDE link initial setup must go through the following steps:
    capability: All RIDs and all memory is allowed, IDE is disabled for the
    selected stream.
 3. The host supervisor domain manager implicitly initiates the IDE link setup
-   by calling the `sbi_covh_connect_device` COVH function, and passing the
+   by calling the `sbi_covh_connect_device()` `COVH` function, and passing the
    selected stream ID as an argument to it. The TSM must first establish a
    secured SPDM session, as described in the previous section.
 4. After it establishes a secured SPDM session with the device, the TSM starts
