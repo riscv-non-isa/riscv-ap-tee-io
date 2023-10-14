@@ -10,5 +10,6 @@
 - [[[PCIE]]] PCI Express Base Specification, https://members.pcisig.com/wg/PCI-SIG/document/18363
 - [[[TDISP]]] TEE Device Interface Protocol ECN, https://members.pcisig.com/wg/PCI-SIG/document/18268?uploaded=1
 - [[[IOMMU]]] RISC-V IOMMU, https://github.com/riscv-non-isa/riscv-iommu/blob/main/riscv-iommu.pdf
+- [[[RATS]]] IETF RFC 9334 Remote ATtestation procedureS (RATS) Architecture, https://datatracker.ietf.org/doc/rfc9334/
 
 bibliography::[]
