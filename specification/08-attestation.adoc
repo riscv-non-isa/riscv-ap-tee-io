@@ -1,2 +1,118 @@
 [[attestation]]
 == Device Attestation
+
+There are two attestation stages involved in the CoVE-IO architecture.
+
+- TVM attests the device
+- A third party attests the TVM with the device
+
+The IETF RATS Remote Attestation Architecture <<RATS>> can be applied to both.
+
+.Remote Attestation Framework (IETF RATS)
+image::images/rats-arch.svg[align="center"]
+
+=== TVM attesting the Device
+
+The TVM must verify and trust the device before offloading the workload to the
+TDI. According to the <<TDISP>> architecture, the high level steps for that
+stage are as follows:
+
+1. The TSM collects the device certificate and measurement from the DSM as the
+   evidence, via SPDM protocol.
+2. The TSM presents the evidence to the TVM.
+3. A TVM verifier appraises the evidence and produce the attestation result to
+   the relying party in the TVM, such as device driver.
+4. The local relying part running in the TVM accepts (or rejects) the device
+   into (from) its TCB.
+
+The above process follows the background-check model, as defined by <<RATS>>.
+The <<RATS>> passport model is not supported by the CoVE-IO attestation
+architecture, because it adds complexity to the TSM as the TSM would need to
+perform the verification and pass the attestation result to TVM.
+Since the TSM is in the TVM's TCB, its attack surface should be kept minimal.
+
+In step 3, the verifier needs to perform the verification for the device. There
+are two possible use cases:
+
+==== Local Verification
+With local verification, the endorsement and reference values are provisioned
+into the TVM. 
+  
+Static provisioning means the data is built into the TVM image at build time,
+while dynamic provisioning means the data is provisioned into the TVM at runtime.
+
+The endorsement may include the device root CA certificate and its associated
+certificate revocation list (CRL). The reference value includes the reference
+integrity manifest (RIM), also known as golden measurement.
+
+When running locally, the verifier in the TVM validates the device certificate
+according to the device root CA certificate and CRL, and then compares the
+device measurement with the measurement from its locally provisioned RIM.
+
+==== Remote Verification
+When the device is verified remotely, the endorsement and reference values
+are not provisioned into the TVM, but are accessible from an externally
+available service, also known as a relying party for the device.
+
+The verifier itself can either run locally or be hosted on an online service
+as well, typically available through an HTTPS-based protocol.
+It always collects the up-to-date endorsement and RIM from the device relying party.
+
+.Device Attestation Comparison
+[width=90%, align="center", options="header"]
+|===
+| Use Case                        | Local Verification                     | Remote Verification
+| Endorsement (Root CA Cert, CRL) | Provisioned in TVM (Static or Dynamic) | Online Service
+| Reference Value (RIM)           | Provisioned in TVM (Static or Dynamic) | Online Service
+| Policy Update (Endorsement, Reference) | No update or scheduled update (Pull or Push) | Always up-to-date
+| Verifier Location               | Inside of TVM         | Inside of TVM or Online Service
+|===
+
+=== Third party attesting the TVM with the device
+
+The third party must follow the CoVE defined attestation mechanism to perform
+local or remote attestation and verify the TVM.
+
+The CoVE-IO architecture adds the additional device related information to the
+TVM attestation evidence, in order to allow the third party to verify the
+attached device TDI.
+
+Depending on the verification process being local or remote, the TVM needs to
+add different pieces of device-related information to the TVM report:
+
+==== Local Verification
+
+The TVM report should include the device verifier code, the device policy,
+including the provisioned device root CA certificate, CRL and RIM.
+
+If the TVM supports device policy update, then the secure signed update
+mechanism should be implemented. In that case, the signer of the update data
+shall be included in the TVM report as the trust anchor.
+
+The device measurement and certificate are not required in the TVM report,
+however the TVM should provide a mechanism to return the device measurement
+and certificate to the verifier for further verification.
+
+==== Remote Verification
+
+The TVM report should include measurements of either the device verifier or
+the proxy connecting to the verifier service. It should also include the online
+service URL and the public certificate as the trust anchor.
+
+The detailed, up-to-date endorsement or reference value is *not* required to be
+part of the TVM report. 
+
+Although the device measurement and certificate are not required to be included
+in the TVM report, the TVM should provide a mechanism to return the device
+measurement and certificate for the verifier to perform further verification.
+
+.TVM Attestation Comparison
+[width=90%, align="center", options="header"]
+|===
+| Use Case                           | Local Verification                 | Remote Verification
+| Device Verifier Code in TVM report | TVM Verifier                       | TVM Verifier or Stub Function to Verifier Service
+| Device Policy Data in TVM report   | Endorsement and Reference Value    | Online Service URL and Public Cert (trust anchor)
+| Device Policy Update in TVM report | Signer of Update (as trust anchor) | N/A
+| Device identity NOT in TVM report  | Device Measurement and Certifcate  | Device Measurement and Certifcate
+|===
+
