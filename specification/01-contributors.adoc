@@ -5,3 +5,5 @@ This RISC-V specification has been contributed to directly or indirectly by:
 [%hardbreaks]
 * Samuel Ortiz <sameo@rivosinc.com>
 * Jiewen Yao <jiewen.yao@intel.com>
+* Ravi Sahita <ravi@rivosinc.com>
+* Vedvyas Shanbhogue <ved@rivosinc.com>
