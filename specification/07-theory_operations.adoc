@@ -230,11 +230,12 @@ requesting the TSM to generate SPDM requests through the CoVIO `COVH`TH ABI,
 sending those requests to the DOE mailbox and forwarding the SPDM responses back
 to the TSM, as described in the SPDM flow section.
 
-=== Device Initialization
+=== Device Connection
 
 After the IOMMU is registered with the TSM, the host supervisor domain manager
-must cooperate with the TSM to properly initialize any device from which a TDI
-could be assigned to a TVM.
+must establish a logical connection with any device from which a TDI could be
+bound to a TVM. To do so, it must cooperate with the TSM to properly initialize
+sll such physical devicesany devices.
 
 The device initialization process aims at establishing secured,
 integrity-protected control and data planes between the TSM and the
@@ -280,6 +281,7 @@ must check that:
 The TSM establishes a secured SPDM session with the physical device DSM by going
 through the steps described in the Secured SPDM Session section.
 
+.Device Connection - Secured SPDM Session
 [source,mermaid]
 ....
 %%{init: {'theme': 'neutral', 'themeVariables': {'darkMode': true}, "flowchart" : { "curve" : "basis" } } }%%
@@ -350,7 +352,7 @@ both entities go through a DHE key exchange over the untrusted host supervisor
 domain manager proxy. SPDM is used as a control link for configuring the rest of
 the device and then running the TDI assignment flows.
 
-The last part of the device initialization is about securing the data link
+The last part of the device connection process is about securing the data link
 between the TSM and the device, and that must be done through the IDE Key
 Management protocol.
 Here again, the host supervisor domain manager implictly initiates the PCI IDE
@@ -511,6 +513,8 @@ TSM ->> VMM: [COVH] - spdm_covh_connect_device()
 VMM ->> Device: Enable IDE for the selected stream
 VMM ->> RootPort: Enable IDE for the selected stream
 ....
+
+=== Device Disconnection
 
 === Interface Assignment
 
