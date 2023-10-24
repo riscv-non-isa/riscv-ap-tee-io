@@ -54,7 +54,7 @@ When the device is verified remotely, the endorsement and reference values
 are not provisioned into the TVM, but are accessible from an externally
 available service, also known as a relying party for the device.
 
-The verifier itself can either run locally or be hosted on an online service
+The verifier itself can either run locally or be hosted on a remote service
 as well, typically available through an HTTPS-based protocol.
 It always collects the up-to-date endorsement and RIM from the device relying party.
 
@@ -62,10 +62,10 @@ It always collects the up-to-date endorsement and RIM from the device relying pa
 [width=90%, align="center", options="header"]
 |===
 | Use Case                        | Local Verification                     | Remote Verification
-| Endorsement (Root CA Cert, CRL) | Provisioned in TVM (Static or Dynamic) | Online Service
-| Reference Value (RIM)           | Provisioned in TVM (Static or Dynamic) | Online Service
+| Endorsement (Root CA Cert, CRL) | Provisioned in TVM (Static or Dynamic) | Remove Service
+| Reference Value (RIM)           | Provisioned in TVM (Static or Dynamic) | Remove Service
 | Policy Update (Endorsement, Reference) | No update or scheduled update (Pull or Push) | Always up-to-date
-| Verifier Location               | Inside of TVM         | Inside of TVM or Online Service
+| Verifier Location               | Inside of TVM         | Inside of TVM or Remove Service
 |===
 
 === Third party attesting the TVM with the device
@@ -96,7 +96,7 @@ and certificate to the verifier for further verification.
 ==== Remote Verification
 
 The TVM report should include measurements of either the device verifier or
-the proxy connecting to the verifier service. It should also include the online
+the proxy connecting to the verifier service. It should also include the remote
 service URL and the public certificate as the trust anchor.
 
 The detailed, up-to-date endorsement or reference value is *not* required to be
@@ -111,7 +111,7 @@ measurement and certificate for the verifier to perform further verification.
 |===
 | Use Case                           | Local Verification                 | Remote Verification
 | Device Verifier Code in TVM report | TVM Verifier                       | TVM Verifier or Stub Function to Verifier Service
-| Device Policy Data in TVM report   | Endorsement and Reference Value    | Online Service URL and Public Cert (trust anchor)
+| Device Policy Data in TVM report   | Endorsement and Reference Value    | Remote Service URL and Public Cert (trust anchor)
 | Device Policy Update in TVM report | Signer of Update (as trust anchor) | N/A
 | Device identity NOT in TVM report  | Device Measurement and Certifcate  | Device Measurement and Certifcate
 |===
