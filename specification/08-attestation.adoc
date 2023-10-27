@@ -49,6 +49,13 @@ When running locally, the verifier in the TVM validates the device certificate
 according to the device root CA certificate and CRL, and then compares the
 device measurement with the measurement from its locally provisioned RIM.
 
+The TVM may have a local policy update mechanism to update the endorsement and
+reference value. How to trigger the update is out of scope of this specification.
+It could be a pull model, such as TVM querying for updates periodically. Or it
+could be a push mode, such as orchestrator posting the update when it notices
+the device vendor update. To maintain the integrity of the policy update, the
+update package should have protection mechanism, such as digital signature.
+
 ==== Remote Verification
 When the device is verified remotely, the endorsement and reference values
 are not provisioned into the TVM, but are accessible from an externally
@@ -67,6 +74,84 @@ It always collects the up-to-date endorsement and RIM from the device relying pa
 | Policy Update (Endorsement, Reference) | No update or scheduled update (Pull or Push) | Always up-to-date
 | Verifier Location               | Inside of TVM         | Inside of TVM or Remove Service
 |===
+
+==== Device Runtime Update and Reattestation
+
+A TEE-IO device may support runtime update. Currently, there are two policy
+settings controlling device runtime update.
+
+===== SPDM Session `TerminationPolicy`
+
+This SPDM session attribute controls if runtime update will cause SPDM session
+termination or device may keep the session.
+
+> **Note**
+> The session termination means the IDE stream will change to `insecure` state
+> and TDI in `ERROR` state.
+
+The SPDM `TerminationPolicy` is set in SPDM `KEY_EXCHANGE` message by
+TSM. The TSM should return such policy information to the TVM via
+`sbi_covg_get_device_spdm_attrs()` `COVG` ABI.
+
+===== TDISP `NO_FW_UPDATE`
+
+This TDISP interface attribute controls if runtime update is allowed after TDI
+in either `CONFIG_LOCKED` or `RUN` state.
+
+> **Note**
+> Runtime update is always allowed if TDI is in `CONFIG_UNLOCKED` or `ERROR`.
+
+The TDISP `NO_FW_UPDATE` is set in TDISP `LOCK_INTERFACE_REPORT` message by TSM,
+and is returned in BIT0 of `INTERFACE_INFO` in `TDI Report Structure` by
+the device. The TVM can get the full `TDI Report Structure` via
+the `sbi_covg_get_interface_report()` `COVG` ABI.
+
+---
+
+The TVM should consult both setting to decide if it can accept the device
+runtime update.
+
+If the TVM allows the device runtime update after lock (`NO_FW_UPDATE`=0) and
+update without session termination (`TerminationPolicy`=1), then the TVM may
+want to do attestation again to verify the device.
+
+There are 2 possible models.
+
+===== Post-update reattestation
+
+After the device performs the update, the TVM will collect both the certificate
+nd the measurement and do verification again to determine if it still wants to
+accept the device. If the TVM decides to no longer accept the device any more,
+the TVM will use `sbi_covg_stop_interface()` ABI to request the VMM to use
+`sbi_covh_unbind_interface()` to unbind the TDI, then the TVM will verify with
+TSM if the TDI is really unbound by the VMM.
+
+How the device performs the update is out of scope of this specification.
+It could be initiated by current TVM, other TVMs, other legacy VMs, VMM, or even
+out of band (OOB) mechanism, such as Baseboard Management Controller (BMC).
+
+When the TVM performs the reattestation is also out of scope of this
+specification. It could be a pull mode with policy inside of TVM, such as
+reattestation every week. Or it could be an interrupt mode such as request
+triggered by the orchestrator.
+
+===== Pre-update attestation
+
+With post-update reattestation, there is a gap between update time and
+attestation time. Confidential data access from the TDI may happen before the
+updated device is re-attested and re-accepted by the TVM.
+
+SPDM 1.3 added an optional event mechanism and `MeasurementPreUpdate` event
+notification. If the device, TSM and TVM all support SPDM 1.3, the TVM may get
+the `MeasurementPreUpdate` event notification and verify the measurement before
+the update takes effect. If the TVM cannot accept the new measurement, then the
+TVM can unbind the TDI before runtime update.
+
+The difference between this pre-update attestation and post-update reattestation
+is that the update takes effect when the verification happens.
+Pre-update attestation gives a chance to unbind TDI before runtime update,
+while post-update reattestation can only unbind TDI after runtime update. That
+can remove the gap between update time and attestation time.
 
 === Third party attesting the TVM with the device
 
