@@ -839,3 +839,51 @@ TVM ->> TVM: Use device interface
 ....
 
 === Interface Unbinding
+
+=== Device and Interface Lifecycle
+
+When combined together, the flows and ABIs described in the previous sections
+are used to build the lifecycle of a TDISP capable device on a CoVE-IO
+compatible platform, as illustrated in the follwing figure:
+
+[[COVE_IO_LIFECYCLE]]
+.Device and Interface Lifecycle
+image::images/cove-io-lifecycle.svg[align="center"]
+
+The host supervisor domain manager owns the physical device, and manages its
+lifecycle. The TSM enforces that this lifecycle management is done without
+compromising any TVM confidential assets.
+
+As the platform resources owner, the host supervisor domain manager can assign
+a TDI to a TVM by binding them together (step 3). At any point in time, it can
+reclaim that physical resource by unbinding (step 8a) it from its TVM.
+
+Before binding a TDI and a TVM together, the host supervisor domain manager must
+first require the TSM to connect (step 1) to the physical device through secured
+SPDM. As part of servicing that request, the TSM also protects the physical link
+with PCIe IDE.
+
+The host supervisor domain manager is also required to explictly add the TDI
+MMIO regions to the TDI (step 2). The TSM can prepare and allocate the TVM
+second stage page tables and map those I/O regions into the guest physical
+address space. The TSM does not enable those tables until the TVM starts the
+interface (step 6)
+
+Only once the TSM is securily connected to the physical device, The host
+supervisor domain manager can proceed with binding a device interface and a TVM
+together. Once bound to a TVM, the device interface is locked but the MMIO and
+DMA paths between the two are not enabled yet.
+
+The TVM to which a TDI is bound to is the I/O gatekeeper. After detecting and
+verifying (steps 4 and 5) the bound interface, it may accept it into its TCB and
+enable all I/O paths between the two parties. The TVM may only use a bound TDI
+(step 7) after accepting it, by requesting the TSM to start the device interface
+(step 6).
+
+Both the host supervisor domain manager and the TVM can disable I/O between the
+TDI and the TVM, by respectively unbinding (step 8a) or stopping the device
+interface (step 8b). The host supervisor domain manager may first remove the TDI
+MMIO regions from the TVM address space (step 9).
+
+Finally, the host supervisor domain manager can fully reclaim the physical
+device by requesting the TSM to disconnect (step 10) from it.
