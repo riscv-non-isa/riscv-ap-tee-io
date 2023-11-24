@@ -14,12 +14,16 @@ OPTIONS := --trace \
 REQUIRES := --require=asciidoctor-bibtex \
             --require=asciidoctor-diagram \
             --require=asciidoctor-mathematical
+REQUIRES := --require=asciidoctor-bibtex \
+            --require=asciidoctor-diagram \
+            --require=asciidoctor-mathematical \
+            --require=./preprocessor.rb
 
 .PHONY: all build clean build-container build-no-container
 
 all: build
 
-build: 
+build:
 	@echo "Checking if Docker is available..."
 	@if command -v docker >/dev/null 2>&1 ; then \
 		echo "Docker is available, building inside Docker container..."; \
