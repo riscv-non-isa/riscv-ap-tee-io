@@ -4,15 +4,6 @@ name: Create Specification Document
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Release version, e.g. X.Y.Z:'
-        required: true
-        type: string
-      revision_mark: 
-          description: 'Set revision mark as Draft, Release or Stable:'
-          required: true
-          type: string
-          default: 'Draft'
       prerelease:
         description: 'Tag as a pre-release?'
         required: false
