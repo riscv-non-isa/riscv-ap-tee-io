@@ -1,3 +1,5 @@
+[![Create Specification Document](https://github.com/riscv-non-isa/riscv-ap-tee-io/actions/workflows/build-pdf.yml/badge.svg?branch=main)](https://github.com/riscv-non-isa/riscv-ap-tee-io/actions/workflows/build-pdf.yml)
+
 = RISC-V AP-TEE-IO Specifications
 
 This repository is for specification deliverables of the AP-TEE-IO TG per the
