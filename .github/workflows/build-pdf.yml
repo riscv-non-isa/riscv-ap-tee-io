@@ -4,6 +4,10 @@ name: Create Specification Document
 on:
   workflow_dispatch:
     inputs:
+      version:
+        description: 'Release version, e.g. X.Y.Z:'
+        required: true
+        type: string
       prerelease:
         description: 'Tag as a pre-release?'
         required: false
@@ -39,7 +43,6 @@ jobs:
       run: make
       env:
         VERSION: v${{ github.event.inputs.version }}
-        REVMARK: ${{ github.event.inputs.revision_mark }}
 
     # Step 4: Upload the built PDF files as a single artifact
     - name: Upload Build Artifacts
@@ -53,7 +56,7 @@ jobs:
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        files: ${{ github.workspace }}/*.pdf
+        files: ${{ github.workspace }}/specification/*.pdf
         tag_name: v${{ github.event.inputs.version }}
         name: Release ${{ github.event.inputs.version }}
         draft: ${{ github.event.inputs.draft }}
