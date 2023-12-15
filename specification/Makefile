@@ -1,5 +1,7 @@
-DOCKER_RUN := docker run --rm -v ${PWD}:/build -w /build \
-riscvintl/riscv-docs-base-container-image:latest
+CONTAINER_RUNTIME ?= docker
+CONTAINER_RUN := ${CONTAINER_RUNTIME} run --rm \
+	-v ${PWD}:/build -w /build \
+	riscvintl/riscv-docs-base-container-image:latest
 
 HEADER_SOURCE := 00-header.adoc
 PDF_RESULT := riscv-cove-io.pdf
@@ -16,8 +18,8 @@ REQUIRES := --require=asciidoctor-bibtex \
             --require=asciidoctor-mathematical
 REQUIRES := --require=asciidoctor-bibtex \
             --require=asciidoctor-diagram \
-            --require=asciidoctor-mathematical \
-            --require=./preprocessor.rb
+            --require=asciidoctor-mathematical
+#            --require=./preprocessor.rb
 
 .PHONY: all build clean build-container build-no-container
 
@@ -35,7 +37,7 @@ build:
 
 build-container:
 	@echo "Starting build inside Docker container..."
-	$(DOCKER_RUN) /bin/sh -c "$(ASCIIDOCTOR_PDF) $(OPTIONS) $(REQUIRES) --out-file=$(PDF_RESULT) $(HEADER_SOURCE)"
+	$(CONTAINER_RUN) /bin/sh -c "$(ASCIIDOCTOR_PDF) $(OPTIONS) $(REQUIRES) --out-file=$(PDF_RESULT) $(HEADER_SOURCE)"
 	@echo "Build completed successfully inside Docker container."
 
 build-no-container:
