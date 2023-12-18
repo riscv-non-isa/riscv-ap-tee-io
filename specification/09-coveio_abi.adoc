@@ -6,34 +6,92 @@
 ==== IOMMU Management
 
 [#sbi_covh_register_iommu()]
-===== IOMMU Registration (FID TBD)
+===== Function: CoVE Host Register IOMMU (FID TBD)
 [source, C]
 -----
 struct sbiret sbi_covh_register_iommu(unsigned long iommu_id,
                                       unsigned long msi_cfg[3]);
 -----
 
-[#sbi_covh_notify_iommu_msi()]
-===== IOMMU MSI notification (FID TBD)
+Registers an IOMMU (`iommu_id`) with a TSM. The `msi_cfg` MSI vectors are
+allocated by the host security domain manager (e.g. the host VMM).
+
+The TSM configures the IOMMU TSM security domain programming interface
+`s_msi_cfg_table` with the provided MSI vectors.
+
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covh_register_iommu]
+.CoVE Host Register IOMMU
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_INVALID_PARAMS  | The `iommu_id` index is invalid.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+[#sbi_covh_notify_iommu_msi]
+===== Function: CoVE Host Notify IOMMU MSI (FID TBD)
 [source, C]
 -----
 struct sbiret sbi_covh_notify_iommu_msi(unsigned long iommu_id);
 -----
 
+Notifies the TSM about a pending MSI for the TSM security domain.
+
+When servicing this request, the TSM must first verify that there are pending
+MSIs, by reading the IOMMU `s_ipsr` register from the IOMMU TSM security
+domain programming interface. If there are some, it handles the interrupts as
+needed.
+
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covh_notify_iommu_msi]
+.CoVE Host Notify IOMMU MSI
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_INVALID_PARAMS  | The `iommu_id` index is invalid.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
 ==== Root Port Management
 
-[#sbi_covh_register_rp()]
-===== PCIe Root Port Registration (FID TBD)
+[#sbi_covh_register_rp]
+===== Function: CoVE Host Register PCIe Root Port (FID TBD)
 [source, C]
 -----
 struct sbiret sbi_covh_register_rp(unsigned long rp_id,
                                    unsigned long mmio_ranges);
 -----
 
+Registers a PCIe Root Port (RP) for TEE I/O and IDE ownership with the TSM.
+
+This function associates a RP id to its MMIO space (for configuring the RP IDE
+capability) and all the MMIO ranges that are routed through it.
+
+The TSM must compare these 2 arguments with the information it received from
+the platform ROT through the TEE I/O manifest. If both match, it can proceed
+into establishing an SPDM session with the RP.
+
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covh_register_rp]
+.CoVE Host Register PCIe Root Port
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_INVALID_PARAMS  | The `rp_id` index is invalid.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
 ==== Physical Device Management
 
-[#sbi_covh_connect_device()]
-===== Device Connection (FID TBD)
+[#sbi_covh_connect_device]
+===== Function: CoVE Host Connect Device (FID TBD)
 [source, C]
 -----
 struct sbiret sbi_covh_connect_device()(unsigned long device_id,
@@ -45,17 +103,47 @@ Establishes a secure SPDM session between the TSM and a device identified by
 upstream Root Port. The configured IDE link must use the selective IDE stream
 identified by `stream_id`.
 
-[#sbi_covh_disconnect_device()]
-===== Device Disconnection (FID TBD)
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covh_connect_device]
+.CoVE Host Connect Device
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_INVALID_PARAMS  | The `device_id` index is invalid.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+[#sbi_covh_disconnect_device]
+===== Function: CoVE Host Disconnect Device (FID TBD)
 [source, C]
 -----
 struct sbiret sbi_covh_disconnect_device()(unsigned long device_id);
 -----
 
+Disconnects the TSM from the device identified by `device_id`.
+
+The TSM must first stop all TVM-bound interfaces belonging to `device_id`, clear
+the IDE link and keys for `device_id` and then terminate the secure SPDM session
+established with `device_id`.
+
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covh_disconnect_device]
+.CoVE Host Disconnect Device
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_INVALID_PARAMS  | The `device_id` index is invalid.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
 ==== TVM Memory Management
 
-[#sbi_covh_add_tvm_device_region()]
-===== Device Interface Memory Region Mapping into the TVM Address Space (FID TBD)
+[#sbi_covh_add_tvm_interface_region]
+===== Function: CoVE Host Add TVM Interface Region (FID TBD)
 [source, C]
 -----
 struct sbiret sbi_covh_add_tvm_interface_region(unsigned long tvm_id,
@@ -64,7 +152,28 @@ struct sbiret sbi_covh_add_tvm_interface_region(unsigned long tvm_id,
                                                 unsigned long num_pages);
 -----
 
-===== Device Interface Memory Region Reclaiming (FID TBD)
+Adds a device interface MMIO region into a TVM address space.
+
+The host supervisor domain manager must call this function for all
+`device_if_id` MMIO regions before binding it to `tvm_id`. This function returns
+an error if `device_if_id` is already bound to `tvm_id`.
+
+The TSM creates uncacheable G-stage mappings for the added region, so that the
+TVM outbound transaction will not trigger MMIO page faults. The TSM must not
+enable the created mappings until the TVM accepts the TDI in its TCB.
+
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covh_add_tvm_interface_region]
+.CoVE Host Add TVM Interface Region
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+===== Function: CoVE Host Reclaim TVM Interface Region (FID TBD)
 [source, C]
 -----
 struct sbiret sbi_covh_reclaim_tvm_interface_region(unsigned long tvm_id,
@@ -74,99 +183,367 @@ struct sbiret sbi_covh_reclaim_tvm_interface_region(unsigned long tvm_id,
 -----
 
 Reclaims a device interface MMIO region previously added to a TVM address space.
+
 The host supervisor domain manager may call this function when the `tvm_id` TVM
-stops `device_if_id` device interface, in order for the TSM to unmap the device
-interface MMIO ranges from the TVM address space.
+stops the `device_if_id` device interface, in order for the TSM to unmap the
+device interface MMIO ranges from the TVM address space.
 
 If `device_if_id` is still bound to `tvm_id` when this call is made, the TSM
 unbinds the device interface from the TVM first.
 
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covh_reclaim_tvm_device_region]
+.CoVE Host Reclaim TVM Interface Region
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
 ==== Device Interface Management
 
-[#sbi_covh_bind_interface()]
-===== Device Interface Binding (FID TBD)
+[#sbi_covh_bind_interface]
+===== Function: CoVE Host Bind Interface (FID TBD)
 [source, C]
 -----
 struct sbiret sbi_covh_bind_interface()(unsigned long tvm_id,
                                         unsigned long device_if_id);
 -----
 
-[#sbi_covh_unbind_interface()]
-===== Device Interface Unbinding (FID TBD)
+Binds a TVM and a device interface together.
+
+The TSM returns an error if a secured SPDM session is not established with the
+DSM or if a stream IDE link is not set up.
+
+After this calls completes successfully, the `device_id_interface` is in the
+TDISP `CONFIG_LOCKED` state.
+
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covh_bind_interface]
+.CoVE Host Bind Interface
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+[#sbi_covh_unbind_interface]
+===== Function: CoVE Host Unbind Interface (FID TBD)
 [source, C]
 -----
 struct sbiret sbi_covh_unbind_interface()(unsigned long tvm_id,
                                           unsigned long device_if_id);
 -----
 
+Unbinds a device interface from a TVM.
+
+After this calls completes successfully, the `device_id_interface` is moved
+back to the TDISP `CONFIG_UNLOCKED` state, from one of the `CONFIG_LOCKED`,
+`CONFIG_UNLOCKED` or `CONFIG_ERROR` states.
+
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covh_unbind_interface]
+.CoVE Host Unbind Interface
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
 === CoVE IO Guest Extension
 
 ==== Physical Device Query
 
-[#sbi_covg_get_device_link()]
-===== Device Link Status (FID TBD)
+[#sbi_covg_get_device_link]
+===== Function: CoVE Guest Get Device Link (FID TBD)
 [source, C]
 -----
-struct sbiret sbi_covg_get_device_link(unsigned long device_id);
+struct sbiret sbi_covg_get_device_link(unsigned long device_if_id);
 -----
 
-[#sbi_covg_get_device_certificate()]
-===== Device Identity Certificate (FID TBD)
+Gets the status of the link between the physical device hosting `device_if_id`
+and the TVM. This covers both the SPDM and IDE links.
+
+Returns the a link status bitmap through `sbiret.value`.
+
+[source, C]
+-------
+// A secure SPDM Session is established.
+#define SECURED_SPDM (1 << 0)
+
+// A PCIe IDE link is established.
+#define PCIE_IDE (1 << 1)
+-------
+
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covg_get_device_link]
+.CoVE Guest Get Device Link
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+[#sbi_covg_get_device_certificate]
+===== Function: CoVE Guest Get Device Certificate (FID TBD)
 [source, C]
 -----
-struct sbiret sbi_covg_get_device_certificate(unsigned long device_id);
+struct sbiret sbi_covg_get_device_certificate(unsigned long device_if_id,
+                                                       unsigned long cert_addr_out,
+                                                       unsigned long cert_size);
 -----
 
-[#sbi_covg_get_device_measurements()]
-===== Device Measurements (FID TBD)
+Get the certificate chain for the physical device hosting `device_if_id`.
+
+The TVM calls this function in order to verify the authenticity of the physical
+device. A TVM must not accept a device interface without doing that verification
+first.
+
+`cert_addr_out` must be page aligned.
+
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covg_get_device_certificate]
+.CoVE Guest Get Device Certificate
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+[#sbi_covg_get_device_measurements]
+===== Function: CoVE Guest Get Device Measurements (FID TBD)
 [source, C]
 -----
-struct sbiret sbi_covg_get_device_measurements(unsigned long device_id);
+struct sbiret sbi_covg_get_device_measurements(unsigned long device_if_id,
+                                                        unsigned long nonce_addr,
+                                                        unsigned long msmt_addr_out,
+                                                        unsigned long msmt_size);
 -----
 
-[#sbi_covg_get_device_spdm_attrs()]
-===== Device SPDM Session Attributes (FID TBD)
+Gets the measurements of the the physical device hosting `device_if_id`.
+
+The TSM returns the measurements in the form of the complete, signed <<SPDM>>
+measurement transcript, i.e. all `{GET_MEASUREMENTS, MEASUREMENTS}` pairs that
+are exchanged between the SPDM measurement requester and the responder.
+
+The `nonce_addr` parameter points at an optional 32 bytes long buffer holding a
+cryptographic nonce.
+
+For any non zero value, the nonce is used as the SPDM `GET_MEASUREMENTS` request
+`Nonce` field. When set to `0x0`, the TSM ignores this argument and generates a
+nonce on behalf of the TVM.
+
+Both `msmt_addr_out` and `nonce_addr` must be page aligned.
+
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covg_get_device_measurements]
+.CoVE Guest Get Device Measurements
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+[#sbi_covg_get_device_spdm_attrs]
+===== Function: CoVE Guest Get Device SPDM Attributes (FID TBD)
 [source, C]
 -----
-struct sbiret sbi_covg_get_device_spdm_attrs(unsigned long device_id);
+struct sbiret sbi_covg_get_device_spdm_attrs(unsigned long device_if_id,
+                                                        unsigned long spdm_attrs_addr_out,
+                                                        unsigned long spdm_attrs_size);
 -----
+
+Gets the attributes for the Secure SPDM session between the physical device
+hosting `device_if_id` and the TSM.
+
+`spdm_attrs_addr_out` must be page aligned.
+
+[source, C]
+-------
+struct SPDMAttributes {
+       bool measurement_freshness;
+}
+-------
+
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covg_get_device_spdm_attr]
+.CoVE Guest Get Device SPDM Attributes
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
 
 ==== Device Interface Management
 
-[#sbi_covg_get_interface_report()]
-===== Device Interface TDISP Report (FID TBD)
+[#sbi_covg_get_interface_report]
+===== Function: CoVE Guest Get Interface Report (FID TBD)
 [source, C]
 -----
-struct sbiret sbi_covg_get_interface_report(unsigned long device_if_id);
+struct sbiret sbi_covg_get_interface_report(unsigned long device_if_id
+                                                        unsigned long if_report_out,
+                                                        unsigned long if_report_size);
 -----
 
-[#sbi_covg_get_interface_state()]
-===== Device Interface State (FID TBD)
+Gets the TDISP interface report for the device interface.
+
+The TSM returns the interface report, as defined by the <<TDISP>> TDI Report
+Structure, at the `if_report_out` address.
+
+`if_report_out` must be page aligned.
+
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covg_get_interface_report]
+.CoVE Guest Get Interface Report
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+[#sbi_covg_get_interface_state]
+===== Function: CoVE Guest Get Interface State (FID TBD)
 [source, C]
 -----
 struct sbiret sbi_covg_get_interface_state(unsigned long device_if_id);
 -----
 
-[#sbi_covg_map_interface_mmio()]
-===== Device Interface MMIO Mapping (FID TBD)
+Gets the TDISP state for the device interface.
+
+The TVM calls this function to verify that a bound device interface is in the
+TDISP `RUN` state.
+
+Returns the interface state through `sbiret.value`.
+
+[source, C]
+-------
+
+enum Interface State {
+     /* TDISP CONFIG_UNLOCKED */
+     Unlocked,
+
+     /* TDISP CONFIG_LOCKED */
+     Locked,
+
+     /* TDISP RUN */
+     Running,
+
+     /* TDISP ERROR */
+     Error,
+};
+
+-------
+
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covg_get_interface_state]
+.CoVE Guest Get Interface State
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+[#sbi_covg_map_interface_mmio]
+===== Function: CoVE Guest Map Interface MMIO (FID TBD)
 [source, C]
 ----
 struct sbiret sbi_covg_map_interface_mmio(unsigned long device_if_id
-                                          unsigned long gpa,
-                                          unsigned long hpa_offset,
+                                          unsigned long gpa_addr,
+                                          unsigned long hpa_addr,
                                           unsigned long size);
 ----
 
-[#sbi_covg_start_interface()]
-===== Start Device Interface (FID TBD)
+Maps a TVM MMIO region (from `gpa_address`, `size` bytes long) to a
+`TDISP`-reported physical region (`hpa_addr`).
+
+The TVM uses that function to verify from the TSM that all the device interface
+MMIO regions exposed by the host security domain manager are correctly mapped to
+the trusted `TDISP`-reported MMIO regions. The TSM will enable those mappings
+if the TVM calls the starts the device interface through the
+`sbi_covg_start_interface` function.
+
+All of `gpa_addr`, `hpa_addr` and `size` values must be page aligned.
+
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covg_map_interface_mmio]
+.CoVE Guest Map Interface MMIO
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+[#sbi_covg_start_interface]
+===== Function: CoVE Guest Start Interface (FID TBD)
 [source, C]
 ----
 struct sbiret sbi_covg_start_interface(unsigned long device_if_id);
 ----
 
-[#sbi_covg_stop_interface()]
-===== Stop Device Interface (FID TBD)
+Starts a bound device interface.
+
+The TVM calls this function in order to accept a bound device interface into its
+TCB. While servicing this request, the TSM moves the device interface TDISP
+state from `CONFIG_LOCKED` to `RUN`.
+
+After this calls completes successfully, the device interface I/O is ready and
+available for the bound TVM.
+
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covg_start_interface]
+.CoVE Guest Start Interface
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_ALREADY_STARTED | The device interface is already started.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+[#sbi_covg_stop_interface]
+===== Function: CoVE Guest Stop Interface (FID TBD)
 [source, C]
 ----
 struct sbiret sbi_covg_stop_interface(unsigned long device_if_id);
 ----
+
+Stops a bound device interface.
+
+The TVM calls this function for either removing a bound device interface from
+its TCB or initially rejecting it.
+
+After this calls completes successfully, the device interface and the TVM are
+no longer bound together.
+
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covg_stop_interface]
+.CoVE Guest Stop Interface
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_ALREADY_STOPPED | The device interface is already stopped.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
