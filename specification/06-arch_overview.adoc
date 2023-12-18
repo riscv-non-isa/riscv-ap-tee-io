@@ -1,2 +1,47 @@
 [[arch_overview]]
 == Architectural Overview
+
+CoVE-IO is made of multiple hardware and software components.
+
+Figure 1 below illustrates the overall CoVE-IO architectural components and how
+they interact together:
+
+[[COVE_IO_ARCHITECTURE]]
+.CoVE-IO High Level Architecture
+image::images/cove-io-architecture.svg[align="center"]
+
+The TEE Security Manager (TSM) orchestrates and manages TEE Virtual Machines
+(TVM), as defined by the <<CoVE>> specification. The TSM operates in HS-Mode
+and is the confidential supervisor domain manager. It uses the <<Smmtt>>
+specified Memory Tracking Table (MTT) to enforce TVM memory isolation from
+the host supervisor domain.
+
+As the confidential security domain manager, the TSM provides the `COVH` ABI
+for the host OS/VMM to create and destroy TVMs, and donate or reclaim
+confidential memory from them. TVMs can interact with the TSM through the
+`COVG` ABI.
+
+CoVE-IO extends both the `COVH` and `COVG` ABIs for bringing TEE-IO capable
+devices into the trust boundary of TVMs. These extensions allow for configuring
+and registering IOMMUs and PCIe root ports, and then binding physical devices
+interfaces (TDI) and TVMs together.
+
+With the CoVE-IO ABIs and flows, TDIs can access TVM confidential memory
+directly. CoVE-IO uses the Smmtt I/O MTT extension and the platform IOMMUs
+security domain specific Register Programming Interfaces (RPI) to grant TDIs
+with direct access to their bound TVM confidential memory and isolate it from
+DMA originating from any unbound TDI.
+
+With the CoVE-IO model, the TVM ultimately holds the decision to accept or
+reject a bound TDI into or from its TCB. Access to a TVM confidential memory
+from a TDI is disabled until a TVM notifies the TSM that it trusts the TDI and
+its configuration. The TVM communicates this decision after verifying the TDI,
+which generally includes attesting to the physical device the TDI belongs to.
+The device attestation process is specific to each TVM workload configuration,
+but it may be handled by the Trusted Device Manager (TDM).
+
+In order to protect the confidentiality and integrity of TVM data between the
+PCIe root port and a bound TDI, CoVE-IO relies on the TSM to configure both the
+PCIe physical device and the root port it's attached to in order to establish
+IDE streams between the two. The PCIe root port IDE configuration from the TSM
+is abstracted through the platform Root-of-Trust (RoT).
