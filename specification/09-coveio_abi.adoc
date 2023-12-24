@@ -340,8 +340,10 @@ struct sbiret sbi_covg_get_device_measurements(unsigned long device_if_id,
 Gets the measurements of the the physical device hosting `device_if_id`.
 
 The TSM returns the measurements in the form of the complete, signed <<SPDM>>
-measurement transcript, i.e. all `{GET_MEASUREMENTS, MEASUREMENTS}` pairs that
-are exchanged between the SPDM measurement requester and the responder.
+measurement transcript, including `VCA` and all `{GET_MEASUREMENTS, MEASUREMENTS}`
+pairs that are exchanged between the SPDM measurement requester and the
+responder. Only the last `MEASUREMENTS` shall include the digital signature of
+the measurement transcript.
 
 The `nonce_addr` parameter points at an optional 32 bytes long buffer holding a
 cryptographic nonce.
