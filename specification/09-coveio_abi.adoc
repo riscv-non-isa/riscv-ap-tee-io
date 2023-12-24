@@ -297,15 +297,22 @@ The possible error codes returned in `sbiret.error` are shown below.
 [source, C]
 -----
 struct sbiret sbi_covg_get_device_certificate(unsigned long device_if_id,
+                                                       unsigned long slot_id,
                                                        unsigned long cert_addr_out,
                                                        unsigned long cert_size);
 -----
 
-Get the certificate chain for the physical device hosting `device_if_id`.
+Get the certificate chain for the physical device hosting `device_if_id`
+based on `slot_id`.
+
+The TSM returns the certificate chain in the form of the <<SPDM>> defined
+`certificate chain format`.
 
 The TVM calls this function in order to verify the authenticity of the physical
 device. A TVM must not accept a device interface without doing that verification
 first.
+
+`slot_id` must be between 0 and 7 inclusive.
 
 `cert_addr_out` must be page aligned.
 
