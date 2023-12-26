@@ -18,8 +18,8 @@ REQUIRES := --require=asciidoctor-bibtex \
             --require=asciidoctor-mathematical
 REQUIRES := --require=asciidoctor-bibtex \
             --require=asciidoctor-diagram \
+#           --require=./preprocessor.rb \
             --require=asciidoctor-mathematical
-#            --require=./preprocessor.rb
 
 .PHONY: all build clean build-container build-no-container
 
