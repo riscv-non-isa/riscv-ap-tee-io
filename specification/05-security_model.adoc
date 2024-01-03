@@ -43,12 +43,12 @@ As a TVM TCB does not include PCIe switches and bridges, a selective PCIe IDE
 stream must be setup to guarantee end-to-end confidentiality and integrity
 protection between a TVM and a TDI. The host VMM is responsible for reserving a
 single selective IDE stream per physical device from which one or more TDIs are
-assigned to TVMs. That single PCIe IDE stream is then shared by all all TDIs
+assigned to TVMs. That single PCIe IDE stream is then shared by all TDIs
 originating from the same corresponding physical device.
 Since the host VMM is not in the TCB, its role in the stream setup is limited to
 selecting an available stream ID and configuring the device IDE capability. The
 selective IDE stream keys, for both link endpoints, are managed and configured
-by TCB elements (the TSM, DSM and platform RoT).
+by TCB elements (the TSM, DSM, and platform RoT).
 
 The main security objective of the CoVE-IO security model is to protect a TVM's
 confidential data integrity and confidentiality while TDIs are assigned to it.

@@ -142,7 +142,7 @@ attestation time. Confidential data access from the TDI may happen before the
 updated device is re-attested and re-accepted by the TVM.
 
 SPDM 1.3 added an optional event mechanism and `MeasurementPreUpdate` event
-notification. If the device, TSM and TVM all support SPDM 1.3, the TVM may get
+notification. If the device, TSM, and TVM all support SPDM 1.3, the TVM may get
 the `MeasurementPreUpdate` event notification and verify the measurement before
 the update takes effect. If the TVM cannot accept the new measurement, then the
 TVM can unbind the TDI before runtime update.
@@ -168,7 +168,7 @@ add different pieces of device-related information to the TVM report:
 ==== Local Verification
 
 The TVM report should include the device verifier code, the device policy,
-including the provisioned device root CA certificate, CRL and RIM.
+including the provisioned device root CA certificate, CRL, and RIM.
 
 If the TVM supports device policy update, then the secure signed update
 mechanism should be implemented. In that case, the signer of the update data

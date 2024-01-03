@@ -114,8 +114,8 @@ in the next sections.
 In a CoVE-IO context, the non-confidential host software stack is the sole
 platform resources owner. In particular, the physical devices to which TDIs
 belong are owned and managed by the host, typically through the device PF.
-Host software stack components, e.g. the VMM, assign, unassign and expose
-TDIs resp. to, from and to TVMs.
+Host software stack components, e.g. the VMM, assign, unassign, and expose
+TDIs resp. to, from, and to TVMs.
 
 ==== Platform Hardware Components
 
@@ -132,7 +132,7 @@ The TSM establishes one single selective IDE stream for each physical device
 from which TDIs may be attached to TVMs. All TDIs within a CoVE-IO device share
 the same IDE stream.
 
-For a given selective IDE stream, the TSM generates, owns and distributes the
+For a given selective IDE stream, the TSM generates, owns, and distributes the
 IDE keys to both the CoVE-IO device and its upstream PCIe Root Port.
 
 [[coveio_hierarchy]]
@@ -248,7 +248,7 @@ The TDI verification process from the TVM guest not only requires support from
 the TSM through the CoVE-IO guest ABI but may also include running local or
 remote attestation of the physical device the assigned TDI belongs to.
 In order to minimize the TVM guest software stack changes needed to support the
-CoVE-IO TDI verification, attestation and acceptance flows, the CoVE-IO guest
+CoVE-IO TDI verification, attestation, and acceptance flows, the CoVE-IO guest
 must run a Trusted Device Manager (TDM) as a separate TVM guest process.
 Although the TDM can be architectured in a TEE-agnostic fashion, it must support
 the CoVE-IO guest ABI.

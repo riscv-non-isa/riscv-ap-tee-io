@@ -20,14 +20,14 @@ guests TCBs with trusted devices is of particular interest. Data analytics and
 transformation, artificial intelligence, financial transactions processing are
 only a few examples of confidential workloads for which a secure and performant
 I/O architecture is key to their operations. By extending guests TCBs with
-trusted accelerators, NICs or GPUs, such workloads would fully take advantage of
+trusted accelerators, NICs, or GPUs, such workloads would fully take advantage of
 their infrastructure providers capacities while keeping their data protected.
 
 The CoVE interfaces provide TEE Virtual Machines (TVMs) memory with confidential
 attributes and allow TVM guests to share parts of their address space with an
 untrusted domain. Although this enables confidential guests to be assigned with
 devices, directly or not, through para-virtualized I/O implementation, it comes
-with a significant performance cost. Withouth additional protection, TVMs have
+with a significant performance cost. Without additional protection, TVMs have
 no ways to trust hypervisor-assigned devices and must exclude them from their
 TCB by not allowing them to directly access confidential memory. Consequently,
 with the current CoVE specification, data flowing from a device to a TVM must
@@ -43,7 +43,7 @@ image::images/bounce_buffer.svg[]
 As devices typically expose their programming interfaces through memory mapped
 registers, using a shared memory buffer requires additional protection of the
 communication between the device and the TVM (e.g. transport-level data
-encryption). Such additional security layers can be impractical, intrusive and
+encryption). Such additional security layers can be impractical, intrusive, and
 may also degrade I/O performance even further.
 
 Ideally, a secure and performant CoVE I/O framework would rely on the ability
@@ -56,11 +56,11 @@ the host software must provide ways for TVM guests to establish trust with
 assigned devices before accepting them into their TCBs and giving them direct
 access to confidential memory regions.
 Devices, on the other side of the I/O link, must protect confidential guest
-workloads and their data from untrusted domain components controlling, accessing
+workloads and their data from untrusted domain components controlling, accessing,
 or tampering with them.
 
 This document describes a proposal for extending the CoVE specification with I/O
-specific flows, interfaces and intrinsics with the goal of implementing the
+specific flows, interfaces, and intrinsics with the goal of implementing the
 above-described framework. The CoVE I/O interfaces aim at giving CoVE TVM guests
 the ability to securily:
 
