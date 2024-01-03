@@ -572,7 +572,7 @@ Binding an interface and a TVM together goes through the following steps:
 7. Through regular discovery mechanisms (ACPI, PCI bus scanning), the TVM
    detects the assigned TDI. It is important to note that the TDI configuration
    space, including its BARs, is emulated by the host security domain manager.
-   The TDI MMIO ranges are mapped into the TVM address space by the the host
+   The TDI MMIO ranges are mapped into the TVM address space by the host
    security domain manager, through the `sbi_covh_add_tvm_interface_region()`
    `COVH` ABI.
 8. Before using the TDI, the TVM must
