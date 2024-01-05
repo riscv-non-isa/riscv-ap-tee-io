@@ -7,7 +7,7 @@
 | Term            ^| Acronym | Definition
 
 | Application Processor | AP | APs can support commodity operating systems,
-hypervisors/VMMs and applications software workloads. The AP subsystem may
+hypervisors/VMMs, and applications software workloads. The AP subsystem may
 contain several processing units, on-chip caches, and other controllers
 for interfacing with memory, accelerators, and other fixed-function logic.
 Multiple APs may be used within a logical system.
@@ -16,7 +16,7 @@ Multiple APs may be used within a logical system.
 mode that provides HW-isolation for workload assets when in use (user/supervisor
 code/ data) and provides HW-attestable confidentiality and integrity protection
 against specific attack vectors per a specified adversary and threat model. The
-term CoVE, TEE and hardware-based TEE are also used as synonyms of AP-TEE in
+term CoVE, TEE, and hardware-based TEE are also used as synonyms of AP-TEE in
 this document.
 
 | Attestation | N/A | The process by which a relying party can assess the
@@ -24,7 +24,7 @@ security posture of the confidential workload based on verifying a set of
 HW-rooted cryptographically-protected evidence.
 
 | Confidential Computing | N/A | The protection of data in use by performing
-computation in a Hardware-based TEE.
+computation in a hardware-based TEE.
 
 | Confidential VM Extension | CoVE | A set of non-ISA RISC-V extensions that
 enables confidential computing on RISC-V platforms.
@@ -39,7 +39,7 @@ and called by host software components.
 be a Virtual Function (VF) or a Physical Function (PF).
 
 | Device Security Manager | DSM | A DSM is a logical entity on a TEE-IO device
-that enforces the TDISP security policies, attributes and states.
+that enforces the TDISP security policies, attributes, and states.
 
 | Direct Memory Access | DMA | The ability for a device to directly read and
 write into the host physical memory.
@@ -63,7 +63,7 @@ this software entity.
 device virtual addresses to physical addresses.
 
 | Integrity and Data Encryption | IDE | Extended PCIe capability for integrity,
-confidentiality and replay protection of PCIe Transport Layer Packets (TLP).
+confidentiality, and replay protection of PCIe Transport Layer Packets (TLP).
 
 | I/O Translation Agent | N/A | Same as an IOMMU.
 
@@ -73,16 +73,16 @@ confidentiality and replay protection of PCIe Transport Layer Packets (TLP).
 actual physical PCIe device.
 
 | Root of Trust | ROT | Isolated HW/SW subsystem with an immutable ROM firmware
-and  isolated compute and memory elements that form the Trusted Compute Base
+and isolated compute and memory elements that form the Trusted Compute Base
 of a TEE system. The RoT manages cryptographic keys and other security
 critical functions such as system lifecycle and debug authorization.
 The RoT provides trusted services to other software on the platform such
-as verified boot, key provisioning, and management, security lifecycle
-management, sealed storage, device management, crypto services,
-attestation etc. The RoT may be an integrated or discrete element, and may take
+as verified boot, key provisioning and management, security lifecycle
+management, sealed storage, device management, cryptography services,
+attestation, etc. The RoT may be an integrated or discrete element, and may take
 on the role of a Device Identification Composition Engine (DICE).
 
-| Secure Protocol and Data Model | SPDM | A DMTF defined specification for
+| Security Protocol and Data Model | SPDM | A DMTF defined specification for
 exchanging messages between devices over a variety of transports and physical
 media. In the CoVE-IO context, SPDM is used to exchange TDISP and IDE
 Key Management messages over PCIe DOE mailboxes.
@@ -102,7 +102,7 @@ chain on the CoVE platform.
 
 | Transaction Layer Packet | TLP |
 
-| Trusted Computing Base | TCB | The hardware, software and firmware elements
+| Trusted Computing Base | TCB | The hardware, software, and firmware elements
 that are trusted by a relying party to protect the confidentiality and integrity
 of the relying parties' workload data and execution against a defined adversary
 model. In a system with separate processing elements within a package on a
@@ -110,7 +110,7 @@ socket, the TCB boundary is the package. In a multi-socket system the TCB
 extends across the socket-to-socket interface, and is managed as one system TCB.
 
 | Trusted Device Manager | TDM | A CoVE-IO device manager, responsible for
-verifying, attesting and accepting CoVE-IO devices into a TVM TCB. This is a TVM
+verifying, attesting, and accepting CoVE-IO devices into a TVM TCB. This is a TVM
 guest software stack component.
 
 | Trusted Memory Mapped Input Output | Trusted MMIO | A TDI memory mapped I/O

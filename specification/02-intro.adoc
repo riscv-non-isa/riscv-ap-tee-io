@@ -4,7 +4,7 @@
 
 The RISC-V Confidential VM Extension <<CoVE>> specification provides
 application and virtualized workloads with data confidentiality and integrity,
-addressing one of the major datacenter security challenge. By building a
+addressing one of the major datacenter security challenges. By building a
 miminized Trusted Computing Base (TCB), the CoVE interfaces manage to isolate
 workloads from each others but also from untrusted domain host software
 components (e.g. the hypervisor). CoVE implementations create a Confidential
@@ -12,16 +12,16 @@ Computing <<CC>> framework that allows for mitigating the risks that guest
 owners are exposed to when running their workloads on shared infrastructures
 like e.g. public clouds.
 
-The value of such hardarwe-based Trusted Execution Environments (TEEs) is
+The value of such hardware-based Trusted Execution Environments (TEEs) is
 acknowledged across the industry, and Confidential Computing providers are
 looking for ways to improve the technology's scalability and performance. With
 the growing need for securing data processing, expanding Confidential Computing
 guests TCBs with trusted devices is of particular interest. Data analytics and
 transformation, artificial intelligence, financial transactions processing are
 only a few examples of confidential workloads for which a secure and performant
-I/O architecture is key to their operations. By extending guests TCBs with
+I/O architecture is key to their operations. By extending guests' TCBs with
 trusted accelerators, NICs, or GPUs, such workloads would fully take advantage of
-their infrastructure providers capacities while keeping their data protected.
+their infrastructure provider's capacities while keeping their data protected.
 
 The CoVE interfaces provide TEE Virtual Machines (TVMs) memory with confidential
 attributes and allow TVM guests to share parts of their address space with an
@@ -64,10 +64,10 @@ specific flows, interfaces, and intrinsics with the goal of implementing the
 above-described framework. The CoVE I/O interfaces aim at giving CoVE TVM guests
 the ability to securily:
 
-* Retrieve a device identity, configuration and security state in order
+* Retrieve a device's identity, configuration, and security state in order
   for them to establish trust with the device.
 * Verify that any untrusted domain component will not be able to intercept,
-  modify or control data flowing between a guest and its assigned devices.
+  modify, or control data flowing between a guest and its assigned devices.
 * Decide to accept devices into their TCB before allowing them to directly
   access their confidential memory, and before being able to control and
   configure said devices.

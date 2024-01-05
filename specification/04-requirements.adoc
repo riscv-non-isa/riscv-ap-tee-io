@@ -2,7 +2,7 @@
 == Requirements
 
 In order to extend TVM TCBs with external and untrusted devices, both the host
-platform and the assigned devices, must meet a specific set of requirements.
+platform and the assigned devices must meet a specific set of requirements.
 
 === Device
 
@@ -13,8 +13,8 @@ and only if they meet the following requirements:
 
 A CoVE-IO supported device must be a PCIe or CXL.io compliant device with
 optional SR-IOV capabilities. When supporting SR-IOV, the device can be split
-into multiple Virtual Functions (VFs). A TVM assigned interface can be the whole
-device, also known as the Physiscal Device (PF) or any of its VFs. In both
+into multiple Virtual Functions (VFs). A TVM-assigned interface can be the whole
+device, also known as the Physical Device (PF), or any of its VFs. In both
 cases, this unit of assignment is referred to as a TEE I/O Device Interface
 (TDI).
 
@@ -28,7 +28,7 @@ TDISP ECN. CoVE-IO devices must support all required TDISP requests and may
 support the optional ones, as defined by the TDISP request code table.
 
 Moreover, CoVE-IO compatible device firmwares must run a Device Security Manager
-(DSM) to enforce the TDISP defined security attributes and policies.
+(DSM) to enforce the TDISP-defined security attributes and policies.
 The DSM must support both full PCIe devices (PFs) and Virtual Functions (VFs)
 assignment to TVMs.
 
@@ -55,17 +55,17 @@ A CoVE-IO supported device must support the following DOE object types:
 
 ====== Secure Protocol and Data Model (SPDM)
 
-RISC-V CoVE-IO compliant hosts use the Secure Protocol and Data Model (<<SPDM>>)
+RISC-V CoVE-IO compliant hosts use the Security Protocol and Data Model (<<SPDM>>)
 protocol to exchange TDISP and IDE Key Management (IDE_KM) messages with
 physical devices, over DOE mailboxes. CoVE-IO also relies on SPDM for
-gathering devices certificates and measurements.
+gathering devices' certificates and measurements.
 
 As a consequence, a CoVE-IO supported DSM must support the SPDM specification
 version 1.2 or above. It must also support sending and receiving SPDM Secured
 Messages as defined in the <<SecuredSPDM>> specification version 1.1 or above.
 
 CoVE-IO compatible DSMs must support the following SPDM responder capabilities:
-`CERT_CAP`, `MEAS_CAP` (10b), `ENCRYPT_CAP`, `MAC_CAP`, `KEY_EX_CAP`.
+`CERT_CAP`, `MEAS_CAP` (10b), `ENCRYPT_CAP`, `MAC_CAP`, and `KEY_EX_CAP`.
 
 Moreover, CoVE-IO compatible DSMs must support below algorithms:
 1. For `BaseAsymAlgo`, one or more of the following ones: `TPM_ALG_RSASSA_3072`,
@@ -75,7 +75,7 @@ Moreover, CoVE-IO compatible DSMs must support below algorithms:
 3. For `MeasurementHashAlgo`, one or more of the following ones:
    `TPM_ALG_SHA_256`, `TPM_ALG_SHA_384`.
 4. For `DHE Group`, one or more of the following ones: `secp256r1`, `secp384r1`.
-5. For `AEAD` Cipher Suite, `AES-256-GCM` with 16 Byte MAC.
+5. For `AEAD` Cipher Suite, `AES-256-GCM` with 16 byte MAC.
 
 ===== Integrity and Data Exchange (IDE)
 
@@ -87,7 +87,7 @@ capability defined in <<PCIE>>.
 
 ====== Selective Streams
 
-As all PCIe switches are excluded from a TVM's TCB, CoVE-IO compliant hosts
+As all PCIe switches are excluded from a TVM's TCB, CoVE-IO compliant hosts'
 TSMs exclusively establish selective IDE streams between the host PCIe Root Port
 and TEE-IO devices.
 
@@ -112,7 +112,7 @@ in the next sections.
 ==== Ownership
 
 In a CoVE-IO context, the non-confidential host software stack is the sole
-platform resources owner. In particular, the physical devices to which TDIs
+platform resource's owner. In particular, the physical devices to which TDIs
 belong are owned and managed by the host, typically through the device PF.
 Host software stack components, e.g. the VMM, assign, unassign, and expose
 TDIs resp. to, from, and to TVMs.
@@ -151,7 +151,7 @@ be attached to a PCIe Root Port that is bound to a platform IOMMU. All inbound
 traffic from a TDI must then be translated by the upstream IOMMU.
 
 As the confidential Domain Security Manager (DoSM), the TSM is responsible for
-setting TDI-specific DMA mapping, MSI page tables and also for configuring
+setting TDI-specific DMA mapping, MSI page tables, and also for configuring
 platform IOMMUs own MSIs. As a consequence, all IOMMUs on a CoVE-IO platform
 must provide a domain isolated Register Programming Interface (RPI) that is
 exclusively accessible to the TSM.
