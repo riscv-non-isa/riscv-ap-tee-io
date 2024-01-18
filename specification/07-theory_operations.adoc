@@ -110,7 +110,7 @@ by the ROT.
 
 [[IDE_KM_RPT_OP]]
 .PCIe Root Port IDE Key Management through Hardware Root-of-Trust
-image::images/rp_rot_idekm.svg[align="center"]
+image::rp_rot_idekm.svg[align="center"]
 
 === SPDM Transport
 
@@ -120,7 +120,7 @@ machine.
 
 [[spdm_message]]
 .SPDM Message Layout
-image::images/SPDM_session.svg[align="center"]
+image::SPDM_session.svg[align="center"]
 
 
 Whether the SPDM session is established with the ROT or the physical device, the
@@ -848,7 +848,7 @@ compatible platform, as illustrated in the follwing figure:
 
 [[COVE_IO_LIFECYCLE]]
 .Device and Interface Lifecycle
-image::images/cove-io-lifecycle.svg[align="center"]
+image::cove-io-lifecycle.svg[align="center"]
 
 The host supervisor domain manager owns the physical device, and manages its
 lifecycle. The TSM enforces that this lifecycle management is done without

@@ -9,7 +9,7 @@ There are two attestation stages involved in the CoVE-IO architecture.
 The IETF RATS Remote Attestation Architecture <<RATS>> can be applied to both.
 
 .Remote Attestation Framework (IETF RATS)
-image::images/rats-arch.svg[align="center"]
+image::rats-arch.svg[align="center"]
 
 === TVM attesting the Device
 

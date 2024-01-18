@@ -8,7 +8,7 @@ they interact together:
 
 [[COVE_IO_ARCHITECTURE]]
 .CoVE-IO High Level Architecture
-image::images/cove-io-architecture.svg[align="center"]
+image::cove-io-architecture.svg[align="center"]
 
 The TEE Security Manager (TSM) orchestrates and manages TEE Virtual Machines
 (TVM), as defined by the <<CoVE>> specification. The TSM operates in HS-Mode

@@ -137,7 +137,7 @@ IDE keys to both the CoVE-IO device and its upstream PCIe Root Port.
 
 [[coveio_hierarchy]]
 .CoVE-IO PCIe Topology
-image::images/coveio_hierarchy.svg[align="center"]
+image::coveio_hierarchy.svg[align="center"]
 
 
 ===== IO Translation Agent
@@ -176,7 +176,7 @@ session.
 
 [[IDE_KM_RPT]]
 .PCIe Root Port IDE Key Management through Hardware Root-of-Trust
-image::images/rp_rot_idekm.svg[align="center"]
+image::rp_rot_idekm.svg[align="center"]
 
 As a consequence, a CoVE-IO-compliant platform must have at least one PCIe
 accessible HROT, with the following requirements:
