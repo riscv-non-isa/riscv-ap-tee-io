@@ -1,16 +1,18 @@
 [[header]]
 :description: RISC-V CoVE IO: Trusted IO proposal for RISC-V
 :company: RISC-V.org
-:revdate: 2023/04
+:revdate: January 15, 2024
 :revnumber: 0.1
 :revremark: This document is in development. Assume everything can change. See http://riscv.org/spec-state for details.
 :url-riscv: http://riscv.org
 :doctype: book
+:pdf-theme: ./docs-resources/themes/riscv-pdf.yml
+:pdf-fontsdir: ./docs-resources/fonts
 :preface-title: Preamble
 :colophon:
 :appendix-caption: Appendix
-:imagesdir: .
-:title-logo-image: image:images/risc-v_logo.svg[pdfwidth=3.25in,align=center]
+:imagesdir: ./docs-resources/images
+:title-logo-image: image:risc-v_logo.png[pdfwidth=3.25in,align=center]
 // Settings:
 :experimental:
 :reproducible:
