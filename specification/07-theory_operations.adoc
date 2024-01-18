@@ -135,7 +135,7 @@ initiated CoVE-IO `COVH` calls that require SPDM requests to be sent to the devi
 DOE mailbox follows the flow described below:
 
 .SPDM Flow With CoVE
-[source,mermaid]
+[mermaid, ,svg]
 ....
 %%{init: {'theme': 'neutral', 'themeVariables': {'darkMode': true}, "flowchart" : { "curve" : "basis" } } }%%
 sequenceDiagram
