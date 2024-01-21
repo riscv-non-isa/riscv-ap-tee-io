@@ -156,7 +156,7 @@ platform IOMMUs own MSIs. As a consequence, all IOMMUs on a CoVE-IO platform
 must provide a domain isolated Register Programming Interface (RPI) that is
 exclusively accessible to the TSM.
 
-===== Hardware Root-of-Trust
+===== Root-of-Trust
 
 As described in <<PCIe>>, the TSM generates and sets the IDE keys into both the
 CoVE-IO PCIe endpoint and its upstream Root Port, for all maintained selective
@@ -168,28 +168,27 @@ Secured SPDM session. However, there are no architecturally-defined PCIe
 protocol for managing Root Port IDE keys.
 
 Instead of adding multiple vendor-specific `IDE_KM` implementations to the TSM,
-the TSM relies on the platform hardware Root-of-Trust (HROT) to implement the
-`IDE_KM` protocol and abstract the platform specific PCIe RP implementation away
-from the TSM. The TSM establishes a Secured SPDM session with the HROT over a
-host accessible DOE mailbox, and then sets platform RP IDE keys over that
-session.
+the TSM relies on the platform Root-of-Trust (ROT) to implement the `IDE_KM`
+protocol and abstract the platform specific PCIe RP implementation away from
+the TSM. The TSM establishes a Secured SPDM session with the ROT over a host
+accessible DOE mailbox, and then sets platform RP IDE keys over that session.
 
 [[IDE_KM_RPT]]
-.PCIe Root Port IDE Key Management through Hardware Root-of-Trust
+.PCIe Root Port IDE Key Management through Root-of-Trust
 image::images/rp_rot_idekm.svg[align="center"]
 
 As a consequence, a CoVE-IO-compliant platform must have at least one PCIe
-accessible HROT, with the following requirements:
+accessible ROT, with the following requirements:
 
-1. The HROT must support the DOE mechanism
-2. The HROT must support Secured SPDM sessions
-3. The HROT must support the IDE Key Management protocol
+1. The ROT must support the DOE mechanism
+2. The ROT must support Secured SPDM sessions
+3. The ROT must support the IDE Key Management protocol
 
 ===== CoVE-IO Manifest
 
 The TSM must be provisioned with a trusted piece of data describing the required
-CoVE-IO platform components. The hardware Root-of-Trust provides the TSM with a
-CoVE-IO manifest containing the following pieces of information:
+CoVE-IO platform components. The Root-of-Trust provides the TSM with a CoVE-IO
+manifest containing the following pieces of information:
 
 Trust anchor:: A list of root certificates that the TSM uses to verify DSM
 certificates received through SPDM.

@@ -220,7 +220,7 @@ from the following adversaries:
        between a physical device and the untrusted host domain.
      - Although the VMM can tamper with the device IDE extended capabilities,
        the PCIe root port IDE settings must only be available to a TVM TCB
-       component, either the TSM or a hardware root-of-trust.
+       component, either the TSM or the platform Root-of-Trust.
 
 |===
 

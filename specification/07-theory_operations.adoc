@@ -109,7 +109,7 @@ RP DSM role, the RP vendor-specific IDE key management interface is abstracted
 by the ROT.
 
 [[IDE_KM_RPT_OP]]
-.PCIe Root Port IDE Key Management through Hardware Root-of-Trust
+.PCIe Root Port IDE Key Management through Root-of-Trust
 image::images/rp_rot_idekm.svg[align="center"]
 
 === SPDM Transport
