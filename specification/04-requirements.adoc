@@ -111,11 +111,11 @@ in the next sections.
 
 ==== Ownership
 
-In a CoVE-IO context, the non-confidential host software stack is the sole
-platform resource's owner. In particular, the physical devices to which TDIs
-belong are owned and managed by the host, typically through the device PF.
-Host software stack components, e.g. the VMM, assign, unassign, and expose
-TDIs resp. to, from, and to TVMs.
+In a CoVE-IO context, the host supervisor domain manager is the sole platform
+resource's owner. In particular, the physical devices to which TDIs belong are
+owned and managed by the host, typically through the device PF. Host software
+stack components, e.g. the VMM, assign, unassign, and expose TDIs resp. to,
+from, and to TVMs.
 
 ==== Platform Hardware Components
 
