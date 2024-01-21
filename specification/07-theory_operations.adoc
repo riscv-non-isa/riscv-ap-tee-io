@@ -112,6 +112,31 @@ by the ROT.
 .PCIe Root Port IDE Key Management through Root-of-Trust
 image::images/rp_rot_idekm.svg[align="center"]
 
+=== Device Initialization
+
+A device may require special initialization before it can act correctly in
+confidential computing mode. This initialization work should be done by device
+specific software, also known as device driver. The location of the device
+driver may depend on how the device is assigned to a TVM.
+
+In single root I/O virtualization (SR-IOV) mode, the host VMM owns the device
+physical function (PF) and the TVM owns the device virtual function (VF). The
+TDI is the device VF. The device initialization should happen in the host device
+driver in the VMM.
+
+In discrete device assignment (DDA) mode, the entire physical device is
+assigned to a TVM. The TDI is the entire device. The device initialization may
+happen in the guest device driver in TVM. The host VMM does not include any
+device driver. In this case, the VMM should ensure that the guest device driver
+does the initialization before the VMM triggers any common confidential computing
+flow, such as SPDM session establishment or IDE key management.
+
+With DDA mode, the TVM should be configured so that it automatically initializes
+the physical device without TSM or VMM intervention. Moreover, the TVM is
+responsible for notifying the VMM once initialization completes, through some
+out-of-band transport like e.g. paravirtualized I/O. Both the TVM configuration
+details and the notification mechanism are out of the CoVE-IO scope.
+
 === SPDM Transport
 
 SPDM is the main transport protocol for securely setting both the RP and the
