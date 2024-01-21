@@ -1,12 +1,18 @@
 [[coveio_abi]]
 == Confidential VM Extension (CoVE) IO ABI
 
-=== CoVE IO Host Extension
+=== CoVE IO Function IDs Namespace
+
+As a <<CoVE>> SBI extension, CoVE-IO has a reserved CoVE Function ID (FID)
+namespace. For all three CoVE EID (`COVH`, `COVI` and `COVG`), the CoVE-IO FIDs
+must be in the `[1024:1087]` range.
+
+=== CoVE IO Host Extension (EID #0x434F5648 "COVH")
 
 ==== IOMMU Management
 
 [#sbi_covh_register_iommu()]
-===== Function: CoVE Host Register IOMMU (FID TBD)
+===== Function: CoVE Host Register IOMMU (FID #1024)
 [source, C]
 -----
 struct sbiret sbi_covh_register_iommu(unsigned long iommu_id,
@@ -32,7 +38,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 
 [#sbi_covh_notify_iommu_msi]
-===== Function: CoVE Host Notify IOMMU MSI (FID TBD)
+===== Function: CoVE Host Notify IOMMU MSI (FID #1025)
 [source, C]
 -----
 struct sbiret sbi_covh_notify_iommu_msi(unsigned long iommu_id);
@@ -60,7 +66,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 ==== Root Port Management
 
 [#sbi_covh_register_rp]
-===== Function: CoVE Host Register PCIe Root Port (FID TBD)
+===== Function: CoVE Host Register PCIe Root Port (FID #1026)
 [source, C]
 -----
 struct sbiret sbi_covh_register_rp(unsigned long rp_id,
@@ -91,7 +97,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 ==== Physical Device Management
 
 [#sbi_covh_connect_device]
-===== Function: CoVE Host Connect Device (FID TBD)
+===== Function: CoVE Host Connect Device (FID #1027)
 [source, C]
 -----
 struct sbiret sbi_covh_connect_device()(unsigned long device_id,
@@ -116,7 +122,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 
 [#sbi_covh_disconnect_device]
-===== Function: CoVE Host Disconnect Device (FID TBD)
+===== Function: CoVE Host Disconnect Device (FID #1028)
 [source, C]
 -----
 struct sbiret sbi_covh_disconnect_device()(unsigned long device_id);
@@ -143,7 +149,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 ==== TVM Memory Management
 
 [#sbi_covh_add_tvm_interface_region]
-===== Function: CoVE Host Add TVM Interface Region (FID TBD)
+===== Function: CoVE Host Add TVM Interface Region (FID #1029)
 [source, C]
 -----
 struct sbiret sbi_covh_add_tvm_interface_region(unsigned long tvm_id,
@@ -173,7 +179,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 | SBI_ERR_FAILED          | The operation failed for unknown reasons.
 |===
 
-===== Function: CoVE Host Reclaim TVM Interface Region (FID TBD)
+===== Function: CoVE Host Reclaim TVM Interface Region (FID #1030)
 [source, C]
 -----
 struct sbiret sbi_covh_reclaim_tvm_interface_region(unsigned long tvm_id,
@@ -205,7 +211,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 ==== Device Interface Management
 
 [#sbi_covh_bind_interface]
-===== Function: CoVE Host Bind Interface (FID TBD)
+===== Function: CoVE Host Bind Interface (FID #1031)
 [source, C]
 -----
 struct sbiret sbi_covh_bind_interface()(unsigned long tvm_id,
@@ -232,7 +238,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 
 [#sbi_covh_unbind_interface]
-===== Function: CoVE Host Unbind Interface (FID TBD)
+===== Function: CoVE Host Unbind Interface (FID #1032)
 [source, C]
 -----
 struct sbiret sbi_covh_unbind_interface()(unsigned long tvm_id,
@@ -256,12 +262,12 @@ The possible error codes returned in `sbiret.error` are shown below.
 | SBI_ERR_FAILED          | The operation failed for unknown reasons.
 |===
 
-=== CoVE IO Guest Extension
+=== CoVE IO Guest Extension (EID #0x434F5647 "COVG")
 
 ==== Physical Device Query
 
 [#sbi_covg_get_device_link]
-===== Function: CoVE Guest Get Device Link (FID TBD)
+===== Function: CoVE Guest Get Device Link (FID #1024)
 [source, C]
 -----
 struct sbiret sbi_covg_get_device_link(unsigned long device_if_id);
@@ -293,7 +299,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 
 [#sbi_covg_get_device_certificate]
-===== Function: CoVE Guest Get Device Certificate (FID TBD)
+===== Function: CoVE Guest Get Device Certificate (FID #1025)
 [source, C]
 -----
 struct sbiret sbi_covg_get_device_certificate(unsigned long device_if_id,
@@ -328,7 +334,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 
 [#sbi_covg_get_device_measurements]
-===== Function: CoVE Guest Get Device Measurements (FID TBD)
+===== Function: CoVE Guest Get Device Measurements (FID #1026)
 [source, C]
 -----
 struct sbiret sbi_covg_get_device_measurements(unsigned long device_if_id,
@@ -373,7 +379,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 
 [#sbi_covg_get_device_spdm_attrs]
-===== Function: CoVE Guest Get Device SPDM Attributes (FID TBD)
+===== Function: CoVE Guest Get Device SPDM Attributes (FID #1027)
 [source, C]
 -----
 struct sbiret sbi_covg_get_device_spdm_attrs(unsigned long device_if_id,
@@ -407,7 +413,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 ==== Device Interface Management
 
 [#sbi_covg_get_interface_report]
-===== Function: CoVE Guest Get Interface Report (FID TBD)
+===== Function: CoVE Guest Get Interface Report (FID #1028)
 [source, C]
 -----
 struct sbiret sbi_covg_get_interface_report(unsigned long device_if_id
@@ -434,7 +440,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 
 [#sbi_covg_get_interface_state]
-===== Function: CoVE Guest Get Interface State (FID TBD)
+===== Function: CoVE Guest Get Interface State (FID #1029)
 [source, C]
 -----
 struct sbiret sbi_covg_get_interface_state(unsigned long device_if_id);
@@ -478,7 +484,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 
 [#sbi_covg_map_interface_mmio]
-===== Function: CoVE Guest Map Interface MMIO (FID TBD)
+===== Function: CoVE Guest Map Interface MMIO (FID #1030)
 [source, C]
 ----
 struct sbiret sbi_covg_map_interface_mmio(unsigned long device_if_id
@@ -510,7 +516,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 
 [#sbi_covg_start_interface]
-===== Function: CoVE Guest Start Interface (FID TBD)
+===== Function: CoVE Guest Start Interface (FID #1031)
 [source, C]
 ----
 struct sbiret sbi_covg_start_interface(unsigned long device_if_id);
@@ -538,7 +544,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 
 [#sbi_covg_stop_interface]
-===== Function: CoVE Guest Stop Interface (FID TBD)
+===== Function: CoVE Guest Stop Interface (FID #1032)
 [source, C]
 ----
 struct sbiret sbi_covg_stop_interface(unsigned long device_if_id);
