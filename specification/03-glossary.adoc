@@ -80,7 +80,7 @@ The RoT provides trusted services to other software on the platform such
 as verified boot, key provisioning and management, security lifecycle
 management, sealed storage, device management, cryptography services,
 attestation, etc. The RoT may be an integrated or discrete element, and may take
-on the role of a Device Identification Composition Engine (DICE).
+on the role of a Device Identifier Composition Engine (DICE).
 
 | Security Protocol and Data Model | SPDM | A DMTF defined specification for
 exchanging messages between devices over a variety of transports and physical

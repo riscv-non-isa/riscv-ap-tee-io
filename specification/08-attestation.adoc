@@ -120,7 +120,7 @@ There are 2 possible models.
 ===== Post-update reattestation
 
 After the device performs the update, the TVM will collect both the certificate
-nd the measurement and do verification again to determine if it still wants to
+and the measurement and do verification again to determine if it still wants to
 accept the device. If the TVM decides to no longer accept the device any more,
 the TVM will use `sbi_covg_stop_interface()` ABI to request the VMM to use
 `sbi_covh_unbind_interface()` to unbind the TDI, then the TVM will verify with

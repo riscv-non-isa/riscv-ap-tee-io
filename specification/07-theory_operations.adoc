@@ -700,7 +700,7 @@ into its TCB:
       device actually owns the private key bound to its certificate. This is
       achieved by getting the TDI measurements from the TSM through the
       `sbi_covg_get_device_measurement()` `COVG` ABI. This set of device-signed
-      measurements, also knonw as the device attestation evidence, must be
+      measurements, also known as the device attestation evidence, must be
       verified against the TDI certificate acquired in the previous step.
    c. Finally, the TVM should attest to the device configuration trustworthiness
       (code, SVN, state, etc) by verifying the previously fetched device
@@ -869,7 +869,7 @@ second stage page tables and map those I/O regions into the guest physical
 address space. The TSM does not enable those tables until the TVM starts the
 interface (step 6)
 
-Only once the TSM is securily connected to the physical device, The host
+Only once the TSM is securely connected to the physical device, The host
 supervisor domain manager can proceed with binding a device interface and a TVM
 together. Once bound to a TVM, the device interface is locked but the MMIO and
 DMA paths between the two are not enabled yet.
