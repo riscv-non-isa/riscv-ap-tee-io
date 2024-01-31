@@ -83,9 +83,14 @@ assets *confidentiality* and *integrity* from components outside of the TCB.
 The CoVE-IO security model aims at protecting the above-described TVM assets
 from the following adversaries:
 
+* _Startup Software adversary_: This includes host system software executing
+  in early boot phases of the system in M-mode, including M-mode firmware,
+  memory configuration code, device option ROM that can access system
+  memory, CPU registers, IOMMU(s), IO devices and platform configuration
+  registers (e.g., address range decoders, SoC fabric configuration, etc.).
+
 * _Privileged host software adversary_: This includes host software components
-  executing in S and M mode like the host firmware, kernel, hypervisor, VMM,
-  device option ROM, host device driver, etc.
+  executing in S/HS mode like the kernel, VMM, host device driver, etc.
   As the system resource owner but also the TVMs lifecycle manager, those
   components can access and control all devices on the system.
 
