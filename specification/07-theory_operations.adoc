@@ -289,7 +289,7 @@ sequenceDiagram
 
 autonumber
 
-participant DSM as Device DSM or ROT
+participant DSM as Device DSM
 participant VMM as Host Supervisor Domain Manager (VMM)
 participant TSM
 
