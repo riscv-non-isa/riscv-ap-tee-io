@@ -155,7 +155,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 struct sbiret sbi_covh_add_tvm_interface_region(unsigned long tvm_id,
                                                 unsigned long device_if_id,
                                                 unsigned long base_addr,
-                                                unsigned long num_pages);
+                                                unsigned long region_len);
 -----
 
 Adds a device interface MMIO region into a TVM address space.
@@ -169,6 +169,10 @@ TVM outbound transaction will not trigger MMIO page faults. The TSM must not
 enable the created mappings until the TVM accepts the TDI in its TCB.
 
 The possible error codes returned in `sbiret.error` are shown below.
+
+`base_addr` value must be 4KB-aligned.
+
+`region_len` value must be 4KB-aligned.
 
 [#table_sbi_covh_add_tvm_interface_region]
 .CoVE Host Add TVM Interface Region
@@ -185,7 +189,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 struct sbiret sbi_covh_reclaim_tvm_interface_region(unsigned long tvm_id,
                                                     unsigned long device_if_id,
                                                     unsigned long base_addr,
-                                                    unsigned long num_pages);
+                                                    unsigned long region_len);
 -----
 
 Reclaims a device interface MMIO region previously added to a TVM address space.
@@ -198,6 +202,10 @@ If `device_if_id` is still bound to `tvm_id` when this call is made, the TSM
 unbinds the device interface from the TVM first.
 
 The possible error codes returned in `sbiret.error` are shown below.
+
+`base_addr` value must be 4KB-aligned.
+
+`region_len` value must be 4KB-aligned.
 
 [#table_sbi_covh_reclaim_tvm_device_region]
 .CoVE Host Reclaim TVM Interface Region
@@ -320,7 +328,7 @@ first.
 
 `slot_id` must be between 0 and 7 inclusive.
 
-`cert_addr_out` must be page aligned.
+`cert_addr_out` must be 4KB-aligned.
 
 The possible error codes returned in `sbiret.error` are shown below.
 
@@ -365,7 +373,7 @@ valid and the rest bits are igored. The last `GET_MEASUREMENT` request must
 set `SignatureRequested` bit to request the digital signaure of the measurement
 transcript.
 
-Both `msmt_addr_out` and `nonce_addr` must be page aligned.
+Both `msmt_addr_out` and `nonce_addr` must be 4KB-aligned.
 
 The possible error codes returned in `sbiret.error` are shown below.
 
@@ -390,7 +398,7 @@ struct sbiret sbi_covg_get_device_spdm_attrs(unsigned long device_if_id,
 Gets the attributes for the Secure SPDM session between the physical device
 hosting `device_if_id` and the TSM.
 
-`spdm_attrs_addr_out` must be page aligned.
+`spdm_attrs_addr_out` must be 4KB-aligned.
 
 [source, C]
 -------
@@ -426,7 +434,7 @@ Gets the TDISP interface report for the device interface.
 The TSM returns the interface report, as defined by the <<TDISP>> TDI Report
 Structure, at the `if_report_out` address.
 
-`if_report_out` must be page aligned.
+`if_report_out` must be 4KB-aligned.
 
 The possible error codes returned in `sbiret.error` are shown below.
 
@@ -502,7 +510,7 @@ the trusted `TDISP`-reported MMIO regions. The TSM will enable those mappings
 if the TVM calls the starts the device interface through the
 `sbi_covg_start_interface` function.
 
-All of `gpa_addr`, `hpa_addr` and `size` values must be page aligned.
+All of `gpa_addr`, `hpa_addr` and `size` values must be 4KB-aligned.
 
 The possible error codes returned in `sbiret.error` are shown below.
 
