@@ -4,12 +4,12 @@
 - [[[CoVE]]] RISC-V Confidential VM Extension, https://github.com/riscv-non-isa/riscv-ap-tee
 - [[[CC]]] Confidential Computing, https://confidentialcomputing.io/about/
 - [[[PCI-SIG]]] PCI SIG, https://pcisig.com/
-- [[[DMTF]]] Distributed Management Task Force, https://www.dmtf.org/
-- [[[SPDM]]] Secure Protocol and Data Model Specification, https://www.dmtf.org/dsp/DSP0274
+- [[[DMTF]]] DMTF, https://www.dmtf.org/
+- [[[SPDM]]] Security Protocol and Data Model Specification, https://www.dmtf.org/dsp/DSP0274
 - [[[SecuredSPDM]]] Secured Messages using SPDM Specification, https://www.dmtf.org/dsp/DSP0277
 - [[[PCIE]]] PCI Express Base Specification, https://members.pcisig.com/wg/PCI-SIG/document/18363
 - [[[TDISP]]] TEE Device Interface Protocol ECN, https://members.pcisig.com/wg/PCI-SIG/document/18268?uploaded=1
-- [[[IOMMU]]] RISC-V IOMMU, https://github.com/riscv-non-isa/riscv-iommu/blob/main/riscv-iommu.pdf
+- [[[IOMMU]]] RISC-V IOMMU, https://github.com/riscv-non-isa/riscv-iommu
 - [[[RATS]]] IETF RFC 9334 Remote ATtestation procedureS (RATS) Architecture, https://datatracker.ietf.org/doc/rfc9334/
 - [[[Smmtt]]] RISC-V Supervisor Domain Access Protection, https://github.com/riscv/riscv-smmtt
 
