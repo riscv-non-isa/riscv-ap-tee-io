@@ -84,20 +84,22 @@ from the following adversaries:
 
 * _Privileged host software adversary_: This includes host software components
   executing in S and M mode like the host firmware, kernel, hypervisor, VMM,
-  etc. As the system resource owner but also the TVMs lifecycle manager, those
+  device option ROM, host device driver, etc.
+  As the system resource owner but also the TVMs lifecycle manager, those
   components can access and control all devices on the system.
 
 * _Unprivileged host software adversary_: This includes host software components
   executing in U mode like e.g. the userspace parts of the host VMM.
 
 * _Privileged guest software adversary_: This includes guest software components
-  executing in VS mode like e.g. the guest kernel.
+  executing in VS mode like e.g. the guest kernel, the guest device driver.
 
 * _Unprivileged guest software adversary_: This includes guest software components
   executing in VU mode like e.g. the guest application workload.
 
 * _Device firmware adversary_: This includes any firmware driving a device
-  within the system's PCIe topology. As PCIe transaction generators those device
+  within the system's PCIe topology. It is the firmware running on the device
+  itself, other than DSM. As PCIe transaction generators those device
   firmware components can gain direct access to a TVM confidential memory.
 
 * _Simple hardware adversary_: This includes adversaries that are able to probe
