@@ -235,9 +235,9 @@ into TVMs, it must:
 === Guest
 
 A TVM guest must verify and explictly accept any TDI into their TCBs. The TSM
-prevents both TDIs from directly accessing the TVM confidential memory and the
-TVM from doing memory mapped I/O with TDIs, unless the TVM guest accepts the
-TDI.
+prevents TDIs from directly accessing the TVM confidential memory and prevents
+the TVM from doing memory mapped I/O with TDIs, unless the TVM guest accepts
+the TDI.
 
 By implementing the CoVE-IO guest ABI, the TSM allows for a TVM guest to verify
 the trustworthiness of an assigned TDI. The TVM also uses the same ABI to notify
