@@ -62,7 +62,7 @@ or tampering with them.
 This document describes a proposal for extending the CoVE specification with I/O
 specific flows, interfaces, and intrinsics with the goal of implementing the
 above-described framework. The CoVE I/O interfaces aim at giving CoVE TVM guests
-the ability to securily:
+the ability to securely:
 
 * Retrieve a device's identity, configuration, and security state in order
   for them to establish trust with the device.
@@ -74,7 +74,7 @@ the ability to securily:
 
 The CoVE I/O framework builds on top of the industry supported and ratified
 <<PCI-SIG>> TEE Device Interface Security Protocol <<TDISP>> specification,
-which itself relies on the <<DMTF>> Secure Protocol and Data Model <<SPDM>>
+which itself relies on the <<DMTF>> Security Protocol and Data Model <<SPDM>>
 protocol.
 TDISP compliant devices, also known as TEE-IO devices, implement security
 protections for isolating guest workloads and confidential data from domains to

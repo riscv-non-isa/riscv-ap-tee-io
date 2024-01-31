@@ -1,7 +1,7 @@
 [[security_model]]
 == Security Model
 
-The CoVE-IO securiy model is built on the following assumptions:
+The CoVE-IO security model is built on the following assumptions:
 
 - The host platform physical devices are owned by untrusted domain software
   components (e.g. the host VMM or the hypervisor) that are not part of any
@@ -267,8 +267,8 @@ from the following adversaries:
 
 5+^| **Description**
 5+| A privileged host software component maps a TDI trusted MMIO space into TVM1
-    as part of the TDI assignement. Then it unassigns the TDI from TVM1 and
-    assigns it to TVM2, withouth unmapping the TDI trusted MMIO space from TVM1. +
+    as part of the TDI assignment. Then it unassigns the TDI from TVM1 and
+    assigns it to TVM2, without unmapping the TDI trusted MMIO space from TVM1. +
     TVM1 can tamper with a TDI trusted MMIO while it is not assigned to it.
 
 5+^| **Mitigations**
