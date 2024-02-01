@@ -69,10 +69,10 @@ It always collects the up-to-date endorsement and RIM from the device relying pa
 [width=90%, align="center", options="header"]
 |===
 | Use Case                        | Local Verification                     | Remote Verification
-| Endorsement (Root CA Cert, CRL) | Provisioned in TVM (Static or Dynamic) | Remove Service
-| Reference Value (RIM)           | Provisioned in TVM (Static or Dynamic) | Remove Service
+| Endorsement (Root CA Cert, CRL) | Provisioned in TVM (Static or Dynamic) | Remote Service
+| Reference Value (RIM)           | Provisioned in TVM (Static or Dynamic) | Remote Service
 | Policy Update (Endorsement, Reference) | No update or scheduled update (Pull or Push) | Always up-to-date
-| Verifier Location               | Inside of TVM         | Inside of TVM or Remove Service
+| Verifier Location               | Inside of TVM         | Inside of TVM or Remote Service
 |===
 
 ==== Device Runtime Update and Reattestation
