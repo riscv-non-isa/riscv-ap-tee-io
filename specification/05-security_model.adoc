@@ -13,12 +13,12 @@ The CoVE-IO security model is built on the following assumptions:
   * The TVM owner has explicitly allowed the TDI to access its confidential
     memory by accepting it.
   * The TDI is exclusively assigned to the TVM, i.e. it must not be shared
-    other TVMs or any host software component.
+    with other TVMs or any host software component.
 - A TVM may access a TDI trusted MMIO space only when all the following
   conditions are met:
   * The TVM owner has explicitly accepted the TDI.
   * The TDI is exclusively assigned to the TVM, i.e. it must not be shared
-    other TVMs or any host software component.
+    with other TVMs or any host software component.
 - Until a TDI is accepted by the TVM:
   * The TDI is not allowed to DMA into the TVM confidential memory.
   * Trusted MMIO access to the TDI is blocked by TSM.
