@@ -27,7 +27,9 @@ and registering IOMMUs and PCIe root ports, and then binding physical devices
 interfaces (TDI) and TVMs together.
 
 With the CoVE-IO ABIs and flows, TDIs can access TVM confidential memory
-directly. CoVE-IO uses the Smmtt I/O MTT extension and the platform IOMMUs
+directly. Based on the TVM configuration, the confidential DMA memory
+could be all TVM memory or a subset of the TVM memory.
+CoVE-IO uses the Smmtt I/O MTT extension and the platform IOMMUs
 security domain specific Register Programming Interfaces (RPI) to grant TDIs
 with direct access to their bound TVM confidential memory and isolate it from
 DMA originating from any unbound TDI.
