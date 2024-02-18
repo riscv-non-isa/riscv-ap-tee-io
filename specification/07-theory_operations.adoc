@@ -213,22 +213,29 @@ For example the above example would be described through those simplified steps:
 
 ==== Secure SPDM Session
 
-With trusted I/O, the TSM establishes SPDM sessions with both the ROT and the
+With trusted I/O, the TSM establishes SPDM sessions with the
 physical devices DSMs. As those sessions are used to exchange IDE keys through
 the `IDE_KM` protocol while going through the host supervisor domain manager,
 they need to be confidentiality and integrity protected. Establishing a secured
 SPDM session for IDE key management or TDISP operations between the TSM and
-either PCIe root ports or devices is a mandatory requirement for TVMs to accept
-TDIs into their TCB.
+devices is a mandatory requirement for TVMs to accept TDIs into their TCB.
 
 Any trusted I/O SPDM session is established through the SPDM responder DOE
-mailbox, which could be either the ROT acting as a DSM for the PCIe root ports,
-or the physical device DSM. In either case the mailboxes are resources owned by
+mailbox in the physical device DSM. The mailbox is resource owned by
 the host security domain manager which thus initiates the SPDM session
 establishment. It acts as an untrusted proxy between the TSM and the DSM by
 requesting the TSM to generate SPDM requests through the CoVIO `COVH`TH ABI,
 sending those requests to the DOE mailbox and forwarding the SPDM responses back
 to the TSM, as described in the SPDM flow section.
+
+The TSM also needs to program IDE keys to the PCIe Root Port. This step is
+implementation specific.
+For example, if the communication between TSM and the PCIe Root Port is
+protected by SOC, the TSM can program the IDE keys directly.
+However, if the communication between TSM and the PCIe Root Port is not
+protected, there must be a secure mechanism to protect the IDE keys exchange,
+such as a SPDM session via DOE mailbox exposed by the SOC ROT acting as the DSM
+for the PCIe root ports.
 
 === Device Connection
 
