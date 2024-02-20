@@ -72,6 +72,11 @@ confidentiality, and replay protection of PCIe Transport Layer Packets (TLP).
 | Physical Device | N/A | The physical device to which DIs belong to. This is the
 actual physical PCIe device.
 
+| Root Domain Security Manager | RDSM | The Root Domain Security Manager is an
+M-mode component that has access to all of the physical address space and
+resources on a platform. The RDSM enforces the isolation between security
+domains by controlling the access to the platform MTT and IO-MTT interfaces.
+
 | Root of Trust | ROT | Isolated HW/SW subsystem with an immutable ROM firmware
 and isolated compute and memory elements that form the Trusted Compute Base
 of a TEE system. The RoT manages cryptographic keys and other security
@@ -81,6 +86,15 @@ as verified boot, key provisioning and management, security lifecycle
 management, sealed storage, device management, cryptography services,
 attestation, etc. The RoT may be an integrated or discrete element, and may take
 on the role of a Device Identifier Composition Engine (DICE).
+
+| Supervisor Domain | N/A | A supervisor domain is associated with a set of
+physical address regions that are isolated from other supervisor domains on the
+same platform, with only the RDSM with access to all of the physical address
+space.
+
+| Supervisor Domain Security Manager | SDSM | The Supervisor Domain Security
+Manager is responsible for isolating workloads within a supervisor domain.
+SDSMs are S-Mode components like the TSM or the OS/Hypervisor.
 
 | Security Protocol and Data Model | SPDM | A DMTF defined specification for
 exchanging messages between devices over a variety of transports and physical
