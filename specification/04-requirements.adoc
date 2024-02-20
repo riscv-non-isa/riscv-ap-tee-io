@@ -150,11 +150,23 @@ In order to protect direct access to confidential memory, a CoVE-IO device must
 be attached to a PCIe Root Port that is bound to a platform IOMMU. All inbound
 traffic from a TDI must then be translated by the upstream IOMMU.
 
-As the confidential Domain Security Manager (DoSM), the TSM is responsible for
-setting TDI-specific DMA mapping, MSI page tables, and also for configuring
-platform IOMMUs own MSIs. As a consequence, all IOMMUs on a CoVE-IO platform
-must provide a domain isolated Register Programming Interface (RPI) that is
-exclusively accessible to the TSM.
+As Supervisor Domain Security Managers (SDSM), TSMs are responsible for
+setting TDI-specific DMA mappings, MSI page tables, and also for configuring
+platform IOMMUs own MSIs. As a consequence, IOMMU instances on a CoVE-IO
+platform may be directly and exclusively tied to a TSM controlled supervisor
+domain, allowing the TSM to manage address translation and protection for DMA
+that originates from devices under its control.
+
+Each IOMMU offers a memory-mapped Register Programming Interface (RPI) that the
+associated TSM uses to configure and control the IOMMU. The RDSM, through the
+<<Smmmtt>> extension, enforces that this interface is access-restricted to the
+TSM the IOMMU is assigned to. This guarantees that a TSM currently running on a
+RISC-V hart has exclusive access to the physical address of its IOMMU RPI.
+
+On platforms supporting the MTT and IO-MTT <<Smmtt>> extensions, any PCIe device
+(regardless of its TEE-IO compliance) can be assigned to any supervisor domain,
+as long as this domain has RDSM-enforced exclusive access to an IOMMU instance
+RPI.
 
 ===== Root-of-Trust
 
