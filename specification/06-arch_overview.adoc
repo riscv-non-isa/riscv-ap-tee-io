@@ -16,7 +16,7 @@ and is the confidential supervisor domain manager. It uses the <<Smmtt>>
 specified Memory Tracking Table (MTT) to enforce TVM memory isolation from
 the host supervisor domain.
 
-As the confidential security domain manager, the TSM provides the `COVH` ABI
+As the confidential supervisor domain manager, the TSM provides the `COVH` ABI
 for the host OS/VMM to create and destroy TVMs, and donate or reclaim
 confidential memory from them. TVMs can interact with the TSM through the
 `COVG` ABI.
@@ -29,10 +29,10 @@ interfaces (TDI) and TVMs together.
 With the CoVE-IO ABIs and flows, TDIs can access TVM confidential memory
 directly. Based on the TVM configuration, the confidential DMA memory
 could be all TVM memory or a subset of the TVM memory.
-CoVE-IO uses the Smmtt I/O MTT extension and the platform IOMMUs
-security domain specific Register Programming Interfaces (RPI) to grant TDIs
-with direct access to their bound TVM confidential memory and isolate it from
-DMA originating from any unbound TDI.
+CoVE-IO uses the Smmtt I/O MTT extension and the platform IOMMUs supervisor
+domain specific Register Programming Interfaces (RPI) to grant TDIs with direct
+access to their bound TVM confidential memory and isolate it from DMA
+originating from any unbound TDI.
 
 With the CoVE-IO model, the TVM ultimately holds the decision to accept or
 reject a bound TDI into or from its TCB. Access to a TVM confidential memory
