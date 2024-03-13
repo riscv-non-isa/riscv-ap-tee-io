@@ -20,9 +20,9 @@ struct sbiret sbi_covh_register_iommu(unsigned long iommu_id,
 -----
 
 Registers an IOMMU (`iommu_id`) with a TSM. The `msi_cfg` MSI vectors are
-allocated by the host security domain manager (e.g. the host VMM).
+allocated by the host supervisor domain manager (e.g. the host VMM).
 
-The TSM configures the IOMMU TSM security domain programming interface
+The TSM configures the IOMMU TSM supervisor domain programming interface
 `s_msi_cfg_table` with the provided MSI vectors.
 
 The possible error codes returned in `sbiret.error` are shown below.
@@ -44,7 +44,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 struct sbiret sbi_covh_notify_iommu_msi(unsigned long iommu_id);
 -----
 
-Notifies the TSM about a pending MSI for the TSM security domain.
+Notifies the TSM about a pending MSI for the TSM supervisor domain.
 
 When servicing this request, the TSM must first verify that there are pending
 MSIs, by reading the IOMMU `s_ipsr` register from the IOMMU TSM security
@@ -505,7 +505,7 @@ Maps a TVM MMIO region (from `gpa_address`, `size` bytes long) to a
 `TDISP`-reported physical region (`hpa_addr`).
 
 The TVM uses that function to verify from the TSM that all the device interface
-MMIO regions exposed by the host security domain manager are correctly mapped to
+MMIO regions exposed by the host supervisor domain manager are correctly mapped to
 the trusted `TDISP`-reported MMIO regions. The TSM will enable those mappings
 if the TVM calls the starts the device interface through the
 `sbi_covg_start_interface` function.
