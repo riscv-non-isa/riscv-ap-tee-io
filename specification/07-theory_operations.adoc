@@ -81,10 +81,14 @@ I/O rules apply:
   used to protect the PCIe link between the TVM and the TDI.
 * A single selective IDE stream is established between the physical device and
   its Root Port. All TDIs from the physical device share this single IDE stream.
-* For each physical device from which a TDI is attached to a TVM, the TSM
-  generates, owns and distributes the IDE stream keys to both the physical
-  device and the RP.
-* The TSM configures the RP PCIe IDE extended capability.
+* The TSM that establishes the SPDM connection with a physical device must
+  generate, own and distribute the IDE stream keys to both the physical device
+  and the RP.
+* A TDI must not be bound to a TVM if the TSM managing the TVM does not own the
+  IDE keys for the TDI's physical device.
+* The TSM that owns the IDE keys for an IDE stream established between a physical
+  device and its RP also configures the corresponding RP PCIe IDE extended
+  capability.
 
 As the TSM is responsible for setting both the RP IDE keys and PCI IDE
 capabilities, it must be the IDE operations owner for any downstream device for
