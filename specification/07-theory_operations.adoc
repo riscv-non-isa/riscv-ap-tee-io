@@ -876,6 +876,47 @@ TVM ->> TVM: Use device interface
 
 === Interface Unbinding
 
+=== Session Key Update
+
+In TEE-IO architecture, when connecting to a device, a TSM establishes an SPDM
+session and an IDE session. Both sessions use AES-GCM-256 keys to protect the
+data. As such, the host supervisor domain manager needs to update the session
+keys before the use of keys reach to the limit.
+
+==== SPDM Session Key Update
+
+SPDM session key update is managed by SPDM KEY_UPDATE command.
+The TSM shall count the usage of SPDM session keys, also knowns as the 64bit
+`sequence number` defined in <<SecuredSPDM>>.
+
+Whenever the TSM generates and encrypts SPDM messages to support the host
+supervisor domain manager (e.g. a VMM) `COVH` requests, it shall check if the
+`sequence number` reaches the limit. If it does, the TSM replies to the request
+with the `SBI_ERR_KEY_UPDATE_REQUIRED` error in order to indicate to the VMM
+that it should initiate an SPDM Key Update (through the
+`sbi_covh_spdm_key_update()` `COVH` call).
+
+Once the SPDM Key Update completes, the VMM shall re-send the failing `COVH`
+request.
+
+==== IDE Session Key Refresh
+
+IDE session key refresh is managed by host software via IDE_KM command.
+The host root port IDE engine shall count the 64-bit invocation field of the IV,
+check if the value reaches the limit, and then process the IDE TLP.
+
+If the invocation field overflows, the IDE stream shall move to the insecure
+state and the IDE session shall terminate.
+
+In order to keep the IDE session alive, the VMM should perform IDE Key Refresh
+action (through the `sbi_covh_ide_key_refresh()` `COVH` call) before the IDE
+session reaches the limit of the key usage.
+
+Currently, there is no robust way to get the invocation field of IV for a given
+IDE session. One possible way is to do time-based refresh. For example, the VMM
+could periodically perform IDE key refresh, based on the calculation of
+maximum usage of IDE TLP.
+
 === Device and Interface Lifecycle
 
 When combined together, the flows and ABIs described in the previous sections
