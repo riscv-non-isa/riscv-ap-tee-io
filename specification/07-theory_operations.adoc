@@ -561,7 +561,7 @@ host supervisor domain manager may bind a TDI and a TVM together, through the
 1. The host supervisor domain manager initiates the interface binding flow by
    having the TSM move the TDI into the TDISP `CONFIG_LOCKED` state. This is
    achieved through the `sbi_covh_bind_interface()` `COVH` ABI.
-2. The TVM xref:_tdi_acceptation[verifies and accepts the locked TDI] into its
+2. The TVM xref:tdi-acceptation[verifies and accepts the locked TDI] into its
    TCB.
 3. The TVM asks the TSM to move the TDI to the TDISP `RUN` state, by calling the
    `sbi_covg_start_interface()` `COVG` ABI.
@@ -893,6 +893,15 @@ compromising any TVM confidential assets.
 As the platform resources owner, the host supervisor domain manager can assign
 a TDI to a TVM by binding them together (step 3). At any point in time, it can
 reclaim that physical resource by unbinding (step 8a) it from its TVM.
+Graceful and explicit unbinding through the `COVH` ABI will clear all
+confidential data and abort any outstanding DMA requests, as described in the
+xref:interface-unbinding[Interface Unbinding] section. Implicit TDI unbinding,
+i.e. attempts from the host supervisor domain manager to reclaim and remap a
+TDI without explicitly notifying the corresponding TSM, represents a security
+threat that is in the
+xref:05-security_model.adoc#security-model[CoVE-IO threat model] scope. In that
+situation, both the DSM and the TSM must protect the confidentiality and
+integrity of the TVM assets.
 
 Before binding a TDI and a TVM together, the host supervisor domain manager must
 first require the TSM to connect (step 1) to the physical device through secured
