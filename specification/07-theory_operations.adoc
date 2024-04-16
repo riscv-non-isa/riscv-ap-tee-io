@@ -17,15 +17,19 @@ extensions to support trusted I/O on CoVE-enabled platforms.
 
 ==== IOMMU Registration and Setup
 
-The TSM relies on the availability of at least one IOMMU instance exclusvely
-associated with the TSM supervisor domain. Those IOMMUs allow the TSM to enforce
-the integrity of address translations and protection from DMA into confidential
-memory, as well as  interrupts originating from assigned TDIs. The host
-supervisor domain may assign one or more IOMMU instances to the TSM supervisor
-domain, after which, only the TSM can access and program the assigned IOMMU
-instances.
+A TSM relies on being granted exclusive control over at least one IOMMU instance
+on the platform. An IOMMU instance refers to any instantiation of a RISC-V IOMMU
+Register Programming Interface (RPI), which could range from an actual IOMMU
+instance to an MTT-enforced, memory-mapped access to a physically partitioned
+IOMMU.
 
-IOMMUs assigned to the TSM supervisor domain may generate MSIs in order to signal
+Those exclusvely assigned IOMMU instances allow the TSM to enforce the integrity
+of address translations and protection from DMA into confidential memory, as
+well as  interrupts originating from assigned TDIs. The host supervisor domain
+may assign one or more IOMMU instances to a TSM supervisor domain, after which,
+only the TSM can access and program the assigned IOMMU instances.
+
+IOMMUs assigned to a TSM supervisor domain may generate MSIs in order to signal
 the TSM about command completions, transaction faults or device page requests.
 Those MSIs target system physical memory, which is owned by the host security
 domain manager, e.g. the host VMM. As a consequence, it is the host security
@@ -34,7 +38,7 @@ program the IOMMUs with those reserved addresses. This IOMMU registration
 process is driven by the untrusted domain manager for all IOMMUs that
 participate in TEE-IO and operates as described in the following steps:
 
-1. The TSM is loaded into a supervisor domain and provisioned with a CoVE-IO
+1. A TSM is loaded into a supervisor domain and provisioned with a CoVE-IO
    manifest. It is recommended that the TSM is measured by the root-of-trust for
    measurement (RTM) for subsequent attestation.
 2. The host supervisor domain manager (e.g. the host VMM) enumerates all
