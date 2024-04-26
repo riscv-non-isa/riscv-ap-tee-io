@@ -254,8 +254,12 @@ from the following adversaries:
     with the TVM confidential data on behalf of the host software component.
 
 5+^| **Mitigations**
-5+a| TBD
+5+a| The `CoVE-IO-T004` threat can be addressed as follows:
 
+     - The TVM must explicitly accept the reported trusted MMIO ranges before
+       any operation.
+     - The TSM must not enable Trusted MMIO mappings for an assigned TDI until
+       the TVM accepts it.
 
 |===
 
@@ -280,8 +284,14 @@ from the following adversaries:
     TVM1 can tamper with a TDI trusted MMIO while it is not assigned to it.
 
 5+^| **Mitigations**
-5+a| TBD
+5+a| The `CoVE-IO-T005` threat can be addressed as follows:
 
+     - The TSM must ensure a TDI is assigned to only one TVM. Once the
+       TDI is assigned, it cannot be assigned to the other TVM. The TDI can be
+       assigned to the other one, only after it is stoped.
+     - The TSM must ensure Trusted MMIO is mapped to only one TVM. Once the
+       MMIO is mapped, it cannot be mapped to the other TVM. The MMIO can be
+       mapped to the other one, only after it is unmapped.
 
 |===
 
@@ -306,8 +316,12 @@ from the following adversaries:
     tamper with a TVM confidential data.
 
 5+^| **Mitigations**
-5+a| TBD
+5+a| The `CoVE-IO-T006` threat can be addressed as follows:
 
+    - A PCIe root port only accepts the DMA request to a trusted domain
+      with IDE TLPs with the T-bit set.
+    - The device only accepts the trusted MMIO request to a TDI
+      with IDE TLPs with the T-bit set.
 
 |===
 
@@ -323,7 +337,7 @@ from the following adversaries:
 | Tamper and Disclosure
 | Device firmware
 | In scope
-| Host software reads and writes from and to a TVM confidential memory
+| Device firmware reads and writes from and to a TVM confidential memory
 
 5+^| **Description**
 5+| A device firmware spoofs a PCIe Requester ID (RID) to generate PCIe packets
@@ -331,8 +345,12 @@ from the following adversaries:
     corresponding TVM confidential memory.
 
 5+^| **Mitigations**
-5+a| TBD
+5+a| The `CoVE-IO-T007` threat can be addressed as follows:
 
+    - A PCIe root port must only accept the IDE TLP with T-bit set to access
+      the TVM confidential memory.
+    - A PCIe root port must check IDE TLP source RID with the IDE stream RID
+      and reject the TLP if there is RID mismatch.
 
 |===
 
@@ -357,8 +375,13 @@ from the following adversaries:
     TVM2 confidential memory is accessed by an unassigned TDI.
 
 5+^| **Mitigations**
-5+a| TBD
+5+a| The `CoVE-IO-T008` threat can be addressed as follows:
 
+    - The TSM must guarantee the DMA translation table for one TDI can only
+      access the corresponding TVM.
+    - The TSM must guarantee the invalidation of all translation caches
+      associated with the DMA translation table if there is change, including
+      but not limited to CPU TLB, IOMMU TLB and device TLB.
 
 |===
 
@@ -384,8 +407,14 @@ from the following adversaries:
     eavesdrop or tamper with the TVM confidential data.
 
 5+^| **Mitigations**
-5+a| TBD
+5+a| The `CoVE-IO-T009` threat can be addressed as follows:
 
+    - The RDSM must guarantee that a DMA transaction from one TDI is translated
+      by an IOMMU instance controlled by a TSM that manages the TVM to which
+      the TDI is bound to.
+    - The TSM must guarantee that the DMA translation table for one TDI can
+      only access the corresponding TVM.
+    - The DSM must guarantee that the DMA request uses IDE TLP with T-bit set.
 
 |===
 
@@ -414,31 +443,16 @@ from the following adversaries:
     inconsistent with the actual device operation.
 
 5+^| **Mitigations**
-5+a| TBD
+5+a| The `CoVE-IO-T010` threat can be addressed as follows:
 
-
-|===
-
-==== CoVE-IO-T011 - TDI Denial of Service
-
-.CoVE-IO-T011
-[options="header"]
-|===
-| Asset | Threat | Adversary | Scope | Result
-
-| TVM confidential data
-| Denial of service
-| Privileged host software
-| **Not** in scope
-| TVM can not access a TDI that is assigned to it
-
-5+^| **Description**
-5+| A privileged host software component resets or powers down an assigned TDI
-    or its physical device, while the TDI is assigned to a TVM. +
-    The TVM is no longer able to directly access its assigned TDI.
-
-5+^| **Mitigations**
-5+a| TBD
+    - The RDSM must guarantee that a DMA transaction from one TDI is translated
+      by an IOMMU instance controlled by a TSM that manages the TVM to which
+      the TDI is bound to.
+    - The TSM must guarantee that the DMA translation table for a TDI under its
+      control is consistent with the G-stage tables for the TVM the TDI is
+      bound to.
+    - The TVM must accept the DMA translation table explictely.
+    - The TSM must not enable DMA translation table until the TVM accepts the TDI.
 
 |===
 
