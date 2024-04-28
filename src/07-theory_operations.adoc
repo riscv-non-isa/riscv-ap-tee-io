@@ -657,7 +657,6 @@ loop For all the TDI MMIO regions exposed to the TVM
      TSM ->> VMM: [COVH] sbi_covh_add_tvm_interface_region()
 end
 
-
 VMM ->> TSM: [COVH] sbi_covh_bind_interface()
 
 TSM ->> TSM: Generate TDISP GET_TDISP_VERSION
@@ -879,6 +878,104 @@ TVM ->> TVM: Use device interface
 ....
 
 === Interface Unbinding
+
+As the platform resources owner, only the host supervisor domain manager may
+decide to unbind an interface from a TVM. At any moment, it can choose to do so
+through the `sbi_covh_unbind_interface()` `COVH` ABI. The targeted TSM services
+the request by moving the TDI from the TDISP `CONFIG_LOCKED`, `RUN` or `ERROR`
+state back to the `CONFIG_UNLOCKED` one.
+
+The host supervisor domain manager may decide to unbind a TDI from a TVM for
+many reasons. First of all, the TVM itself could be requesting that a TDI be
+unbound through the `sbi_covg_stop_interface()` `COVG` ABI, because e.g. it no
+longer needs the TDI for its operation or when shutting down. The host
+supervisor domain manager can also asynchronously choose to reclaim a TDI from
+a TVM, because the TVM or the TDI is misbehaving or unresponsive, or simply
+because it needs to re-assign a TDI to another TVM. Once unbound, a TDI can then
+be assigned to any TVM on any security domain.
+
+Unbinding a TDI from a TVM is first and foremost a resource management
+operation, and as such it must be designed to robustly address multiple error
+conditions and states that either the TDI or the TVM may have reached, while at
+the same time maintaining confidential data integrity and confidentiality. In
+order to unconditionally release all TDI related system resources, the operation
+does not require any interaction with neither the TDI nor the TVM to complete.
+
+==== Unbinding Flow
+
+Unbinding an interface from a TVM goes through the following steps:
+
+1. The host supervisor domain manager initiates the unbinding operation through
+   the `sbi_covh_unbind_interface()` `COVH` ABI. The TSM rejects that request if
+   the targeted TDI and TVM are not bound together.
+2. The TSM generates and sends the TDISP `STOP_INTERFACE_REQUEST` to the DSM.
+3. The DSM and the TDI complete or abort all pending DMA requests.
+4. The DSM and TDI scrub the internal state of the interface in order to remove
+   and clear all secrets and confidential data.
+5. The TSM receives the TDISP `STOP_INTERFACE_RESPONSE`. The TDI is now in the
+   `CONFIG_UNLOCKED` state.
+6. The TSM disables the C-IOMMU and the TVM G-stage mappings that were enabled
+   upon xref:tdi-acceptation[acceptation of the TDI by TVM].
+7. Eventually, the host supervisor domain manager reclaims the TDI MMIO regions
+   exposed to the TVM address space by calling the
+   `sbi_covh_reclaim_tvm_interface_region()` `COVH` ABI for each and every one of
+   them. The TSM rejects any one of those requests if the reclaimed MMIO region
+   belongs to a bound interface, or if it does not belong to the MMIO gpa -> hpa
+   mapping the TSM initially created for the interface at
+   xref:binding-flow[TDI binding time].
+8. The TSM removes all C-IOMMU, TVM G-stage mappings and the MMIO gpa -> hpa
+   mapping for the interface.
+
+.Device Interface Unbinding - Unbind Interface
+[source,mermaid]
+....
+%%{init: {'theme': 'neutral', 'themeVariables': {'darkMode': true}, "flowchart" : { "curve" : "basis" } } }%%
+sequenceDiagram
+
+autonumber
+
+participant TDI as Device Interface
+participant DSM as Device DSM
+participant VMM as Host Supervisor Domain Manager (VMM)
+participant TSM
+participant TVM
+participant IOMMU
+
+note over TDI: CONFIG_LOCKED, RUN or ERROR
+
+opt
+VMM ->> TSM: [COVH] sbi_covh_run_vcpu()
+TVM ->> TSM: [COVH] sbi_covg_stop_interface()
+end
+
+VMM ->> TSM: [COVH] sbi_covh_unbind_interface()
+TSM ->> TSM: Generate TDISP STOP_INTERFACE_REQUEST
+TSM ->> VMM: [COVH] spdm_req(STOP_INTERFACE_REQUEST)
+VMM ->> DSM: [DOE] spdm_req(STOP_INTERFACE_REQUEST)
+DSM ->> TDI: STOP
+TDI ->> TDI: Abort or complete all pending DMA requests
+TDI ->> TDI: Scrub all TDI secrets and confidential data
+note over TDI: CONFIG_UNLOCKED
+DSM ->> VMM: [DOE] spdm_resp(STOP_INTERFACE_RESPONSE)
+VMM ->> TSM: [COVH] spdm_resp(STOP_INTERFACE_RESPONSE)
+TSM ->> TSM: Decrypt STOP_INTERFACE_RESPONSE
+TSM ->> IOMMU: Disable IOMMU translation for devif_id
+TSM ->> TSM: Disable G-stage MMIO mapping for devif_id
+TSM ->> VMM: [COVH] sbi_covh_unbind_interface()
+
+opt
+VMM ->> TSM: [COVH] sbi_covh_run_vcpu()
+TSM ->> TVM: [COVH] sbi_covg_stop_interface()
+end
+
+loop For all the unbound TDI MMIO regions exposed to the TVM
+     VMM ->> TSM: [COVH] sbi_covh_reclaim_tvm_interface_region()
+     TSM ->> IOMMU: Remove all C-IOMMU mappings
+     TSM ->> TSM: Remove all G-stage mappings
+     TSM ->> VMM: [COVH] sbi_covh_add_tvm_interface_region()
+end
+
+....
 
 === Session Key Update
 
