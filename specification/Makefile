@@ -1,5 +1,5 @@
 CONTAINER_RUNTIME ?= docker
-CONTAINER_RUN := ${CONTAINER_RUNTIME} run --rm \
+CONTAINER_RUN := ${CONTAINER_RUNTIME} run --privileged --rm \
 	-v ${PWD}:/build -w /build \
 	riscvintl/riscv-docs-base-container-image:latest
 
@@ -11,14 +11,11 @@ OPTIONS := --trace \
            -a compress \
            -a mathematical-format=svg \
            -a pdf-fontsdir=docs-resources/fonts \
-           -a pdf-style=docs-resources/themes/riscv-pdf.yml \
+           -a pdf-theme=docs-resources/themes/riscv-pdf.yml \
+           -D build \
            --failure-level=ERROR
 REQUIRES := --require=asciidoctor-bibtex \
             --require=asciidoctor-diagram \
-            --require=asciidoctor-mathematical
-REQUIRES := --require=asciidoctor-bibtex \
-            --require=asciidoctor-diagram \
-#           --require=./preprocessor.rb \
             --require=asciidoctor-mathematical
 
 .PHONY: all build clean build-container build-no-container
