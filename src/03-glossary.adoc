@@ -26,6 +26,8 @@ HW-rooted cryptographically-protected evidence.
 | Confidential Computing | N/A | The protection of data in use by performing
 computation in a hardware-based TEE.
 
+| Confidential VM | CVM | Same as a TVM.
+
 | Confidential VM Extension | CoVE | A set of non-ISA RISC-V extensions that
 enables confidential computing on RISC-V platforms.
 
@@ -103,8 +105,9 @@ Key Management messages over PCIe DOE mailboxes.
 
 | System TCB | TCB | System Trusted Computing Base, same as TCB.
 
-| TEE Device Interface Security Protocol | TDISP | An architecture for trusted
-I/O virtualization.
+| TEE Device Interface Security Protocol | TDISP | A PCIe specified architecture
+for managing TEEs that include a composition of resources from one or more
+devices.
 
 | TEE I/O Device Interface | TDI | The unit of assignment for a trusted I/O
 capable device. For example, a TDI can be a Virtual Function (VF) or a Physical
@@ -114,7 +117,8 @@ Function (PF).
 (in TCB) intermediary between the VMM and the TVM. This module extends the TCB
 chain on the CoVE platform.
 
-| Transaction Layer Packet | TLP |
+| Transaction Layer Packet | TLP | The fundamental unit of data transfer between
+PCIe devices, root ports and switches.
 
 | Trusted Computing Base | TCB | The hardware, software, and firmware elements
 that are trusted by a relying party to protect the confidentiality and integrity
@@ -127,13 +131,19 @@ extends across the socket-to-socket interface, and is managed as one system TCB.
 verifying, attesting, and accepting CoVE-IO devices into a TVM TCB. This is a TVM
 guest software stack component.
 
+| Trusted Execution Environment | TEE | An environment, which may include a
+composition of zero or more devices, within which some level of “trust” is
+established, such that operations (including code execution) is considered
+trustworthy. TEEs are isolated from untrusted environments by a TSM. A CoVE
+virtual machine is one example of a TEE.
+
 | Trusted Memory Mapped Input Output | Trusted MMIO | A TDI memory mapped I/O
 region that can only be accessed by a TVM that accepted the TDI in its TCB. TDIs
 describe their trusted MMIO regions through TDISP. The TVM, with the TSM
 support, is responsible for verifying that trusted MMIO ranges are correctly
 mapped into its address space.
 
-| TEE VM | TVM | A VM instantiation of an confidential workload.
+| TEE VM | TVM | A VM instantiation of a TEE.
 
 | Virtual Machine | VM | Virtual Machines hosted by a VMM
 
