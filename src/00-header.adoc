@@ -10,14 +10,14 @@
 :colophon:
 :appendix-caption: Appendix
 :imagesdir: .
-:title-logo-image: image:images/risc-v_logo.svg[pdfwidth=3.25in,align=center]
+:title-logo-image: image:images/risc-v_logo.png["RISC-V International Logo",pdfwidth=3.25in,align=center]
 // Settings:
 :experimental:
 :reproducible:
 // needs to be changed? bug discussion started
 //:WaveDromEditorApp: app/wavedrom-editor.app
 :imagesoutdir: images
-:bibtex-file: cove-io.bib
+:bibtex-file: src/cove-io.bib
 :bibtex-order: alphabetical
 :bibtex-style: apa
 :icons: font
