@@ -36,6 +36,7 @@ ASCIIDOCTOR_PDF := asciidoctor-pdf
 ASCIIDOCTOR_HTML := asciidoctor
 OPTIONS := --trace \
            -a compress \
+           -a allow-uri-read \
            -a mathematical-format=svg \
            -a revnumber=${VERSION} \
            -a revremark=${REVMARK} \
@@ -43,11 +44,12 @@ OPTIONS := --trace \
            -a pdf-fontsdir=docs-resources/fonts \
            -a pdf-theme=docs-resources/themes/riscv-pdf.yml \
            $(XTRA_ADOC_OPTS) \
-		   -D build \
+           -D build \
            --failure-level=ERROR
 REQUIRES := --require=asciidoctor-bibtex \
             --require=asciidoctor-diagram \
-            --require=asciidoctor-mathematical
+            --require=asciidoctor-mathematical \
+            --require=asciidoctor-kroki
 
 .PHONY: all build clean build-container build-no-container build-docs
 
