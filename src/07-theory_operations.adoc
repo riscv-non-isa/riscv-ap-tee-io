@@ -525,7 +525,7 @@ Loop 3 times (For each sub-stream)
      TSM ->> TSM: Generate SPDM request IDE_KM_K_SET_GO
      TSM ->> VMM: [COVH] - spdm_req(IDE_KM_K_SET_GO)
      VMM ->> RoT: [DOE] - SPDM_IDE_KM_K_SET_GO
-     RoT ->> Device: Trigger Tx IDE
+     RoT ->> RootPort: Trigger Tx IDE
      RoT ->> VMM: [DOE] - SPDM_IDE_KM_K_GOSTOP_ACK
      VMM ->> TSM: [COVH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
 end
@@ -543,7 +543,7 @@ Loop 3 times (For each sub-stream)
      TSM ->> TSM: Generate SPDM request IDE_KM_K_SET_GO
      TSM ->> VMM: [COVH] - spdm_req(IDE_KM_K_SET_GO)
      VMM ->> RoT: [DOE] - SPDM_IDE_KM_K_SET_GO
-     RoT ->> Device: Trigger Rx IDE
+     RoT ->> RootPort: Trigger Rx IDE
      RoT ->> VMM: [DOE] - SPDM_IDE_KM_K_GOSTOP_ACK
      VMM ->> TSM: [COVH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
 end
@@ -555,6 +555,142 @@ VMM ->> RootPort: Enable IDE for the selected stream
 ....
 
 === Device Disconnection
+
+The host supervisor domain manager may decide to reclaim all resources related
+to a connected device. All TDIs tracking states, TDISP resources, SPDM session
+context or allocated IDE stream can be reclaimed by disconnecting the TSM from
+the device. This is achieved through a `sbi_covh_disconnect_device()` `COVH`
+ABI call to the connected TSM.
+
+TSMs servicing the `sbi_covh_disconnect_device()` request must return an error
+if some TDIs belonging to the related device are still bound to one or more TVMs
+managed by the TSM. The host supervisor domain manager must first unbind all
+TDIs from their respective TVMs before attempting to disconnect the device from
+the TSM.
+
+To bind again a TDI from the disconnected device to a TVM, the host supervisor
+domain manager must first xref:device-connection[establish a new connection]
+between the device's DSM and the related TSM.
+
+==== Disconnection Flow
+
+Upon receiving a device disconnection request from the host supervisor domain
+manager, the TSM must end the previously established SPDM session with the device
+DSM. Before doing so, the TSM must use the SPDM session to disable the IDE stream
+between the PCIe root port and the device, and clear all IDE key material:
+
+1. The host supervisor domain manager xref:interface-unbinding[unbinds all TDIs]
+   assigned to any TVM managed by the TSM that owns the connection with the
+   physical device.
+2. The host supervisor domain manager disables IDE from the device's PCIe
+   selective IDE stream extended capability control register.
+3. The host supervisor domain manager calls the `sbi_covh_disconnect_device()`
+   `COVH` in order to initiate the device disconnection.
+4. The TSM disables IDE from the Root Port's PCIe selective IDE stream extended
+   capability control register.
+5. The TSM, for each Tx sub-stream, disables the corresponding IDE key
+   previously programmed into the physical device:
+   a. Generates and sends an `IDE_KM SET_STOP(Tx)` message to the DSM. The message
+      is encapsulated into a vendor-defined SPDM request.
+   b. Receives an `IDE_KM_KEY K_GOSTOP_ACK` from the DSM.
+6. The TSM, for each Tx sub-stream, disables the corresponding IDE key
+   previously programmed into the physical device's PCIe root port:
+   a. Generates and sends an `IDE_KM SET_STOP(Tx)` message to the ROT. The message
+      is encapsulated into a vendor-defined SPDM request.
+   b. Receives an `IDE_KM_KEY K_GOSTOP_ACK` from the DSM.
+7. The TSM, for each Rx sub-stream, disables the corresponding IDE key
+   previously programmed into the physical device:
+   a. Generates and sends an `IDE_KM SET_STOP(Rx)` message to the DSM. The message
+      is encapsulated into a vendor-defined SPDM request.
+   b. Receives an `IDE_KM_KEY K_GOSTOP_ACK` from the DSM.
+8. The TSM, for each Rx sub-stream, disables the corresponding IDE key
+   previously programmed into the physical device's PCIe root port:
+   a. Generates and sends an `IDE_KM SET_STOP(Rx)` message to the ROT. The message
+      is encapsulated into a vendor-defined SPDM request.
+   b. Receives an `IDE_KM_KEY K_GOSTOP_ACK` from the DSM.
+9. The TSM clears all stored IDE keys and state.
+10. The TSM terminates the SPDM session with the physical device:
+    a. Generates and sends an SPDM `END_SESSION` message to the DSM.
+    b. Receives an SPDM `END_SESSION_ACK` message from the DSM.
+11. The TSM clears all SPDM session secrets and data.
+
+.Device Disconnection
+[source,mermaid]
+....
+%%{init: {'theme': 'neutral', 'themeVariables': {'darkMode': true}, "flowchart" : { "curve" : "basis" } } }%%
+sequenceDiagram
+
+autonumber
+
+participant DSM as Device DSM
+participant Device as PCIe Device
+participant RootPort as PCIe Root Port
+participant RoT as RoT (RP DSM)
+participant VMM as Host Supervisor Domain Manager (VMM)
+participant TSM
+
+Loop For all TDIs bound to a TVM
+     VMM ->> TSM: [COVH] sbi_covh_unbind_interface()
+     TSM ->> VMM: [COVH] sbi_covh_unbind_interface()
+end
+
+Note over TSM,DSM: Initiate IDE Link Tear Down
+
+VMM ->> Device: Disable IDE from the IDE extended capability
+VMM ->> TSM: [COVH] sbi_covh_disconnect_device()
+
+TSM ->> RoT: Disable IDE from the RP IDE extended capability
+
+Loop 3 times - TSM requests the Device to stop using the IDE stream Tx key (For each sub-stream) (For each sub-stream)
+     TSM ->> TSM: Generate SPDM request IDE_KM_K_SET_STOP
+     TSM ->> VMM: [COVH] - spdm_req(IDE_KM_K_SET_STOP)
+     VMM ->> DSM: [DOE] - SPDM_IDE_KM_K_SET_STOP
+     DSM ->> Device: Clear IDE Tx key
+     DSM ->> VMM: [DOE] - SPDM_IDE_KM_K_GOSTOP_ACK
+     VMM ->> TSM: [COVH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
+end
+
+Loop 3 times - TSM requests the RP to stop using the IDE stream Tx key (For each sub-stream)
+     TSM ->> TSM: Generate SPDM request IDE_KM_K_SET_STOP
+     TSM ->> VMM: [COVH] - spdm_req(IDE_KM_K_SET_STOP)
+     VMM ->> RoT: [DOE] - SPDM_IDE_KM_K_SET_STOP
+     RoT ->> RootPort: Clear IDE Tx key
+     RoT ->> VMM: [DOE] - SPDM_IDE_KM_K_GOSTOP_ACK
+     VMM ->> TSM: [COVH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
+end
+
+Loop 3 times - TSM requests the Device to stop using the IDE stream Rx key (For each sub-stream)
+     TSM ->> TSM: Generate SPDM request IDE_KM_K_SET_STOP
+     TSM ->> VMM: [COVH] - spdm_req(IDE_KM_K_SET_STOP)
+     VMM ->> DSM: [DOE] - SPDM_IDE_KM_K_SET_STOP
+     DSM ->> Device: Clear IDE Rx key
+     DSM ->> VMM: [DOE] - SPDM_IDE_KM_K_GOSTOP_ACK
+     VMM ->> TSM: [COVH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
+end
+
+Loop 3 times - TSM requests the TP to stop using the IDE stream Rx key (For each sub-stream)
+     TSM ->> TSM: Generate SPDM request IDE_KM_K_SET_STOP
+     TSM ->> VMM: [COVH] - spdm_req(IDE_KM_K_SET_STOP)
+     VMM ->> RoT: [DOE] - SPDM_IDE_KM_K_SET_STOP
+     RoT ->> RooTPort: Clear IDE x key
+     RoT ->> VMM: [DOE] - SPDM_IDE_KM_K_GOSTOP_ACK
+     VMM ->> TSM: [COVH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
+end
+
+TSM ->> TSM: Clear stored IDE keys for the device stream
+
+Note over TSM,DSM: Terminate SPDM Session
+
+TSM ->> TSM: Generate SPDM request: END_SESSION
+TSM ->> VMM: [COVH] - spdm_req(END_SESSION)
+VMM ->> DSM: [DOE] - SPDM_END_SESSION
+DSM ->> VMM: [DOE] - END_SESSION_ACK
+VMM ->> TSM: [COVH] - spdm_resp(END_SESSION_ACK)
+
+TSM ->> TSM: Clear all SPDM session secrets and data
+
+TSM ->> VMM: [COVH] sbi_covh_disconnect_device()
+....
 
 === Interface Binding
 
