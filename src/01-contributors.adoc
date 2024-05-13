@@ -1,9 +1,5 @@
 == Contributors
 
-This RISC-V specification has been contributed to directly or indirectly by:
+This RISC-V specification has been contributed to directly or indirectly by (in alphabetical order):
 
-[%hardbreaks]
-* Samuel Ortiz <sameo@rivosinc.com>
-* Jiewen Yao <jiewen.yao@intel.com>
-* Ravi Sahita <ravi@rivosinc.com>
-* Vedvyas Shanbhogue <ved@rivosinc.com>
+Jiewen Yao (Editor), Kevin Broch, Osman Koyuncu, Ravi Sahita, Samuel Ortiz (Editor), Steven Bellock, Vedvyas Shanbhogue
