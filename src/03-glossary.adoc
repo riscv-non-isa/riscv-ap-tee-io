@@ -19,6 +19,12 @@ against specific attack vectors per a specified adversary and threat model. The
 term CoVE, TEE, and hardware-based TEE are also used as synonyms of AP-TEE in
 this document.
 
+| Address Translation Cache | ATC | A virtual to physical address translation
+cache in a PCIe device.
+
+| Address Translation Service | ATS | A PCIe protocol to support Device
+ATC.
+
 | Attestation | N/A | The process by which a relying party can assess the
 security posture of the confidential workload based on verifying a set of
 HW-rooted cryptographically-protected evidence.
