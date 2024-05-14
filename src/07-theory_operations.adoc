@@ -1059,8 +1059,9 @@ Unbinding an interface from a TVM goes through the following steps:
    belongs to a bound interface, or if it does not belong to the MMIO gpa -> hpa
    mapping the TSM initially created for the interface at
    xref:binding-flow[TDI binding time].
-8. The TSM removes all C-IOMMU, TVM G-stage mappings and the MMIO gpa -> hpa
-   mapping for the interface.
+8. The TSM removes all C-IOMMU mappings and all cached C-IOMMU Address
+   Translation Cache (ATC) mappings, the TVM G-stage mappings and the MMIO
+   gpa -> hpa mappings for the interface.
 
 .Device Interface Unbinding - Unbind Interface
 [source,mermaid]
