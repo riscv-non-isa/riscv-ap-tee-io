@@ -16,7 +16,7 @@ DOCS := \
 	riscv-cove-io.adoc
 
 DATE ?= $(shell date +%Y-%m-%d)
-VERSION ?= v0.0.0
+VERSION ?= v0.2.0
 REVMARK ?= Draft
 ifneq ($(SKIP_DOCKER),true)
 	DOCKER_CMD := docker run --rm -v ${PWD}:/build -w /build \
