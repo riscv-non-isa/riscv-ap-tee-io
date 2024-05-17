@@ -49,7 +49,8 @@ OPTIONS := --trace \
 REQUIRES := --require=asciidoctor-bibtex \
             --require=asciidoctor-diagram \
             --require=asciidoctor-mathematical \
-            --require=asciidoctor-kroki
+            --require=asciidoctor-kroki \
+            --require=./src/preprocessor.rb
 
 .PHONY: all build clean build-container build-no-container build-docs
 

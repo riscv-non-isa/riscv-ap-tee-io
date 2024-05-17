@@ -35,6 +35,7 @@ endif::[]
 :stem: latexmath
 :footnote:
 :xrefstyle: short
+:kroki-default-format: png
 
 = Confidential VM Extension I/O (CoVE-IO) for Confidential Computing on RISC-V platforms
 Editor - Samuel Ortiz; Jiewen Yao, RISC-V AP-TEE-IO Task Group
