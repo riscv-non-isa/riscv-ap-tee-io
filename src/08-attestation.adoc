@@ -135,6 +135,11 @@ specification. It could be a pull mode with policy inside of TVM, such as
 reattestation every week. Or it could be an interrupt mode such as request
 triggered by the orchestrator.
 
+> **Note**
+> In this mode, the device can be updated before the TVM performs the
+reattestation, or just after TVM performs reattestation. If this is a
+concern, the TVM should choose no-update or pre-update attestation.
+
 ===== Pre-update attestation
 
 With post-update reattestation, there is a gap between update time and
@@ -152,6 +157,13 @@ is that the update takes effect when the verification happens.
 Pre-update attestation gives a chance to unbind TDI before runtime update,
 while post-update reattestation can only unbind TDI after runtime update. That
 can remove the gap between update time and attestation time.
+
+> **Note**
+> In this mode, the device will be updated, regardless of the TSM or the TVM
+accepting the firmware update or not. If TSM cannot accept the new firmware,
+the TSM shall terminate the SPDM session with SPDM message `END_SESSION`,
+but not acknowledge the SPDM event with SPDM message `EVENT_ACK`.
+If TVM cannot accept the new firmware, the TVM shall unbind the TDI.
 
 === Third party attesting the TVM with the device
 
