@@ -203,6 +203,34 @@ Although the device measurement and certificate are not required to be included
 in the TVM report, the TVM should provide a mechanism to return the device
 measurement and certificate for the verifier to perform further verification.
 
+To support remote verification, the device measurement data shall be the
+signed <<SPDM>> measurement transcript, including `VCA` and all
+`{GET_MEASUREMENTS, MEASUREMENTS}` pairs that are exchanged between the SPDM
+measurement requester and the responder. Only the last `MEASUREMENTS` shall
+include the digital signature of the measurement transcript.
+
+Providing the signed <<SPDM>> measurement transcript has multiple benefits:
+
+- Measurement record integrity protection.
+  The provided  <<SPDM>> measurement transcript digital signature protects
+  the measurement record integrity against:
+  * Transport attacks between the host and the remote verifier, that should
+    otherwise be protected through TLS.
+  * Internal device attacks and vulnerabilities. The Device Security Manager
+    (DSM) may be composed of several pieces of firmware, and every one of them
+    can potentially forge the measurements before returning it to the requester.
+    With a digitally signed measurement transcript, they can not be modified
+    after the DSM RoT signs them, effectively removing all other DSM components
+    out of the overall TCB.
+- Additional data for attestation.
+  * <<SPDM>> `MEASUREMENTS` response opaque data field.
+    With a signed transcript, device-specific opaque data is included into
+    the `MEASUREMENTS` response. This piece of data may be required by the
+    device verifier.
+  * <<SPDM>> connection parameter in `VCA`. The verifier can check the
+    negotiated SPDM version, capabilities and algorithms.
+
+
 .TVM Attestation Comparison
 [width=90%, align="center", options="header"]
 |===
