@@ -203,6 +203,35 @@ Although the device measurement and certificate are not required to be included
 in the TVM report, the TVM should provide a mechanism to return the device
 measurement and certificate for the verifier to perform further verification.
 
+To support the remote verification, the device measurement data should be the
+signed <<SPDM>> measurement transcript, including `VCA` and all
+`{GET_MEASUREMENTS, MEASUREMENTS}` pairs that are exchanged between the SPDM
+measurement requester and the responder. Only the last `MEASUREMENTS` shall
+include the digital signature of the measurement transcript.
+
+To provide the signed <<SPDM>> measurement transcript has multiple benefits:
+* The measurement record is protected by the digital signature.
+There is no need to use other mechanism (such as TLS) to protect the
+measurement record between the host and the remote verifier.
+* The opaque data in <<SPDM>> `MEASUREMENTS` response is provided.
+A device vendor may use opaque data to store extra information for device
+specific information, which may be required for device specific verifier.
+* The verifier can attest the <<SPDM>> connection parameter in `VCA`.
+It includes the negotiated version, capability and algorithm.
+* Using digital signature to protect the measurement record can resist
+the device internal attack.
+Using <<SPDM>> session can only resist the attack during data transport,
+but not the device internal attack in some case.
+For example, a device may include an RoT to do measurement, have private key,
+and provide the digital signature for the measurement. However, an SPDM session
+may be managed by a high level component. Without the digital signature
+the high level component may forge the measurement and return to the requester.
+The difference between session based protection and digital signature based
+protection is the scope of TCB. With digital signature, the TCB is device RoT.
+With session only, the TCB must include the high level component which provides
+SPDM functionality.
+
+
 .TVM Attestation Comparison
 [width=90%, align="center", options="header"]
 |===
