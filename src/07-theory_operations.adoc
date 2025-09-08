@@ -1155,6 +1155,12 @@ IDE session. One possible way is to do time-based refresh. For example, the VMM
 could periodically perform IDE key refresh, based on the calculation of
 maximum usage of IDE TLP.
 
+By default, The maximum AES-GCM counter allowed in the algorithm is 2<sup>64</sup>.
+<<AEADLimit>> provided a way to allow a TSM or DSM to set a smaller
+AES-GCM counter to resist the attack to AEAD algorithm.
+The TSM and DSM should support AEAD Limit Counter feature described in
+<<AEADLimit>>.
+
 === Device and Interface Lifecycle
 
 When combined together, the flows and ABIs described in the previous sections
