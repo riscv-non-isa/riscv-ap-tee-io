@@ -312,6 +312,27 @@ The possible error codes returned in `sbiret.error` are shown below.
 | SBI_ERR_FAILED          | The operation failed for unknown reasons.
 |===
 
+[#sbi_covh_spdm_heartbeat]
+===== Function: CoVE Host SPDM Heartbeat (FID #1035)
+[source, C]
+-----
+struct sbiret sbi_covh_spdm_heartbeat(unsigned long device_id);
+-----
+
+Perform an SPDM session heartbeat for a SPDM connection between the TSM and
+a connected device.
+
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covh_spdm_heartbeat]
+.CoVE Host SPDM Heartbeat
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
 === CoVE IO Guest Extension (EID #0x434F5647 "COVG")
 
 ==== Physical Device Query
