@@ -1217,3 +1217,18 @@ MMIO regions from the TVM address space (step 9).
 
 Finally, the host supervisor domain manager can fully reclaim the physical
 device by requesting the TSM to disconnect (step 10) from it.
+
+=== Session Heartbeat
+
+A device may require SPDM session heartbeat to ensure the session is kept alive
+on the host side. If the both TSM and DSM support SPDM heartbeat,
+the device may return a non-zero `HeartbeatPeriod` in `KEY_EXCHANGE_RSP`
+response message.
+
+The host is required to send SPDM message within two successive
+`HeartbeatPeriod`s, otherwise the device will terminate the
+corresponding SPDM session.
+
+When a SPDM heartbeat is required, the VMM must initiate an SPDM heartbeat
+(through the `sbi_covh_spdm_heartbeat()` `COVH` call).
+
