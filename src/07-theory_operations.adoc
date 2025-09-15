@@ -254,18 +254,18 @@ SPDM session for IDE key management or TDISP operations between the TSM and
 devices is a mandatory requirement for TVMs to accept TDIs into their TCB.
 
 Any trusted I/O SPDM session is established through the SPDM responder DOE
-mailbox in the physical device DSM. The mailbox is resource owned by
+mailbox in the physical device DSM. The mailbox is a resource owned by
 the host supervisor domain manager which thus initiates the SPDM session
 establishment. It acts as an untrusted proxy between the TSM and the DSM by
-requesting the TSM to generate SPDM requests through the CoVIO `COVH`TH ABI,
+requesting the TSM to generate SPDM requests through the CoVE-IO `COVH` ABI,
 sending those requests to the DOE mailbox and forwarding the SPDM responses back
 to the TSM, as described in the SPDM flow section.
 
 The TSM also needs to program IDE keys to the PCIe Root Port. This step is
 implementation specific.
 For example, if the communication between TSM and the PCIe Root Port is
-protected by SOC, the TSM can program the IDE keys directly.
-However, if the communication between TSM and the PCIe Root Port is not
+protected by the SOC, the TSM can program the IDE keys directly.
+However, if the communication between the TSM and the PCIe Root Port is not
 protected, there must be a secure mechanism to protect the IDE keys exchange,
 such as a SPDM session via DOE mailbox exposed by the SOC ROT acting as the DSM
 for the PCIe root ports.
@@ -297,7 +297,7 @@ The CoVE-IO `COVH` extension supports those two initialization steps through one
 single function: `sbi_covh_connect_device()`.
 
 When the host supervisor domain manager calls `sbi_covh_connect_device()`, it
-requests the TSM to establish an SPDM session with a device, and to set an PCIe
+requests the TSM to establish an SPDM session with a device, and to set a PCIe
 IDE link between the device and the TSM.
 
 ==== SPDM Session
@@ -384,6 +384,74 @@ Note over TSM,DSM: TSM: SPDM Session Created
 
 ....
 
+==== Device Connection Transcript
+
+The CoVE-IO device connection transcript is a complete, ordered record of all
+SPDM requests and responses exchanged between the TSM and a device during the
+connection establishment process. The transcript is a foundational element for
+subsequent verification and security checks. It includes the messages leading
+to the `Version-Capabilities-Algorithm` (`VCA`) construction and the device's
+certificate chain and measurements.
+
+The CoVE-IO device connection transcript is constructed from raw SPDM messages
+and must adhere to the following properties:
+
+* Contains only plain text SPDM messages (no encryption).
+* Contains full SPDM messages, including digital signatures, to allow for
+  checking message integrity and authenticity.
+* Strictly follows the SPDM message exchange order between the Requester (TSM)
+  and the Responder (device).
+* Must not include any secret data, such as IDE keys.
+* Must not include transport layer padding.
+* Must not include `ENCAP` SPDM message headers, or `CHUNK` headers. Large
+  messages transmitted in chunks must be reconstructed before being added to the
+  transcript.
+* May include optional TDISP messages exchanged by the TSM (e.g.
+  `TDISP_GET_VERSION` or `TDISP_GET_CAPABILITY`).
+
+Below is an example of all messages composing a device connection transcript:
+
+```
+[GET_VERSION][VERSION]
+[GET_CAPABILITIES][CAPABILITIES]
+[NEGOTIATE_ALGORITHMS][ALGORITHMS]
+[GET_CERTIFICATE][CERTIFICATE]
+[KEY_EXCHANGE][KEY_EXCHANGE_RSP]
+[FINISH][FINISH_RSP]
+[GET_MEASUREMENTS][MEASUREMENTS]
+[TDISP_GET_VERSION][TDISP_VERSION]
+[TDISP_GET_CAPABILITY][TDISP_CAPABILITY]
+```
+
+Once the connection is established, the TSM returns the complete connection
+transcript to the host security domain manager via the
+`sbi_covh_connect_device()` ABI. The TSM retains and maintains a map of the
+connection transcript digests for all connected devices.
+
+===== TVM Verification Process
+
+As part of the xref:tdi-verification-and-acceptation[TDI verification process],
+a TVM can request device connection-related data from the TSM to verify the
+connected device's trustworthiness or the integrity of the secure SPDM session.
+
+The TSM handles these requests sent by the TVM via the
+`sbi_covg_get_device_connection_transcript()` ABI:
+
+1. Retrieving the full device connection transcript from the host, through
+   the `sbi_covh_get_device_connection_transcript()` ABI.
+
+2. Verifying the transcript's digest against the its internal map to ensure
+   integrity.
+
+3. Returning the requested data based on the `transcript_element_id` value.
+   This could be the entire transcript or a specific element from it.
+
+[NOTE]
+====
+When receiving the full transcript, TVM verifiers must inspect all `MEASUREMENT`
+messages and may need to reconstruct device certificates that were potentially
+delivered across multiple `CERTIFICATE` messages.
+====
 
 ==== IDE Link
 

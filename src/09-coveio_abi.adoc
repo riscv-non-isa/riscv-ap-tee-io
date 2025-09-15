@@ -101,13 +101,31 @@ The possible error codes returned in `sbiret.error` are shown below.
 [source, C]
 -----
 struct sbiret sbi_covh_connect_device()(unsigned long device_id,
-                                        unsigned long stream_id);
+                                        unsigned long stream_id,
+                                        unsigned long connection_data_addr_out,
+                                        unsigned long connection_data_size);
 -----
 
 Establishes a secure SPDM session between the TSM and a device identified by
 `device_id`, and configure the PCIe IDE link between that device and its
 upstream Root Port. The configured IDE link must use the selective IDE stream
 identified by `stream_id`.
+
+The TSM returns the device connection transcript data to the host security domain
+manager at `connection_data_addr_out`, structured as follows:
+
+[#table_sbi_covh_connection_transcript]
+.CoVE Device Connection Transcript
+[options=header]
+|===
+| *Byte Offset* | *Field*                    | *Size (bytes)*               | *Description*
+| 0             | COVEIOVersion              | 1                            | CoVE-IO version
+| 1             | ConnectionTranscriptLength | 4                            | Size of the `ConnectionTranscript` field that follows, in bytes
+| 5             | ConnectionTranscript       | `ConnectionTranscriptLength` | Device connection transcript
+|===
+
+`connection_data_addr_out` must be 4KB-aligned and points to a memory region
+that is accessible to both the host security domain manager and the TSM.
 
 The possible error codes returned in `sbiret.error` are shown below.
 
@@ -333,6 +351,36 @@ The possible error codes returned in `sbiret.error` are shown below.
 | SBI_ERR_FAILED          | The operation failed for unknown reasons.
 |===
 
+[#sbi_covh_spdm_data]
+===== Function: CoVE Host Device Connection Transcript (FID #1036)
+[source, C]
+-----
+struct sbiret sbi_covh_get_device_connection_transcript(unsigned long device_id,
+                                                        unsigned long transcript_data_addr_out,
+                                                        unsigned long transcript_data_size);
+-----
+
+Pass the device connection transcript data back to the TSM for a given connected
+device. The data is formatted according to the
+[Device Connection Transcript](#function-cove-host-connect-device-fid-1027)
+structure.
+
+`transcript_data_addr_out` must be 4KB-aligned and points to a memory region
+that is accessible to both the host security domain manager and the TSM.
+
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covh_get_device_connection_transcript]
+.CoVE Device Connection Transcript
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_INVALID_PARAMS  | Invalid parameter value provided for `device_id`.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+
 === CoVE IO Guest Extension (EID #0x434F5647 "COVG")
 
 ==== Physical Device Query
@@ -369,38 +417,68 @@ The possible error codes returned in `sbiret.error` are shown below.
 | SBI_ERR_FAILED          | The operation failed for unknown reasons.
 |===
 
-[#sbi_covg_get_device_certificate]
-===== Function: CoVE Guest Get Device Certificate (FID #1025)
+[#sbi_covg_get_device_connection_transcript]
+===== Function: CoVE Guest Get Device Connection Transcript (FID #1025)
 [source, C]
 -----
-struct sbiret sbi_covg_get_device_certificate(unsigned long device_if_id,
-                                                       unsigned long slot_id,
-                                                       unsigned long cert_addr_out,
-                                                       unsigned long cert_size);
+struct sbiret sbi_covg_get_device_connection_transcript(unsigned long device_if_id,
+                                                        unsigned long transcript_element_id,
+                                                        unsigned long transcript_element_parameter,
+                                                        unsigned long data_addr_out,
+                                                        unsigned long data_size);
 -----
 
-Get the certificate chain for the physical device hosting `device_if_id`
-based on `slot_id`.
+Get a specific element from the device connection transcript, or the whole
+transcript.
 
-The TSM returns the certificate chain in the form of the <<SPDM>> defined
-`certificate chain format`.
+The `transcript_element_id` specifies which part of the device connection
+transcript the TVM is requesting. It must be one of the following values:
 
-The TVM calls this function in order to verify the authenticity of the physical
-device. A TVM must not accept a device interface without doing that verification
-first.
+[source, C]
+-----
+enum sbi_covg_transcript_element {
+     /* Full device connection transcript */
+     FULL_TRANSCRIPT = 0,
 
-`slot_id` must be between 0 and 7 inclusive.
+     /*
+      * Reconstructed certificate chain for the physical device hosting
+      * `device_if_id`, from the transcript `CERTIFICATE` SPDM responses.
+      * The TSM returns the certificate chain in the form of the <<SPDM>>
+      * defined `certificate chain format`.
+      * The `transcript_element_parameter` is set to a certificate chain slot
+      * ID and thus must be between 0 and 7 inclusive.
+      */
+     DEVICE_CERTIFICATE = 1,
 
-`cert_addr_out` must be 4KB-aligned.
+     /*
+      * Reconstructed device measurement for the physical device hosting
+      * `device_if_id`, from the transcript `GET_MEASUREMENTS` and
+      * `MEASUREMENTS` SPDM responses.
+      */
+     DEVICE_MEASUREMENT = 2,
+
+     /*
+      * SPDM `VCA` (Version-Capabilities-Algorithms) for the physical device
+      * hosting `device_if_id`.
+      * This is the concatenation of the `GET_VERSION`, `VERSION`,
+      * `GET_CAPABILITIES`, `CAPABILITIES`, `NEGOTIATE_ALGORITHMS` and
+      * `ALGORITHMS` SPDM messages from the transcript.
+      */
+     VCA = 3,
+}
+-----
+
+`data_addr_out` must be 4KB-aligned.
 
 The possible error codes returned in `sbiret.error` are shown below.
 
-[#table_sbi_covg_get_device_certificate]
-.CoVE Guest Get Device Certificate
+[#table_sbi_covg_get_device_connection_transcript]
+.CoVE Guest Get Device Connection Transcript
 [cols="2,3", width=90%, align="center", options="header"]
 |===
 | Error code              | Description
 | SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_INVALID_PARAMS  | Invalid parameter value provided for `device_if_id` or `transcript_element_id`.
 | SBI_ERR_FAILED          | The operation failed for unknown reasons.
 |===
 
@@ -449,42 +527,10 @@ The possible error codes returned in `sbiret.error` are shown below.
 | SBI_ERR_FAILED          | The operation failed for unknown reasons.
 |===
 
-[#sbi_covg_get_device_spdm_attrs]
-===== Function: CoVE Guest Get Device SPDM Attributes (FID #1027)
-[source, C]
------
-struct sbiret sbi_covg_get_device_spdm_attrs(unsigned long device_if_id,
-                                                        unsigned long spdm_attrs_addr_out,
-                                                        unsigned long spdm_attrs_size);
------
-
-Gets the attributes for the Secure SPDM session between the physical device
-hosting `device_if_id` and the TSM.
-
-`spdm_attrs_addr_out` must be 4KB-aligned.
-
-[source, C]
--------
-struct SPDMAttributes {
-       bool measurement_freshness;
-}
--------
-
-The possible error codes returned in `sbiret.error` are shown below.
-
-[#table_sbi_covg_get_device_spdm_attr]
-.CoVE Guest Get Device SPDM Attributes
-[cols="2,3", width=90%, align="center", options="header"]
-|===
-| Error code              | Description
-| SBI_SUCCESS             | The operation completed successfully.
-| SBI_ERR_FAILED          | The operation failed for unknown reasons.
-|===
-
 ==== Device Interface Management
 
 [#sbi_covg_get_interface_report]
-===== Function: CoVE Guest Get Interface Report (FID #1028)
+===== Function: CoVE Guest Get Interface Report (FID #1027)
 [source, C]
 -----
 struct sbiret sbi_covg_get_interface_report(unsigned long device_if_id
@@ -511,7 +557,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 
 [#sbi_covg_get_interface_state]
-===== Function: CoVE Guest Get Interface State (FID #1029)
+===== Function: CoVE Guest Get Interface State (FID #1028)
 [source, C]
 -----
 struct sbiret sbi_covg_get_interface_state(unsigned long device_if_id);
@@ -555,7 +601,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 
 [#sbi_covg_map_interface_mmio]
-===== Function: CoVE Guest Map Interface MMIO (FID #1030)
+===== Function: CoVE Guest Map Interface MMIO (FID #1029)
 [source, C]
 ----
 struct sbiret sbi_covg_map_interface_mmio(unsigned long device_if_id
@@ -587,7 +633,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 
 [#sbi_covg_start_interface]
-===== Function: CoVE Guest Start Interface (FID #1031)
+===== Function: CoVE Guest Start Interface (FID #1030)
 [source, C]
 ----
 struct sbiret sbi_covg_start_interface(unsigned long device_if_id);
@@ -615,7 +661,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 
 [#sbi_covg_stop_interface]
-===== Function: CoVE Guest Stop Interface (FID #1032)
+===== Function: CoVE Guest Stop Interface (FID #1031)
 [source, C]
 ----
 struct sbiret sbi_covg_stop_interface(unsigned long device_if_id);
