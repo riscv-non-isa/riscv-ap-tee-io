@@ -184,43 +184,6 @@ On platforms supporting the MTT and IO-MTT <<Smmtt>> extensions, any PCIe device
 as long as this domain has RDSM-enforced exclusive access to an IOMMU instance
 RPI.
 
-===== Root-of-Trust
-
-As described in <<PCIe>>, the TSM generates and sets the IDE keys into both the
-CoVE-IO PCIe endpoint and its upstream Root Port, for all maintained selective
-IDE streams.
-
-When setting IDE keys into a CoVE-IO device, the TSM relies on the DSM IDE Key
-Management (`IDE_KM`) support, and its ability to receive IDE_KM messages over a
-Secured SPDM session. However, there are no architecturally-defined PCIe
-protocol for managing root port IDE keys and this specification considers two
-variants for conveying IDE keys from the TSM to the PCIe root port.
-
-In one variant the platform provides vendor-specific protection for the
-communication path between these entities. Here the TSM may program IDE keys
-directly through the `IDE_KM` protocol or choose any other vendor-specific
-mechanism.
-
-In the second variant this protection is not provided by the platform and/or
-PCIe root ports are not directly accessible to the TSM. However, if the platform
-Root-of-Trust (RoT) implements the `IDE_KM` protocol, the TSM should establish a
-Secured SPDM session with the RoT over a host accessible DOE mailbox. It can
-then set platform RP IDE keys over that session. Having a PCIe accessible and
-`IDE_KM` capable RoT on the platform abstracts the vendor-specific PCIe root
-port IDE key management implementation away from the TSM, as described below:
-
-[[IDE_KM_RPT]]
-.PCIe Root Port IDE Key Management through Root-of-Trust
-image::images/rp_rot_idekm.svg[align="center"]
-
-As a consequence, a CoVE-IO-compliant platform that does not protect the link
-between the TSM and PCIe root ports should have at least one PCIe accessible RoT,
-with the following requirements:
-
-1. The RoT supports the DOE mechanism
-2. The RoT supports Secured SPDM sessions
-3. The RoT supports the IDE Key Management protocol
-
 ===== CoVE-IO Manifest
 
 The TSM must be provisioned with a trusted piece of data describing the required
