@@ -63,7 +63,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 | SBI_ERR_FAILED          | The operation failed for unknown reasons.
 |===
 
-==== Root Port Management
+==== PCIe Root Port Management
 
 [#sbi_covh_register_rp]
 ===== Function: CoVE Host Register PCIe Root Port (FID #1026)
@@ -573,7 +573,7 @@ Returns the interface state through `sbiret.value`.
 [source, C]
 -------
 
-enum Interface State {
+enum sbi_covg_interface_state {
      /* TDISP CONFIG_UNLOCKED */
      Unlocked,
 
@@ -684,5 +684,241 @@ The possible error codes returned in `sbiret.error` are shown below.
 | Error code              | Description
 | SBI_SUCCESS             | The operation completed successfully.
 | SBI_ERR_ALREADY_STOPPED | The device interface is already stopped.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+=== CoVE IO TSM Extension (EID #0x434F5654 "COVT")
+
+==== PCIe Root Port IDE Management
+
+[#sbi_covt_program_rp_ide_key]
+===== Function: CoVE TSM Program PCIe Root Port IDE Key (FID #1024)
+[source, C]
+-----
+struct sbiret sbi_covt_program_rp_ide_key(unsigned long rp_id,
+                                          unsigned long key_desc,
+                                          unsigned long key_data_addr);
+-----
+
+Programs a PCIe IDE key into the `rp_id` PCIe Root Port. This is functionally
+equivalent to the PCIe IDE KM `KEY_PROG` command.
+
+The `key_desc` IDE key descriptor must be structured as follows:
+
+[#table_sbi_covt_rp_ide_key_desc]
+.CoVE IDE Key Descriptor
+[options=header]
+|===
+| *Byte Offset* | *Field*       | *Size (bytes)* | *Description*
+| 00h           | Stream_ID     | 1               | IDE selective stream ID
+| 01h           | Sub_Stream_ID | 1               | IDE sub-stream ID
+| 02h           | Key_Set       | 1               | IDE Key set. This must be 0 or 1, all other values are invalid.
+| 03h           | Tx_Rx         | 1               | Transmitter key (0) or receiver key (1). All other values are invalid.
+|===
+
+The IDE key and IV data at `key_data_addr` must follow the same byte order and
+structure as the `KEY_PROG` data object payload, as described in the
+`IDE Key Management (IDE_KM)` section of the PCIe specification:
+
+```title="CoVE IDE Key and IV"
+ 31            24 23           16 15            8 7              0
+ ┌───────────────┬───────────────┬───────────────┬───────────────┐
+ │ KEY_DW7_Byte3 │ KEY_DW7_Byte2 │ KEY_DW7_Byte1 │ KEY_DW7_Byte0 │
+ ├───────────────┼───────────────┼───────────────┼───────────────┤
+ │ KEY_DW6_Byte3 │ KEY_DW6_Byte2 │ KEY_DW6_Byte1 │ KEY_DW6_Byte0 │
+ ├───────────────┼───────────────┼───────────────┼───────────────┤
+ │ KEY_DW5_Byte3 │ KEY_DW5_Byte2 │ KEY_DW5_Byte1 │ KEY_DW5_Byte0 │
+ ├───────────────┼───────────────┼───────────────┼───────────────┤
+ │ KEY_DW4_Byte3 │ KEY_DW4_Byte2 │ KEY_DW4_Byte1 │ KEY_DW4_Byte0 │
+ ├───────────────┼───────────────┼───────────────┼───────────────┤
+ │ KEY_DW3_Byte3 │ KEY_DW3_Byte2 │ KEY_DW3_Byte1 │ KEY_DW3_Byte0 │
+ ├───────────────┼───────────────┼───────────────┼───────────────┤
+ │ KEY_DW2_Byte3 │ KEY_DW2_Byte2 │ KEY_DW2_Byte1 │ KEY_DW2_Byte0 │
+ ├───────────────┼───────────────┼───────────────┼───────────────┤
+ │ KEY_DW1_Byte3 │ KEY_DW1_Byte2 │ KEY_DW1_Byte1 │ KEY_DW1_Byte0 │
+ ├───────────────┼───────────────┼───────────────┼───────────────┤
+ │ KEY_DW0_Byte3 │ KEY_DW0_Byte2 │ KEY_DW0_Byte1 │ KEY_DW0_Byte0 │
+ ├───────────────┼───────────────┼───────────────┼───────────────┤
+ │ IFV_DW1_Byte3 │ IFV_DW1_Byte2 │ IFV_DW1_Byte1 │ IFV_DW1_Byte0 │
+ ├───────────────┼───────────────┼───────────────┼───────────────┤
+ │ IFV_DW0_Byte3 │ IFV_DW0_Byte2 │ IFV_DW0_Byte1 │ IFV_DW0_Byte0 │
+ └───────────────┴───────────────┴───────────────┴───────────────┘
+```
+
+The initial state of a successfully programmed key is the `Programmed` state.
+
+Calling `sbi_covt_program_rp_ide_key()` on a key that is in the `Programmed`
+state overwrites the existing key content.
+
+Overwriting a key that is in the `Enabled` state (i.e. enabled through the
+`sbi_covt_set_go_rp_ide_key()` function) returns an `SBI_INVALID_STATE` error.
+
+[#table_sbi_covt_program_rp_ide_key]
+.CoVE TSM Program PCIe Root Port IDE Key
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_INVALID_ADDRESS | `key_data_addr` is invalid.
+| SBI_ERR_INVALID_PARAM   | `key_desc` or `rp_id` is invalid.
+                            The key descriptor can be invalid if the stream ID
+                            is unknown or the sub-stream ID is invalid.
+| SBI_ERR_INVALID_STATE   | The key is in the `Enabled` state and can not be
+                            programmed.
+| SBI_ERR_IO              | The key can not be transferred or stored.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+[#sbi_covt_clear_rp_ide_key]
+===== Function: CoVE TSM Clear PCIe Root Port IDE Key (FID #1025)
+[source, C]
+-----
+struct sbiret sbi_covt_clear_rp_ide_key(unsigned long rp_id,
+                                        unsigned long stream_id);
+-----
+
+Clears all previously programmed IDE key for `stream_id` in the `rp_id` PCIe
+Root Port.
+
+If any `stream_id` bound IDE key is in the `Enabled` state (i.e. enabled through
+the `sbi_covt_set_go_rp_ide_key()` function), this function returns an
+`SBI_INVALID_STATE` error.
+
+Once cleared from a Root Port, a key is no longer tracked by the RDSM and
+its status is `Unknown`.
+
+[#table_sbi_covt_clear_rp_ide_key]
+.CoVE TSM Clear PCIe Root Port IDE Key
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_INVALID_PARAM   | `rp_id` or `stream_id` is invalid.
+| SBI_ERR_INVALID_STATE   | At least one `stream_id` key is not in the
+                           `Programmed` state.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+
+[#sbi_covt_set_go_rp_ide_key]
+===== Function: CoVE TSM Enable PCIe Root Port IDE Key (FID #1026)
+[source, C]
+-----
+struct sbiret sbi_covt_set_go_rp_ide_key(unsigned long rp_id,
+                                         unsigned long key_desc);
+-----
+
+Enables a previously programmed IDE key for the `rp_id` PCIe Root Port. This
+is functionally equivalent to the PCIe IDE KM `K_SET_GO` command.
+
+Once enabled, a key status moves to the `Enabled` state.
+
+If the enabled key is a transmitter key, the `rp_id` Root Port will use the key
+content to encrypt transmitted PCIe TLPs for the corresponding stream and
+sub-streams combination.
+
+If the enabled key is a receiver key, the `rp_id` Root Port prepares for
+receiving and decrypting PCIe TLPs on the the corresponding stream and
+sub-streams combination.
+
+Once enabled, a key can not be cleared or reprogrammed. It must be
+disabled first.
+
+[#table_sbi_covt_set_go_rp_ide_key]
+.CoVE TSM Enable PCIe Root Port IDE Key
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_INVALID_PARAM   | `key_desc` or `rp_id` is invalid.
+| SBI_ERR_INVALID_STATE   | The key is not in the `Programmed` state and can not
+                            be enabled.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+[#sbi_covt_set_stop_rp_ide_key]
+===== Function: CoVE TSM Disable PCIe Root Port IDE Tx Key (FID #1027)
+[source, C]
+-----
+struct sbiret sbi_covt_set_stop_rp_ide_key(unsigned long rp_id,
+                                           unsigned long key_desc);
+-----
+
+Disables a previously enabled IDE key for the `rp_id` PCIe Root Port. This
+is functionally equivalent to the PCIe IDE KM `K_SET_STOP` command.
+
+Once disabled, a key status moves back to the `Programmed` state.
+
+[#table_sbi_covt_set_stop_rp_ide_key]
+.CoVE TSM Disable PCIe Root Port IDE Key
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_INVALID_PARAM   | `key_desc` or `rp_id` is invalid.
+| SBI_ERR_INVALID_STATE   | The key is not in the `Enabled` state and can not
+                            be disabled.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+
+[#sbi_covt_rp_ide_key_status]
+===== Function: CoVE TSM PCIe Root Port IDE Key Status (FID #1028)
+[source, C]
+-----
+struct sbiret sbi_covt_rp_ide_key_status(unsigned long rp_id,
+                                         unsigned long key_desc);
+-----
+
+Gets the status of a PCIe Root Port IDE key.
+
+Returns the key status through `sbiret.value`.
+
+A key status must be one of the following values:
+
+[source, C]
+-------
+
+enum sbi_covt_ide_key_status {
+     /* The key is not programmed in the Root Port */
+     Cleared,
+
+     /* The key is programmed but it is not enabled */
+     Programmed,
+
+     /* The key is programmed and enabled */
+     Enabled,
+};
+
+-------
+
+When a selective IDE Stream State Machine transitions to the `Insecure` state
+from the `Secure` one, all associated keys for that stream move to the `Cleared`
+state:
+
+[source,mermaid]
+....
+%%{init: {'theme': 'neutral', 'themeVariables': {'darkMode': true}, "flowchart" : { "curve" : "basis" } } }%%
+stateDiagram-v2
+    [*] --> Cleared
+
+    Cleared --> Programmed: program_rp_ide_key
+    Programmed --> Cleared: clear_rp_ide_key
+    Programmed --> Enabled: set_go_rp_ide_key
+    Enabled --> Programmed: set_stop_rp_ide_key
+
+    Enabled --> Cleared: IDE stream Insecure
+    Programmed --> Cleared: IDE stream Insecure
+....
+
+The possible error codes returned in `sbiret.error` are shown below.
+
+[#table_sbi_covt_rp_ide_key_status]
+.CoVE TSM PCIe Root Port IDE Key Status
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_INVALID_PARAM   | `key_desc` or `rp_id` is invalid.
 | SBI_ERR_FAILED          | The operation failed for unknown reasons.
 |===

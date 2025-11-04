@@ -104,21 +104,16 @@ ranges that are routed through it. The TSM must compare these 2 arguments with
 the information it received from the platform ROT through the TEE I/O manifest.
 If both match, it can proceed into establishing an SPDM session with the RP.
 
-===== Root-of-Trust SPDM Session
+===== PCIe Root Port IDE Key Programming
 
-For each TDI that gets attached to a TVM, its corresponding PCIe root port must
-be configured with per-device IDE keys. This configuration is done through the
-PCIe IDE key management protocol (IDE_KM) that runs on top of an SPDM session.
-It is thus necessary to establish an SPDM session with all trusted I/O
-registered root ports. This is akin to considering the RP as just another
-trusted device for which the DSM is the platform ROT. The SPDM establishment
-thus happens between the TSM and the platform ROT. By having the ROT playing the
-RP DSM role, the RP vendor-specific IDE key management interface is abstracted
-by the ROT.
+During xref:device-connection[Device Connection] establishment with a TEE-IO
+capable device, the TSM generates and provisions IDE keys to two locations: the
+device itself and its upstream PCIe Root Port (RP).
 
-[[IDE_KM_RPT_OP]]
-.PCIe Root Port IDE Key Management through Root-of-Trust
-image::images/rp_rot_idekm.svg[align="center"]
+While provisioning the device is done using the standard PCIe IDE Key Management
+Protocol (IDE_KM), provisioning the Root Port is a platform-specific operation.
+This operation is delegated to the Root Domain Security Manager (RDSM), which
+the TSM accesses via the `COVT` SBI's PCIe Root Port IDE management functions.
 
 === Device Initialization
 
@@ -261,15 +256,6 @@ requesting the TSM to generate SPDM requests through the CoVE-IO `COVH` ABI,
 sending those requests to the DOE mailbox and forwarding the SPDM responses back
 to the TSM, as described in the SPDM flow section.
 
-The TSM also needs to program IDE keys to the PCIe Root Port. This step is
-implementation specific.
-For example, if the communication between TSM and the PCIe Root Port is
-protected by the SOC, the TSM can program the IDE keys directly.
-However, if the communication between the TSM and the PCIe Root Port is not
-protected, there must be a secure mechanism to protect the IDE keys exchange,
-such as a SPDM session via DOE mailbox exposed by the SOC ROT acting as the DSM
-for the PCIe root ports.
-
 === Device Connection
 
 After the IOMMU is registered with the TSM, the host supervisor domain manager
@@ -311,12 +297,8 @@ and for binding or unbinding TDIs to or from a TVM.
 The host supervisor domain manager requires the TSM to establish a secured SPDM
 session with the physical device by calling the `sbi_covh_connect_device()`
 COVH function. Before proceeding into actually establishing the session, the TSM
-must check that:
-
-1. The physical device is a downstream endpoint of a root port that
-   the host supervisor domain manager has previously registered with the TSM.
-2. A secured SPDM session between the TSM and the upstream root port is
-   established.
+must check that the physical device is a downstream endpoint of a root port that
+the host supervisor domain manager has previously registered with the TSM.
 
 The TSM establishes a secured SPDM session with the physical device DSM by going
 through the steps described in the Secured SPDM Session section.
@@ -463,7 +445,7 @@ the device and then running the TDI binding flows.
 The last part of the device connection process is about securing the data link
 between the TSM and the device, and that must be done through the IDE Key
 Management protocol.
-Here again, the host supervisor domain manager implictly initiates the PCI IDE
+Here again, the host supervisor domain manager implicitly initiates the PCI IDE
 link setup by calling the `sbi_covh_connect_device()` `COVH` function, and
 relies on the TSM to generate and send IDE KM messages over SPDM.
 
@@ -471,9 +453,10 @@ The TSM is responsible for:
 
 1. Configuring the PCIe root port IDE Extended Capability.
 2. Generating the IDE keys for all sub-streams for a given stream ID.
-3. Setting the PCIe root port IDE keys for a given stream ID, through IDE KM
-   requests.
-4. Refreshing the PCIe root port IDE keys for a given stream ID.
+3. Setting the PCIe root port IDE keys for a given stream ID, through the `COVT`
+   PCIe Root Port Management functions.
+4. Refreshing the PCIe root port IDE keys for a given stream ID, upon the host
+   security domain manager request.
 5. Generating all IDE KM requests and encapsulating them into SPDM messages.
 6. Setting the PCIe device IDE keys through IDE KM requests.
 
@@ -484,6 +467,7 @@ The host supervisor domain manager is responsible for:
 3. Programing the PCIe switch between the device and PCIe root port, such as
    IDE Control Register - Flow-Through IDE Stream Enabled.
 4. Initiating the IDE link setup.
+5. Initiating IDE keys refresh.
 
 The IDE link initial setup must go through the following steps:
 
@@ -509,30 +493,24 @@ The IDE link initial setup must go through the following steps:
       is encapsulated in a vendor-defined SPDM request.
    b. Receives an `IDE_KM_KEY KP_ACK` from the DSM.
 7. The TSM, for each Rx and Tx sub-stream (6 of them), programs the generated
-   keys into the physical device’s PCIe root port:
-   a. Generates and sends an `IDE_KM KEY_PROG` message to the ROT. The message
-      is encapsulated into a vendor-defined SPDM request.
-   b. Receives an `IDE_KM_KEY KP_ACK` from the ROT.
+   keys into the physical device’s PCIe root port, by calling the
+   `sbi_covt_program_rp_ide_key()` `COVT` functions.
 8. The TSM, for each Rx sub-stream (3 of them), triggers IDE in the physical
    device:
    a. Generates and sends an `IDE_KM SET_GO(Rx)` message to the DSM. The message
       is encapsulated into a vendor-defined SPDM request.
    b. Receives an `IDE_KM_KEY K_GOSTOP_ACK` from the DSM.
 9. The TSM, for each Rx sub-stream (3 of them), triggers IDE in the physical
-   device’s PCIe root port:
-   a. Generates and sends an `IDE_KM SET_GO(Rx)` message to the ROT. The message
-      is encapsulated into a vendor-defined SPDM request.
-   b. Receives an `IDE_KM_KEY K_GOSTOP_ACK` from the ROT.
+   device’s PCIe root port by calling the `sbi_covt_set_go_rp_ide_key()`
+   `COVT` function.
 10. The TSM, for each Tx sub-stream (3 of them), triggers IDE in the physical
     device:
    a. Generates and sends an `IDE_KM SET_GO(Tx)` message to the DSM. The message
       is encapsulated into a vendor-defined SPDM request.
    b. Receives an `IDE_KM_KEY K_GOSTOP_ACK` from the DSM.
 11. The TSM, for each Tx sub-stream (3 of them), triggers IDE in the physical
-    device’s PCIe root port:
-    a. Generates and sends an `IDE_KM SET_GO(Tx)` message to the ROT. The
-        message is encapsulated into a vendor-defined SPDM request.
-    b. Receives an `IDE_KM_KEY K_GOSTOP_ACK` from the DSM.
+    device’s PCIe root port by calling the `sbi_covt_set_go_rp_ide_key()`
+   `COVT` function.
 
 .Device Connection - IDE Link Setup
 [source,mermaid]
@@ -545,7 +523,7 @@ autonumber
 participant DSM as Device DSM
 participant Device as PCIe Device
 participant RootPort as PCIe Root Port
-participant RoT as RoT (RP DSM)
+participant RDSM as Root Domain Security Manager (RDSM)
 participant VMM as Host Supervisor Domain Manager (VMM)
 participant TSM
 
@@ -558,7 +536,7 @@ Note over TSM,DSM: TSM: SPDM Connection Initialization
 
 Note over TSM,DSM: TSM: SPDM Connection Created
 
-TSM ->> RoT: Program RP IDE extended capability (Allow RID and memory for the device, IDE is disabled).
+TSM ->> RDSM: Program RP IDE extended capability (Allow RID and memory for the device, IDE is disabled)
 
 TSM ->> TSM: Generate 6 IDE keys [(Rx, Tx) * sub-streams(P, NP, C)]
 
@@ -566,18 +544,14 @@ Loop 6 times - TSM programs IDE keys into Device (For the given stream ID)
      TSM ->> TSM: Generate SPDM request IDE_KM_KEY_PROG
      TSM ->> VMM: [COVH] - spdm_req(IDE_KM_KEY_PROG)
      VMM ->> DSM: [DOE] - SPDM_IDE_KM_KEY_PROG
-     DSM ->> Device: Program  IDE Key
+     DSM ->> Device: Program IDE Key
      DSM ->> VMM: [DOE] - SPDM_IDE_KM_KP_ACK
      VMM ->> TSM: [COVH] - spdm_resp(IDE_KM_KP_ACK)
 end
 
-Loop 6 times - TSM programs IDE keys into Root Port through RoT (For the given stream ID)
-     TSM ->> TSM: Generate SPDM request IDE_KM_KEY_PROG
-     TSM ->> VMM: [COVH] - spdm_req(IDE_KM_KEY_PROG)
-     VMM ->> RoT: [DOE] - SPDM_IDE_KM_KEY_PROG
-     RoT ->> RootPort: Program  IDE Key
-     RoT ->> VMM: [DOE] - SPDM_IDE_KM_KP_ACK
-     VMM ->> TSM: [COVH] - spdm_resp(IDE_KM_KP_ACK)
+Loop 6 times - TSM programs IDE keys into Root Port through RDSM (For the given stream ID)
+     TSM ->> RDSM: [COVT] - sbi_sbi_covt_program_rp_ide_key(rp_id, key_desc, key_data)
+     RDSM ->> RootPort: Program IDE Key
 end
 
 Loop 3 times (For each sub-stream)
@@ -590,12 +564,8 @@ Loop 3 times (For each sub-stream)
 end
 
 Loop 3 times (For each sub-stream)
-     TSM ->> TSM: Generate SPDM request IDE_KM_K_SET_GO
-     TSM ->> VMM: [COVH] - spdm_req(IDE_KM_K_SET_GO)
-     VMM ->> RoT: [DOE] - SPDM_IDE_KM_K_SET_GO
-     RoT ->> RootPort: Trigger Tx IDE
-     RoT ->> VMM: [DOE] - SPDM_IDE_KM_K_GOSTOP_ACK
-     VMM ->> TSM: [COVH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
+     TSM ->> RDSM: [COVT] - sbi_covt_set_go_rp_ide_key(rp_id, key_desc)
+     RDSM ->> RootPort: Trigger Tx IDE
 end
 
 Loop 3 times (For each sub-stream)
@@ -608,12 +578,8 @@ Loop 3 times (For each sub-stream)
 end
 
 Loop 3 times (For each sub-stream)
-     TSM ->> TSM: Generate SPDM request IDE_KM_K_SET_GO
-     TSM ->> VMM: [COVH] - spdm_req(IDE_KM_K_SET_GO)
-     VMM ->> RoT: [DOE] - SPDM_IDE_KM_K_SET_GO
-     RoT ->> RootPort: Trigger Rx IDE
-     RoT ->> VMM: [DOE] - SPDM_IDE_KM_K_GOSTOP_ACK
-     VMM ->> TSM: [COVH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
+     TSM ->> RDSM: [COVT] - sbi_covt_set_go_rp_ide_key(rp_id, key_desc)
+     RDSM ->> RootPort: Trigger Tx IDE
 end
 
 TSM ->> VMM: [COVH] - spdm_covh_connect_device()
@@ -662,20 +628,16 @@ between the PCIe root port and the device, and clear all IDE key material:
       is encapsulated into a vendor-defined SPDM request.
    b. Receives an `IDE_KM_KEY K_GOSTOP_ACK` from the DSM.
 6. The TSM, for each Tx sub-stream, disables the corresponding IDE key
-   previously programmed into the physical device's PCIe root port:
-   a. Generates and sends an `IDE_KM SET_STOP(Tx)` message to the ROT. The message
-      is encapsulated into a vendor-defined SPDM request.
-   b. Receives an `IDE_KM_KEY K_GOSTOP_ACK` from the DSM.
+   previously programmed into the physical device's PCIe root port by calling
+   the `sbi_covt_set_stop_rp_ide_key()` `COVT` function.
 7. The TSM, for each Rx sub-stream, disables the corresponding IDE key
    previously programmed into the physical device:
    a. Generates and sends an `IDE_KM SET_STOP(Rx)` message to the DSM. The message
       is encapsulated into a vendor-defined SPDM request.
    b. Receives an `IDE_KM_KEY K_GOSTOP_ACK` from the DSM.
 8. The TSM, for each Rx sub-stream, disables the corresponding IDE key
-   previously programmed into the physical device's PCIe root port:
-   a. Generates and sends an `IDE_KM SET_STOP(Rx)` message to the ROT. The message
-      is encapsulated into a vendor-defined SPDM request.
-   b. Receives an `IDE_KM_KEY K_GOSTOP_ACK` from the DSM.
+   previously programmed into the physical device's PCIe root port by calling
+   the `sbi_covt_set_stop_rp_ide_key()` `COVT` function.
 9. The TSM clears all stored IDE keys and state.
 10. The TSM terminates the SPDM session with the physical device:
     a. Generates and sends an SPDM `END_SESSION` message to the DSM.
@@ -693,7 +655,7 @@ autonumber
 participant DSM as Device DSM
 participant Device as PCIe Device
 participant RootPort as PCIe Root Port
-participant RoT as RoT (RP DSM)
+participant RDSM as Root Domain Security Manager (RDSM)
 participant VMM as Host Supervisor Domain Manager (VMM)
 participant TSM
 
@@ -719,12 +681,8 @@ Loop 3 times - TSM requests the Device to stop using the IDE stream Tx key (For 
 end
 
 Loop 3 times - TSM requests the RP to stop using the IDE stream Tx key (For each sub-stream)
-     TSM ->> TSM: Generate SPDM request IDE_KM_K_SET_STOP
-     TSM ->> VMM: [COVH] - spdm_req(IDE_KM_K_SET_STOP)
-     VMM ->> RoT: [DOE] - SPDM_IDE_KM_K_SET_STOP
-     RoT ->> RootPort: Clear IDE Tx key
-     RoT ->> VMM: [DOE] - SPDM_IDE_KM_K_GOSTOP_ACK
-     VMM ->> TSM: [COVH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
+     TSM ->> RDSM: [COVT] - sbi_covt_set_stop_rp_ide_key(rp_id, key_desc)
+     RDSM ->> RootPort: Clear IDE Tx key
 end
 
 Loop 3 times - TSM requests the Device to stop using the IDE stream Rx key (For each sub-stream)
@@ -737,12 +695,8 @@ Loop 3 times - TSM requests the Device to stop using the IDE stream Rx key (For 
 end
 
 Loop 3 times - TSM requests the TP to stop using the IDE stream Rx key (For each sub-stream)
-     TSM ->> TSM: Generate SPDM request IDE_KM_K_SET_STOP
-     TSM ->> VMM: [COVH] - spdm_req(IDE_KM_K_SET_STOP)
-     VMM ->> RoT: [DOE] - SPDM_IDE_KM_K_SET_STOP
-     RoT ->> RooTPort: Clear IDE x key
-     RoT ->> VMM: [DOE] - SPDM_IDE_KM_K_GOSTOP_ACK
-     VMM ->> TSM: [COVH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
+     TSM ->> RDSM: [COVT] - sbi_covt_set_stop_rp_ide_key(rp_id, key_desc)
+     RDSM ->> RootPort: Clear IDE Rx key
 end
 
 TSM ->> TSM: Clear stored IDE keys for the device stream
