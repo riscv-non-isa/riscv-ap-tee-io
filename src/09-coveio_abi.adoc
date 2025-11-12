@@ -63,7 +63,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 | SBI_ERR_FAILED          | The operation failed for unknown reasons.
 |===
 
-==== Root Port Management
+==== PCIe Root Port Management
 
 [#sbi_covh_register_rp]
 ===== Function: CoVE Host Register PCIe Root Port (FID #1026)
@@ -684,5 +684,146 @@ The possible error codes returned in `sbiret.error` are shown below.
 | Error code              | Description
 | SBI_SUCCESS             | The operation completed successfully.
 | SBI_ERR_ALREADY_STOPPED | The device interface is already stopped.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+=== CoVE IO TSM Extension (EID #0x434F5654 "COVT")
+
+==== PCIe Root Port IDE Management
+
+[#sbi_covt_program_rp_ide_key]
+===== Function: CoVE TSM Program PCIe Root Port IDE Key (FID #1024)
+[source, C]
+-----
+struct sbiret sbi_covt_program_rp_ide_key(unsigned long rp_id,
+                                          unsigned long key_desc_addr,
+                                          unsigned long key_data_addr);
+-----
+
+Programs a PCIe IDE key into the `rp_id` PCIe Root Port.
+
+The IDE key descriptor at `key_desc_addr` must be structured as follows:
+
+[#table_sbi_covt_rp_ide_key_desc]
+.CoVE IDE Key Descriptor
+[options=header]
+|===
+| *Byte Offset* | *Field*       | *Size (bytes)* | *Description*
+| 00h           | Stream_ID     | 1               | IDE selective stream ID
+| 01h           | Sub_Stream_ID | 1               | IDE sub-stream ID
+| 02h           | Key_Set       | 1               | IDE Key set. This must be 0 or 1, all other values are invalid.
+| 03h           | Tx_Rx         | 1               | Transmitter key (0) or receiver key (1). All other values are invalid.
+|===
+
+The IDE key and IV data at `key_data_addr` must be structured as follows:
+
+[#table_sbi_covt_rp_ide_key_data]
+.CoVE IDE Key and IV
+[options=header]
+|===
+| *Byte Offset* | *Field* | *Size (bytes)* | *Description*
+| 00h           | Key_DW0 | 4              | IDE Key DWord 0
+| 04h           | Key_DW1 | 4              | IDE Key DWord 1
+| 08h           | Key_DW2 | 4              | IDE Key DWord 2
+| 0Ch           | Key_DW3 | 4              | IDE Key DWord 3
+| 10h           | Key_DW4 | 4              | IDE Key DWord 4
+| 14h           | Key_DW5 | 4              | IDE Key DWord 5
+| 18h           | Key_DW6 | 4              | IDE Key DWord 6
+| 1Ch           | Key_DW7 | 4              | IDE Key DWord 7
+| 20h           | IV_DW0  | 4              | IV DWord 0
+| 24h           | IV_DW1  | 4              | IV DWord 1
+|===
+
+Calling `sbi_covt_program_rp_ide_key()` with a key descriptor that has already
+been used will overwrite the existing key content.
+
+Overwriting a key that has been enabled through `sbi_covt_enable_rp_ide_key()`
+returns an `SBI_INVALID_PARAM` error.
+
+[#table_sbi_covt_program_rp_ide_key]
+.CoVE TSM Program PCIe Root Port IDE Key
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_INVALID_PARAM   | The key is already programmed and enabled.
+| SBI_ERR_DENIED          | The key can not be programmed or stored.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+[#sbi_covt_clear_rp_ide_key]
+===== Function: CoVE TSM Clear PCIe Root Port IDE Key (FID #1025)
+[source, C]
+-----
+struct sbiret sbi_covt_clear_rp_ide_key(unsigned long rp_id,
+                                         unsigned long key_desc_addr);
+-----
+
+Clears a previously programmed IDE key for the `rp_id` PCIe Root Port.
+
+Clearing a key that that has been enabled through `sbi_covt_enable_rp_ide_key()`
+returns an `SBI_INVALID_PARAM` error.
+
+[#table_sbi_covt_clear_rp_ide_key]
+.CoVE TSM Clear PCIe Root Port IDE Key
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_INVALID_PARAM   | The key is enabled.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+
+[#sbi_covt_enable_rp_ide_key]
+===== Function: CoVE TSM Enable PCIe Root Port IDE Key (FID #1026)
+[source, C]
+-----
+struct sbiret sbi_covt_enable_rp_ide_key(unsigned long rp_id,
+                                         unsigned long key_desc_addr);
+-----
+
+Enables a previously programmed IDE key for the `rp_id` PCIe Root Port.
+
+If the enabled key is a transmitter key, the `rp_id` Root Port will use the key
+content to encrypt transmitted PCIe TLPs for the corresponding stream and
+sub-streams combination.
+
+If the enabled key is a receiver key, the `rp_id` Root Port prepares for
+receiving and decrypting PCIe TLPs on the the corresponding stream and
+sub-streams combination.
+
+Once enabled, a key can not be cleared or reprogrammed. It must be
+disabled first.
+
+[#table_sbi_covt_enable_rp_ide_key]
+.CoVE TSM Enable PCIe Root Port IDE Key
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_INVALID_PARAM   | The `key_desc_addr` address points to an unknown key.
+| SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+[#sbi_covt_disable_rp_ide_key]
+===== Function: CoVE TSM Disable PCIe Root Port IDE Tx Key (FID #1027)
+[source, C]
+-----
+struct sbiret sbi_covt_disable_rp_ide_key(unsigned long rp_id,
+                                          unsigned long key_desc_addr);
+-----
+
+Disables a previously enabled IDE key for the `rp_id` PCIe Root Port.
+
+Once disabled, a key can be cleared.
+
+[#table_sbi_covt_disable_rp_ide_key]
+.CoVE TSM Disable PCIe Root Port IDE Key
+[cols="2,3", width=90%, align="center", options="header"]
+|===
+| Error code              | Description
+| SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_INVALID_PARAM   | The `key_desc_addr` address points to an unknown key.
 | SBI_ERR_FAILED          | The operation failed for unknown reasons.
 |===
