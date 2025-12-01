@@ -389,7 +389,7 @@ and must adhere to the following properties:
   messages transmitted in chunks must be reconstructed before being added to the
   transcript.
 * May include optional TDISP messages exchanged by the TSM (e.g.
-  `TDISP_GET_VERSION` or `TDISP_GET_CAPABILITY`).
+  `TDISP_GET_VERSION` or `TDISP_GET_CAPABILITIES`).
 
 Below is an example of all messages composing a device connection transcript:
 
@@ -402,7 +402,7 @@ Below is an example of all messages composing a device connection transcript:
 [FINISH][FINISH_RSP]
 [GET_MEASUREMENTS][MEASUREMENTS]
 [TDISP_GET_VERSION][TDISP_VERSION]
-[TDISP_GET_CAPABILITY][TDISP_CAPABILITY]
+[TDISP_GET_CAPABILITIES][TDISP_CAPABILITIES]
 ```
 
 Once the connection is established, the TSM returns the complete connection
