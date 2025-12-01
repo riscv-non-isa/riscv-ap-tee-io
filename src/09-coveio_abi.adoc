@@ -451,9 +451,12 @@ enum sbi_covg_transcript_element {
      DEVICE_CERTIFICATE = 1,
 
      /*
-      * Reconstructed device measurement for the physical device hosting
-      * `device_if_id`, from the transcript `GET_MEASUREMENTS` and
-      * `MEASUREMENTS` SPDM responses.
+      * SPDM measurement messages for the physical device hosting
+      * `device_if_id`.
+      * This is the concatenation of all `{GET_MEASUREMENTS, MEASUREMENTS}`
+      * pairs that are exchanged between the SPDM measurement requester and the
+      * responder. Only the last `MEASUREMENTS` shall include the digital
+      * signature of the measurement transcript.
       */
      DEVICE_MEASUREMENT = 2,
 
@@ -514,6 +517,8 @@ struct sbiret sbi_covg_get_device_measurements(unsigned long device_if_id,
 -----
 
 Gets the measurements of the physical device hosting `device_if_id`.
+
+The TVM can call this interface multiple times to get the latest device measurement.
 
 The TSM returns the measurements in the form of the complete, signed <<SPDM>>
 measurement transcript, including `VCA` and all `{GET_MEASUREMENTS, MEASUREMENTS}`
