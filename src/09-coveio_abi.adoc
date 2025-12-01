@@ -465,6 +465,26 @@ enum sbi_covg_transcript_element {
       * `ALGORITHMS` SPDM messages from the transcript.
       */
      VCA = 3,
+
+     /*
+      * SPDM session messages for the physical device hosting
+      * `device_if_id`.
+      * This is the concatenation of the `KEY_EXCHANGE`, `KEY_EXCHANGE_RSP`,
+      * `FINISH`, `FINISH_RSP` SPDM messages from the transcript.
+      * It includes the `TerminationPolicy`, and `HeartbeatPeriod` etc.
+      */
+     SESSION = 4,
+
+     /*
+      * TDISP messages for the physical device hosting
+      * `device_if_id`.
+      * This is the concatenation of the `TDISP_GET_VERSION`, `TDISP_VERSION`,
+      * `TDISP_GET_CAPABILITIES` and `TDISP_CAPABILITIES` TDISP messages from
+      * the trasncript.
+      * It includes the `TSM_CAPS`, `DSM_CAPS`, `REQ_MSGS_SUPPORTED`, and
+      * `LOCK_INTERFACE_FLAGS_SUPPORTED`, etc.
+      */
+     TDISP_VC = 5,
 }
 -----
 
