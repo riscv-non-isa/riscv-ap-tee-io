@@ -127,7 +127,7 @@ in the next sections.
 
 ==== Ownership
 
-In a CoVE-IO context, the host supervisor domain manager is the sole platform
+In a CoVE-IO context, the host Supervisor Domain manager is the sole platform
 resource's owner. In particular, the physical devices to which TDIs belong are
 owned and managed by the host, typically through the device PF. Host software
 stack components, e.g. the VMM, assign, unassign, and expose TDIs resp. to,
@@ -180,7 +180,7 @@ TSM the IOMMU is assigned to. This guarantees that a TSM currently running on a
 RISC-V hart has exclusive access to the physical address of its IOMMU RPI.
 
 On platforms supporting the MTT and IO-MTT <<Smmtt>> extensions, any PCIe device
-(regardless of its TEE-IO compliance) can be assigned to any supervisor domain,
+(regardless of its TEE-IO compliance) can be assigned to any Supervisor Domain,
 as long as this domain has RDSM-enforced exclusive access to an IOMMU instance
 RPI.
 

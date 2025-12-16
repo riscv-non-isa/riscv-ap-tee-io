@@ -95,13 +95,13 @@ management, sealed storage, device management, cryptography services,
 attestation, etc. The RoT may be an integrated or discrete element, and may take
 on the role of a Device Identifier Composition Engine (DICE).
 
-| Supervisor Domain | N/A | A supervisor domain is associated with a set of
-physical address regions that are isolated from other supervisor domains on the
+| Supervisor Domain | N/A | A Supervisor Domain is associated with a set of
+physical address regions that are isolated from other Supervisor Domains on the
 same platform, with only the RDSM with access to all of the physical address
 space.
 
 | Supervisor Domain Security Manager | SDSM | The Supervisor Domain Security
-Manager is responsible for isolating workloads within a supervisor domain.
+Manager is responsible for isolating workloads within a Supervisor Domain.
 SDSMs are S-Mode components like the TSM or the OS/Hypervisor.
 
 | Security Protocol and Data Model | SPDM | A DMTF defined specification for

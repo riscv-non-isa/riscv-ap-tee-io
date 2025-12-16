@@ -12,11 +12,11 @@ image::images/cove-io-architecture.svg[align="center"]
 
 The TEE Security Manager (TSM) orchestrates and manages TEE Virtual Machines
 (TVM), as defined by the <<CoVE>> specification. The TSM operates in HS-Mode
-and is the confidential supervisor domain manager. It uses the <<Smmtt>>
+and is the confidential Supervisor Domain manager. It uses the <<Smmtt>>
 specified Memory Tracking Table (MTT) to enforce TVM memory isolation from
-the host supervisor domain.
+the host Supervisor Domain.
 
-As the confidential supervisor domain manager, the TSM provides the `COVH` ABI
+As the confidential Supervisor Domain manager, the TSM provides the `COVH` ABI
 for the host OS/VMM to create and destroy TVMs, and donate or reclaim
 confidential memory from them. TVMs can interact with the TSM through the
 `COVG` ABI.
