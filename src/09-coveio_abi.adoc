@@ -111,7 +111,7 @@ Establishes a secure SPDM session between the TSM and a device identified by
 upstream Root Port. The configured IDE link must use the selective IDE stream
 identified by `stream_id`.
 
-The TSM returns the device connection transcript data to the host security domain
+The TSM returns the device connection transcript data to the host Supervisor Domain
 manager at `connection_data_addr_out`, structured as follows:
 
 [#table_sbi_covh_connection_transcript]
@@ -125,7 +125,7 @@ manager at `connection_data_addr_out`, structured as follows:
 |===
 
 `connection_data_addr_out` must be 4KB-aligned and points to a memory region
-that is accessible to both the host security domain manager and the TSM.
+that is accessible to both the host Supervisor Domain manager and the TSM.
 
 The possible error codes returned in `sbiret.error` are shown below.
 
@@ -366,7 +366,7 @@ device. The data is formatted according to the
 structure.
 
 `transcript_data_addr_out` must be 4KB-aligned and points to a memory region
-that is accessible to both the host security domain manager and the TSM.
+that is accessible to both the host Supervisor Domain manager and the TSM.
 
 The possible error codes returned in `sbiret.error` are shown below.
 

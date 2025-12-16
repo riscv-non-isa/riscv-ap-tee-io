@@ -406,7 +406,7 @@ Below is an example of all messages composing a device connection transcript:
 ```
 
 Once the connection is established, the TSM returns the complete connection
-transcript to the host security domain manager via the
+transcript to the host Supervisor Domain manager via the
 `sbi_covh_connect_device()` ABI. The TSM retains and maintains a map of the
 connection transcript digests for all connected devices.
 
@@ -456,7 +456,7 @@ The TSM is responsible for:
 3. Setting the PCIe root port IDE keys for a given stream ID, through the `COVT`
    PCIe Root Port Management functions.
 4. Refreshing the PCIe root port IDE keys for a given stream ID, upon the host
-   security domain manager request.
+   Supervisor Domain manager request.
 5. Generating all IDE KM requests and encapsulating them into SPDM messages.
 6. Setting the PCIe device IDE keys through IDE KM requests.
 
@@ -1050,7 +1050,7 @@ longer needs the TDI for its operation or when shutting down. The host
 supervisor domain manager can also asynchronously choose to reclaim a TDI from
 a TVM, because the TVM or the TDI is misbehaving or unresponsive, or simply
 because it needs to re-assign a TDI to another TVM. Once unbound, a TDI can then
-be assigned to any TVM on any security domain.
+be assigned to any TVM on any Supervisor Domain.
 
 Unbinding a TDI from a TVM is first and foremost a resource management
 operation, and as such it must be designed to robustly address multiple error
