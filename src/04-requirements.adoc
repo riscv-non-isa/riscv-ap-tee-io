@@ -127,7 +127,7 @@ in the next sections.
 
 ==== Ownership
 
-In a CoVE-IO context, the host Supervisor Domain manager is the sole platform
+In a CoVE-IO context, the hosting Supervisor Domain manager is the sole platform
 resource's owner. In particular, the physical devices to which TDIs belong are
 owned and managed by the host, typically through the device PF. Host software
 stack components, e.g. the VMM, assign, unassign, and expose TDIs resp. to,
