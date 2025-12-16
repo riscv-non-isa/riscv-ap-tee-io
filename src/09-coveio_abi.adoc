@@ -9,64 +9,10 @@ must be in the `[1024:1087]` range.
 
 === CoVE IO Host Extension (EID #0x434F5648 "COVH")
 
-==== IOMMU Management
-
-[#sbi_covh_register_iommu()]
-===== Function: CoVE Host Register IOMMU (FID #1024)
-[source, C]
------
-struct sbiret sbi_covh_register_iommu(unsigned long iommu_id,
-                                      unsigned long msi_cfg[3]);
------
-
-Registers an IOMMU (`iommu_id`) with a TSM. The `msi_cfg` MSI vectors are
-allocated by the host Supervisor Domain manager (e.g. the host VMM).
-
-The TSM configures the IOMMU TSM Supervisor Domain programming interface
-`s_msi_cfg_table` with the provided MSI vectors.
-
-The possible error codes returned in `sbiret.error` are shown below.
-
-[#table_sbi_covh_register_iommu]
-.CoVE Host Register IOMMU
-[cols="2,3", width=90%, align="center", options="header"]
-|===
-| Error code              | Description
-| SBI_SUCCESS             | The operation completed successfully.
-| SBI_ERR_INVALID_PARAMS  | The `iommu_id` index is invalid.
-| SBI_ERR_FAILED          | The operation failed for unknown reasons.
-|===
-
-[#sbi_covh_notify_iommu_msi]
-===== Function: CoVE Host Notify IOMMU MSI (FID #1025)
-[source, C]
------
-struct sbiret sbi_covh_notify_iommu_msi(unsigned long iommu_id);
------
-
-Notifies the TSM about a pending MSI for the TSM Supervisor Domain.
-
-When servicing this request, the TSM must first verify that there are pending
-MSIs, by reading the IOMMU `s_ipsr` register from the IOMMU TSM security
-domain programming interface. If there are some, it handles the interrupts as
-needed.
-
-The possible error codes returned in `sbiret.error` are shown below.
-
-[#table_sbi_covh_notify_iommu_msi]
-.CoVE Host Notify IOMMU MSI
-[cols="2,3", width=90%, align="center", options="header"]
-|===
-| Error code              | Description
-| SBI_SUCCESS             | The operation completed successfully.
-| SBI_ERR_INVALID_PARAMS  | The `iommu_id` index is invalid.
-| SBI_ERR_FAILED          | The operation failed for unknown reasons.
-|===
-
 ==== PCIe Root Port Management
 
 [#sbi_covh_register_rp]
-===== Function: CoVE Host Register PCIe Root Port (FID #1026)
+===== Function: CoVE Host Register PCIe Root Port (FID #1024)
 [source, C]
 -----
 struct sbiret sbi_covh_register_rp(unsigned long rp_id,
@@ -97,7 +43,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 ==== Physical Device Management
 
 [#sbi_covh_connect_device]
-===== Function: CoVE Host Connect Device (FID #1027)
+===== Function: CoVE Host Connect Device (FID #1025)
 [source, C]
 -----
 struct sbiret sbi_covh_connect_device()(unsigned long device_id,
@@ -140,7 +86,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 
 [#sbi_covh_disconnect_device]
-===== Function: CoVE Host Disconnect Device (FID #1028)
+===== Function: CoVE Host Disconnect Device (FID #1026)
 [source, C]
 -----
 struct sbiret sbi_covh_disconnect_device()(unsigned long device_id);
@@ -167,7 +113,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 ==== TVM Memory Management
 
 [#sbi_covh_add_tvm_interface_region]
-===== Function: CoVE Host Add TVM Interface Region (FID #1029)
+===== Function: CoVE Host Add TVM Interface Region (FID #1027)
 [source, C]
 -----
 struct sbiret sbi_covh_add_tvm_interface_region(unsigned long tvm_id,
@@ -201,7 +147,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 | SBI_ERR_FAILED          | The operation failed for unknown reasons.
 |===
 
-===== Function: CoVE Host Reclaim TVM Interface Region (FID #1030)
+===== Function: CoVE Host Reclaim TVM Interface Region (FID #1028)
 [source, C]
 -----
 struct sbiret sbi_covh_reclaim_tvm_interface_region(unsigned long tvm_id,
@@ -237,7 +183,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 ==== Device Interface Management
 
 [#sbi_covh_bind_interface]
-===== Function: CoVE Host Bind Interface (FID #1031)
+===== Function: CoVE Host Bind Interface (FID #1029)
 [source, C]
 -----
 struct sbiret sbi_covh_bind_interface()(unsigned long tvm_id,
@@ -264,7 +210,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 
 [#sbi_covh_unbind_interface]
-===== Function: CoVE Host Unbind Interface (FID #1032)
+===== Function: CoVE Host Unbind Interface (FID #1030)
 [source, C]
 -----
 struct sbiret sbi_covh_unbind_interface()(unsigned long tvm_id,
@@ -289,7 +235,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 
 [#sbi_covh_spdm_key_update]
-===== Function: CoVE Host SPDM Key Update (FID #1033)
+===== Function: CoVE Host SPDM Key Update (FID #1031)
 [source, C]
 -----
 struct sbiret sbi_covh_spdm_key_update(unsigned long device_id);
@@ -310,7 +256,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 
 [#sbi_covh_ide_key_refresh]
-===== Function: CoVE Host IDE Key Refresh (FID #1034)
+===== Function: CoVE Host IDE Key Refresh (FID #1032)
 [source, C]
 -----
 struct sbiret sbi_covh_ide_key_refresh(unsigned long device_id,
@@ -331,7 +277,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 
 [#sbi_covh_spdm_heartbeat]
-===== Function: CoVE Host SPDM Heartbeat (FID #1035)
+===== Function: CoVE Host SPDM Heartbeat (FID #1033)
 [source, C]
 -----
 struct sbiret sbi_covh_spdm_heartbeat(unsigned long device_id);
@@ -352,7 +298,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 
 [#sbi_covh_spdm_data]
-===== Function: CoVE Host Device Connection Transcript (FID #1036)
+===== Function: CoVE Host Device Connection Transcript (FID #1034)
 [source, C]
 -----
 struct sbiret sbi_covh_get_device_connection_transcript(unsigned long device_id,
