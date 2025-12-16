@@ -20,9 +20,9 @@ struct sbiret sbi_covh_register_iommu(unsigned long iommu_id,
 -----
 
 Registers an IOMMU (`iommu_id`) with a TSM. The `msi_cfg` MSI vectors are
-allocated by the host supervisor domain manager (e.g. the host VMM).
+allocated by the host Supervisor Domain manager (e.g. the host VMM).
 
-The TSM configures the IOMMU TSM supervisor domain programming interface
+The TSM configures the IOMMU TSM Supervisor Domain programming interface
 `s_msi_cfg_table` with the provided MSI vectors.
 
 The possible error codes returned in `sbiret.error` are shown below.
@@ -44,7 +44,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 struct sbiret sbi_covh_notify_iommu_msi(unsigned long iommu_id);
 -----
 
-Notifies the TSM about a pending MSI for the TSM supervisor domain.
+Notifies the TSM about a pending MSI for the TSM Supervisor Domain.
 
 When servicing this request, the TSM must first verify that there are pending
 MSIs, by reading the IOMMU `s_ipsr` register from the IOMMU TSM security
@@ -178,7 +178,7 @@ struct sbiret sbi_covh_add_tvm_interface_region(unsigned long tvm_id,
 
 Adds a device interface MMIO region into a TVM address space.
 
-The host supervisor domain manager must call this function for all
+The host Supervisor Domain manager must call this function for all
 `device_if_id` MMIO regions before binding it to `tvm_id`. This function returns
 an error if `device_if_id` is already bound to `tvm_id`.
 
@@ -212,7 +212,7 @@ struct sbiret sbi_covh_reclaim_tvm_interface_region(unsigned long tvm_id,
 
 Reclaims a device interface MMIO region previously added to a TVM address space.
 
-The host supervisor domain manager may call this function when the `tvm_id` TVM
+The host Supervisor Domain manager may call this function when the `tvm_id` TVM
 stops the `device_if_id` device interface, in order for the TSM to unmap the
 device interface MMIO ranges from the TVM address space.
 
@@ -639,7 +639,7 @@ Maps a TVM MMIO region (from `gpa_address`, `size` bytes long) to a
 `TDISP`-reported physical region (`hpa_addr`).
 
 The TVM uses that function to verify from the TSM that all the device interface
-MMIO regions exposed by the host supervisor domain manager are correctly mapped to
+MMIO regions exposed by the host Supervisor Domain manager are correctly mapped to
 the trusted `TDISP`-reported MMIO regions. The TSM will enable those mappings
 if the TVM calls the starts the device interface through the
 `sbi_covg_start_interface` function.
