@@ -23,8 +23,8 @@ confidential memory from them. TVMs can interact with the TSM through the
 
 CoVE-IO extends both the `COVH` and `COVG` ABIs for bringing TEE-IO capable
 devices into the trust boundary of TVMs. These extensions allow for configuring
-and registering IOMMUs and PCIe root ports, and then binding physical devices
-interfaces (TDI) and TVMs together.
+and registering PCIe root ports and then binding physical devices interfaces
+(TDI) and TVMs together.
 
 With the CoVE-IO ABIs and flows, TDIs can access TVM confidential memory
 directly through DMA. Based on the TVM configuration, the DMA accessible
