@@ -25,7 +25,7 @@ IOMMU.
 
 Those exclusvely assigned IOMMU instances allow the TSM to enforce the integrity
 of address translations and protection from DMA into confidential memory, as
-well as  interrupts originating from assigned TDIs. The host Supervisor Domain
+well as  interrupts originating from assigned TDIs. The hosting Supervisor Domain
 may assign one or more IOMMU instances to a TSM Supervisor Domain, after which,
 only the TSM can access and program the assigned IOMMU instances.
 
@@ -41,13 +41,13 @@ participate in TEE-IO and operates as described in the following steps:
 1. A TSM is loaded into a Supervisor Domain and provisioned with a CoVE-IO
    manifest. It is recommended that the TSM is measured by the root-of-trust for
    measurement (RTM) for subsequent attestation.
-2. The host Supervisor Domain manager (e.g. the host VMM) enumerates all
+2. The hosting Supervisor Domain manager (e.g. the host VMM) enumerates all
    platform IOMMUs as PCIe devices.
 3. The host IOMMU driver is loaded and probed.
 4. The host IOMMU driver allocates MSI vectors for the trusted domain
    IOMMUs. Those vectors must point to the untrusted IOMMU driver as the TSM can
    not handle external interrupts.
-5. The host Supervisor Domain manager registers the IOMMUs with the TSM by
+5. The hosting Supervisor Domain manager registers the IOMMUs with the TSM by
    calling the `sbi_covh_register_iommu()` `COVH` function. The TSM gets the
    allocated MSI vectors and configures the trusted IOMMU `s_msi_cfg_table`
    register accordingly.
@@ -96,7 +96,7 @@ I/O rules apply:
 
 As the TSM is responsible for setting both the RP IDE keys and PCI IDE
 capabilities, it must be the IDE operations owner for any downstream device for
-a given RP. As the overall platform resources owner, the host Supervisor Domain
+a given RP. As the overall platform resources owner, the hosting Supervisor Domain
 software stack must register a RP for TEE I/O and IDE ownership with the TSM, by
 calling the `sbi_covh_register_rp()` `COVH` function. This function associates a
 RP id to its MMIO space (for the IDE capability configurations) and all the MMIO
@@ -153,12 +153,12 @@ image::images/SPDM_session.svg[align="center"]
 
 Whether the SPDM session is established with the ROT or the physical device, the
 TSM is the requester and it must reach and communicate with DOE mailboxes that
-are owned by the host Supervisor Domain manager. As a consequence, after
+are owned by the hosting Supervisor Domain manager. As a consequence, after
 requesting the TSM to establish an SPDM session with a device (through the
 `sbi_covh_connect_device()` `COVH` call), it acts as an untrusted SPDM messages
 proxy between the TSM and the device DSM.
 
-After a successful call to `sbi_covh_connect_device()`, host Supervisor Domain
+After a successful call to `sbi_covh_connect_device()`, hosting Supervisor Domain
 initiated CoVE-IO `COVH` calls that require SPDM requests to be sent to the device
 DOE mailbox follows the flow described below:
 
@@ -188,15 +188,15 @@ VMM ->> TSM: [COVH] - sbi_covh_tee_io_action(RESP_2)
 TSM ->> VMM: [COVH] - SBI_ERROR_CODE(SPDM_REQUEST_COMPLETED)
 ....
 
-The TSM generates the SPDM request to support the initial CoVE-IO `COVH` call and
-copies the request into the per-vcpu shared, non-confidential memory region that
-the host Supervisor Domain and the TSM share as per the CoVE specification. The
-TSM replies to the host Supervisor Domain manager request with the `SBI_SUCCESS`
-error code and the `SPDM_PENDING_REQUEST (0x1)` value through the `sbiret`
-structure. The host Supervisor Domain manager then sends the pending SPDM
-request to the device DOE mailbox. It forwards the device SPDM response to the
-TSM, by copying it to the same SPDM buffer it fetches the SPDM request from and
-by calling again the same CoVE-IO `COVH` call.
+The TSM generates the SPDM request to support the initial CoVE-IO `COVH` call
+and copies the request into the per-vcpu shared, non-confidential memory region
+that the hosting Supervisor Domain and the TSM share as per the CoVE
+specification. The TSM replies to the hosting Supervisor Domain manager request
+with the `SBI_SUCCESS` error code and the `SPDM_PENDING_REQUEST (0x1)` value
+through the `sbiret` structure. The hosting Supervisor Domain manager then sends
+the pending SPDM request to the device DOE mailbox. It forwards the device SPDM
+response to the TSM, by copying it to the same SPDM buffer it fetches the SPDM
+request from and by calling again the same CoVE-IO `COVH` call.
 This process continues until the initial CoVE-IO call is completed. The TSM then
 replies to the last `COVH` call with the appropriate error code and the
 `SPDM_REQUEST_COMPLETED (0x0)` value through the `sbiret` structure.
@@ -222,10 +222,10 @@ following layout:
 
 In this document, for readability reasons, flow definitions that involve SPDM
 based exchanges are simplified and do not include the above described flow
-between the TSM, the host Supervisor Domain manager and the SPDM responder. In
-particular, the steps that cover the SPDM request generation from the TSM, the
-transmission to the host VMM, the transmission to the SPDM responder and finally
-the path back to the TSM are reduced into 2 steps:
+between the TSM, the hosting Supervisor Domain manager and the SPDM responder.
+In particular, the steps that cover the SPDM request generation from the TSM,
+the transmission to the host VMM, the transmission to the SPDM responder and
+finally the path back to the TSM are reduced into 2 steps:
 
 1. TSM sends SPDM request #1
 2. TSM receives SPDM response #1
@@ -243,14 +243,14 @@ For example the above example would be described through those simplified steps:
 
 With trusted I/O, the TSM establishes SPDM sessions with the
 physical devices DSMs. As those sessions are used to exchange IDE keys through
-the `IDE_KM` protocol while going through the host Supervisor Domain manager,
+the `IDE_KM` protocol while going through the hosting Supervisor Domain manager,
 they need to be confidentiality and integrity protected. Establishing a secured
 SPDM session for IDE key management or TDISP operations between the TSM and
 devices is a mandatory requirement for TVMs to accept TDIs into their TCB.
 
 Any trusted I/O SPDM session is established through the SPDM responder DOE
 mailbox in the physical device DSM. The mailbox is a resource owned by
-the host Supervisor Domain manager which thus initiates the SPDM session
+the hosting Supervisor Domain manager which thus initiates the SPDM session
 establishment. It acts as an untrusted proxy between the TSM and the DSM by
 requesting the TSM to generate SPDM requests through the CoVE-IO `COVH` ABI,
 sending those requests to the DOE mailbox and forwarding the SPDM responses back
@@ -258,10 +258,10 @@ to the TSM, as described in the SPDM flow section.
 
 === Device Connection
 
-After the IOMMU is registered with the TSM, the host Supervisor Domain manager
-must establish a logical connection with any device from which a TDI could be
-bound to a TVM. To do so, it must cooperate with the TSM to properly initialize
-all such physical devices.
+After the IOMMU is registered with the TSM, the hosting Supervisor Domain
+manager must establish a logical connection with any device from which a TDI
+could be bound to a TVM. To do so, it must cooperate with the TSM to properly
+initialize all such physical devices.
 
 The device initialization process aims at establishing secured,
 integrity-protected control and data planes between the TSM and the
@@ -272,8 +272,8 @@ messages between the TSM and the DSM.
 The data place is a hardware session based on the PCIe Integrity and Data
 Encryption (IDE) specification and is used to secure the PCIe TLPs.
 
-When the host Supervisor Domain detects a new TEE-IO capable device, it must go
-through two device initialization steps:
+When the hosting Supervisor Domain detects a new TEE-IO capable device, it must
+go through two device initialization steps:
 
 1. Establish a secured SPDM session between the TSM (The SPDM Requester) and the
    device DSM (The SPDM responder).
@@ -282,7 +282,7 @@ through two device initialization steps:
 The CoVE-IO `COVH` extension supports those two initialization steps through one
 single function: `sbi_covh_connect_device()`.
 
-When the host Supervisor Domain manager calls `sbi_covh_connect_device()`, it
+When the hosting Supervisor Domain manager calls `sbi_covh_connect_device()`, it
 requests the TSM to establish an SPDM session with a device, and to set a PCIe
 IDE link between the device and the TSM.
 
@@ -294,11 +294,11 @@ will then be used to carry `TDISP` and `IDE_KM` messages, in order to
 respectively secure the physical link between the device and its PCIe root port,
 and for binding or unbinding TDIs to or from a TVM.
 
-The host Supervisor Domain manager requires the TSM to establish a secured SPDM
-session with the physical device by calling the `sbi_covh_connect_device()`
+The hosting Supervisor Domain manager requires the TSM to establish a secured
+SPDM session with the physical device by calling the `sbi_covh_connect_device()`
 COVH function. Before proceeding into actually establishing the session, the TSM
 must check that the physical device is a downstream endpoint of a root port that
-the host Supervisor Domain manager has previously registered with the TSM.
+the hosting Supervisor Domain manager has previously registered with the TSM.
 
 The TSM establishes a secured SPDM session with the physical device DSM by going
 through the steps described in the Secured SPDM Session section.
@@ -406,7 +406,7 @@ Below is an example of all messages composing a device connection transcript:
 ```
 
 Once the connection is established, the TSM returns the complete connection
-transcript to the host Supervisor Domain manager via the
+transcript to the hosting Supervisor Domain manager via the
 `sbi_covh_connect_device()` ABI. The TSM retains and maintains a map of the
 connection transcript digests for all connected devices.
 
@@ -445,8 +445,8 @@ the device and then running the TDI binding flows.
 The last part of the device connection process is about securing the data link
 between the TSM and the device, and that must be done through the IDE Key
 Management protocol.
-Here again, the host Supervisor Domain manager implicitly initiates the PCI IDE
-link setup by calling the `sbi_covh_connect_device()` `COVH` function, and
+Here again, the hosting Supervisor Domain manager implicitly initiates the PCI
+IDE link setup by calling the `sbi_covh_connect_device()` `COVH` function, and
 relies on the TSM to generate and send IDE KM messages over SPDM.
 
 The TSM is responsible for:
@@ -460,7 +460,7 @@ The TSM is responsible for:
 5. Generating all IDE KM requests and encapsulating them into SPDM messages.
 6. Setting the PCIe device IDE keys through IDE KM requests.
 
-The host Supervisor Domain manager is responsible for:
+The hosting Supervisor Domain manager is responsible for:
 
 1. Generating and managing system wide PCIe stream IDs.
 2. Setting the device PCIe device IDE PCI Extended Capability.
@@ -471,12 +471,12 @@ The host Supervisor Domain manager is responsible for:
 
 The IDE link initial setup must go through the following steps:
 
-1. The host Supervisor Domain manager finds an available stream ID and
+1. The hosting Supervisor Domain manager finds an available stream ID and
    configures the device IDE Extended Capability accordingly.
-2. The host Supervisor Domain manager programs the device IDE extended
+2. The hosting Supervisor Domain manager programs the device IDE extended
    capability: All RIDs and all memory is allowed, IDE is disabled for the
    selected stream.
-3. The host Supervisor Domain manager implicitly initiates the IDE link setup
+3. The hosting Supervisor Domain manager implicitly initiates the IDE link setup
    by calling the `sbi_covh_connect_device()` `COVH` function, and passing the
    selected stream ID as an argument to it. The TSM must first establish a
    secured SPDM session, as described in the previous section.
@@ -590,7 +590,7 @@ VMM ->> RootPort: Enable IDE for the selected stream
 
 === Device Disconnection
 
-The host Supervisor Domain manager may decide to reclaim all resources related
+The hosting Supervisor Domain manager may decide to reclaim all resources related
 to a connected device. All TDIs tracking states, TDISP resources, SPDM session
 context or allocated IDE stream can be reclaimed by disconnecting the TSM from
 the device. This is achieved through a `sbi_covh_disconnect_device()` `COVH`
@@ -598,7 +598,7 @@ ABI call to the connected TSM.
 
 TSMs servicing the `sbi_covh_disconnect_device()` request must return an error
 if some TDIs belonging to the related device are still bound to one or more TVMs
-managed by the TSM. The host Supervisor Domain manager must first unbind all
+managed by the TSM. The hosting Supervisor Domain manager must first unbind all
 TDIs from their respective TVMs before attempting to disconnect the device from
 the TSM.
 
@@ -608,17 +608,17 @@ between the device's DSM and the related TSM.
 
 ==== Disconnection Flow
 
-Upon receiving a device disconnection request from the host Supervisor Domain
+Upon receiving a device disconnection request from the hosting Supervisor Domain
 manager, the TSM must end the previously established SPDM session with the device
 DSM. Before doing so, the TSM must use the SPDM session to disable the IDE stream
 between the PCIe root port and the device, and clear all IDE key material:
 
-1. The host Supervisor Domain manager xref:interface-unbinding[unbinds all TDIs]
+1. The hosting Supervisor Domain manager xref:interface-unbinding[unbinds all TDIs]
    assigned to any TVM managed by the TSM that owns the connection with the
    physical device.
-2. The host Supervisor Domain manager disables IDE from the device's PCIe
+2. The hosting Supervisor Domain manager disables IDE from the device's PCIe
    selective IDE stream extended capability control register.
-3. The host Supervisor Domain manager calls the `sbi_covh_disconnect_device()`
+3. The hosting Supervisor Domain manager calls the `sbi_covh_disconnect_device()`
    `COVH` in order to initiate the device disconnection.
 4. The TSM disables IDE from the Root Port's PCIe selective IDE stream extended
    capability control register.
@@ -717,10 +717,10 @@ TSM ->> VMM: [COVH] sbi_covh_disconnect_device()
 === Interface Binding
 
 Once both the SPDM session and the IDE link are secured and established, the
-host Supervisor Domain manager may bind a TDI and a TVM together, through the
+hosting Supervisor Domain manager may bind a TDI and a TVM together, through the
 `COVH` interface. This is a four steps process:
 
-1. The host Supervisor Domain manager initiates the interface binding flow by
+1. The hosting Supervisor Domain manager initiates the interface binding flow by
    having the TSM move the TDI into the TDISP `CONFIG_LOCKED` state. This is
    achieved through the `sbi_covh_bind_interface()` `COVH` ABI.
 2. The TVM xref:tdi-acceptation[verifies and accepts the locked TDI] into its
@@ -739,14 +739,14 @@ the TVM decision of accepting or rejecting the TDI into its TCB.
 
 Binding an interface and a TVM together goes through the following steps:
 
-1. For the binding process to succeed, the host Supervisor Domain manager must
-   first pass each of the bound TDI MMIO ranges to the TVM. It does so by
+1. For the binding process to succeed, the hosting Supervisor Domain manager
+   must first pass each of the bound TDI MMIO ranges to the TVM. It does so by
    calling the `sbi_covh_add_tvm_interface_region()` `COVH` ABI. The TSM services
    those requests by creating uncacheable G-stage mappings for each range, so
    that the TVM outbound transaction will not trigger MMIO page faults. The TSM
    must not enable the above mappings until the TVM accepts the TDI in its TCB,
    by moving it to the TDISP `RUN` state.
-2. The host Supervisor Domain manager calls the `sbi_covh_bind_interface()`
+2. The hosting Supervisor Domain manager calls the `sbi_covh_bind_interface()`
    `COVH` function to start binding the TDI and the TVM together. The TSM
    rejects that request if a secured SPDM session is not established with the
    DSM or if a stream IDE link is not set up.
@@ -769,10 +769,10 @@ Binding an interface and a TVM together goes through the following steps:
    its TCB through the `sbi_covg_start_interface()` `COVG` ABI.
 7. Through regular discovery mechanisms (ACPI, PCI bus scanning), the TVM
    detects the assigned TDI. It is important to note that the TDI configuration
-   space, including its BARs, is emulated by the host Supervisor Domain manager.
-   The TDI MMIO ranges are mapped into the TVM address space by the host
-   Supervisor Domain manager, through the `sbi_covh_add_tvm_interface_region()`
-   `COVH` ABI.
+   space, including its BARs, is emulated by the hosting Supervisor Domain
+   manager. The TDI MMIO ranges are mapped into the TVM address space by the
+   hosting Supervisor Domain manager, through the
+   `sbi_covh_add_tvm_interface_region()` `COVH` ABI.
 8. Before using the TDI, the TVM must
    xref:tdi-acceptation[accept it into its TCB]. Moreover, the TVM must not use
    the TDI until it can verify from the TSM that it’s been put in the TDISP
@@ -851,7 +851,7 @@ note over IOMMU,TDI: TVM accepts and uses the device interface
 ==== TDI Verification and Acceptation
 
 It is the TVM responsibility to accept or reject the assigned TDI into its
-TCB, and to explicitly notify both the TSM and the host Supervisor Domain
+TCB, and to explicitly notify both the TSM and the hosting Supervisor Domain
 manager about its decision. The TVM should verify the following security
 attributes before being able to decide whether or not it can safely accept a TDI
 into its TCB:
@@ -878,7 +878,7 @@ into its TCB:
    capable physical devices follow the TDISP specification and can guarantee
    that immutability state once the TDI has been moved to the TDISP
    `CONFIG_LOCKED` state. The transition from TDISP `CONFIG_UNLOCKED` to
-   `CONFIG_LOCKED` is triggered by the host Supervisor Domain manager through
+   `CONFIG_LOCKED` is triggered by the hosting Supervisor Domain manager through
    the `COVH` ABI. As such, the TVM can query the TSM for the TDI state through
    the `sbi_covg_get_interface_state()` `COVG` ABI. A TVM must not accept a TDI
    if it’s in any other TDISP state than `CONFIG_LOCKED`.
@@ -907,7 +907,7 @@ into its TCB:
    through a set of memory mapped IO ranges (e.g. a PCI BAR defined memory
    range). However, when discovering the TDI in its address space, the TVM only
    sees guest physical addresses (GPA) for those ranges, as exposed by the
-   host Supervisor Domain manager  PCI emulation. When communicating with the
+   hosting Supervisor Domain manager  PCI emulation. When communicating with the
    TDI, the TVM will use those GPAs and must rely on their corresponding
    translations to host physical addresses (HPA) to be properly set. In
    particular, it must rely on the fact that the TDI MMIO ranges GPAs do not map
@@ -1037,13 +1037,13 @@ TVM ->> TVM: Use device interface
 
 === Interface Unbinding
 
-As the platform resources owner, only the host Supervisor Domain manager may
+As the platform resources owner, only the hosting Supervisor Domain manager may
 decide to unbind an interface from a TVM. At any moment, it can choose to do so
 through the `sbi_covh_unbind_interface()` `COVH` ABI. The targeted TSM services
 the request by moving the TDI from the TDISP `CONFIG_LOCKED`, `RUN` or `ERROR`
 state back to the `CONFIG_UNLOCKED` one.
 
-The host Supervisor Domain manager may decide to unbind a TDI from a TVM for
+The hosting Supervisor Domain manager may decide to unbind a TDI from a TVM for
 many reasons. First of all, the TVM itself could be requesting that a TDI be
 unbound through the `sbi_covg_stop_interface()` `COVG` ABI, because e.g. it no
 longer needs the TDI for its operation or when shutting down. The host
@@ -1063,9 +1063,9 @@ does not require any interaction with neither the TDI nor the TVM to complete.
 
 Unbinding an interface from a TVM goes through the following steps:
 
-1. The host Supervisor Domain manager initiates the unbinding operation through
-   the `sbi_covh_unbind_interface()` `COVH` ABI. The TSM rejects that request if
-   the targeted TDI and TVM are not bound together.
+1. The hosting Supervisor Domain manager initiates the unbinding operation
+   through the `sbi_covh_unbind_interface()` `COVH` ABI. The TSM rejects that
+   request if the targeted TDI and TVM are not bound together.
 2. The TSM generates and sends the TDISP `STOP_INTERFACE_REQUEST` to the DSM.
 3. The DSM and the TDI complete or abort all pending DMA requests.
 4. The DSM and TDI scrub the internal state of the interface in order to remove
@@ -1074,8 +1074,8 @@ Unbinding an interface from a TVM goes through the following steps:
    `CONFIG_UNLOCKED` state.
 6. The TSM disables the C-IOMMU and the TVM G-stage mappings that were enabled
    upon xref:tdi-acceptation[acceptation of the TDI by TVM].
-7. Eventually, the host Supervisor Domain manager reclaims the TDI MMIO regions
-   exposed to the TVM address space by calling the
+7. Eventually, the hosting Supervisor Domain manager reclaims the TDI MMIO
+   regions exposed to the TVM address space by calling the
    `sbi_covh_reclaim_tvm_interface_region()` `COVH` ABI for each and every one of
    them. The TSM rejects any one of those requests if the reclaimed MMIO region
    belongs to a bound interface, or if it does not belong to the MMIO gpa -> hpa
@@ -1140,7 +1140,7 @@ end
 
 In TEE-IO architecture, when connecting to a device, a TSM establishes an SPDM
 session and an IDE session. Both sessions use AES-GCM-256 keys to protect the
-data. As such, the host Supervisor Domain manager needs to update the session
+data. As such, the hosting Supervisor Domain manager needs to update the session
 keys before the use of keys reach to the limit.
 
 ==== SPDM Session Key Update
@@ -1193,29 +1193,29 @@ compatible platform, as illustrated in the follwing figure:
 .Device and Interface Lifecycle
 image::images/cove-io-lifecycle.svg[align="center"]
 
-The host Supervisor Domain manager owns the physical device, and manages its
+The hosting Supervisor Domain manager owns the physical device, and manages its
 lifecycle. The TSM enforces that this lifecycle management is done without
 compromising any TVM confidential assets.
 
-As the platform resources owner, the host Supervisor Domain manager can assign
+As the platform resources owner, the hosting Supervisor Domain manager can assign
 a TDI to a TVM by binding them together (step 3). At any point in time, it can
 reclaim that physical resource by unbinding (step 8a) it from its TVM.
 Graceful and explicit unbinding through the `COVH` ABI will clear all
 confidential data and abort any outstanding DMA requests, as described in the
 xref:interface-unbinding[Interface Unbinding] section. Implicit TDI unbinding,
-i.e. attempts from the host Supervisor Domain manager to reclaim and remap a
+i.e. attempts from the hosting Supervisor Domain manager to reclaim and remap a
 TDI without explicitly notifying the corresponding TSM, represents a security
 threat that is in the
 xref:05-security_model.adoc#security-model[CoVE-IO threat model] scope. In that
 situation, both the DSM and the TSM must protect the confidentiality and
 integrity of the TVM assets.
 
-Before binding a TDI and a TVM together, the host Supervisor Domain manager must
-first require the TSM to connect (step 1) to the physical device through secured
-SPDM. As part of servicing that request, the TSM also protects the physical link
-with PCIe IDE.
+Before binding a TDI and a TVM together, the hosting Supervisor Domain manager
+must first require the TSM to connect (step 1) to the physical device through
+secured SPDM. As part of servicing that request, the TSM also protects the
+ physical link with PCIe IDE.
 
-The host Supervisor Domain manager is also required to explictly add the TDI
+The hosting Supervisor Domain manager is also required to explictly add the TDI
 MMIO regions to the TDI (step 2). The TSM can prepare and allocate the TVM
 second stage page tables and map those I/O regions into the guest physical
 address space. The TSM does not enable those tables until the TVM starts the
@@ -1232,12 +1232,12 @@ enable all I/O paths between the two parties. The TVM may only use a bound TDI
 (step 7) after accepting it, by requesting the TSM to start the device interface
 (step 6).
 
-Both the host Supervisor Domain manager and the TVM can disable I/O between the
-TDI and the TVM, by respectively unbinding (step 8a) or stopping the device
-interface (step 8b). The host Supervisor Domain manager may first remove the TDI
-MMIO regions from the TVM address space (step 9).
+Both the hosting Supervisor Domain manager and the TVM can disable I/O between
+the TDI and the TVM, by respectively unbinding (step 8a) or stopping the device
+interface (step 8b). The hosting Supervisor Domain manager may first remove the
+TDI MMIO regions from the TVM address space (step 9).
 
-Finally, the host Supervisor Domain manager can fully reclaim the physical
+Finally, the hosting Supervisor Domain manager can fully reclaim the physical
 device by requesting the TSM to disconnect (step 10) from it.
 
 === Session Heartbeat
