@@ -62,19 +62,9 @@ I/O rules apply:
   and the RP.
 * A TDI must not be bound to a TVM if the TSM managing the TVM does not own the
   IDE keys for the TDI's physical device.
-* The TSM that owns the IDE keys for an IDE stream established between a physical
-  device and its RP also configures the corresponding RP PCIe IDE extended
-  capability.
-
-As the TSM is responsible for setting both the RP IDE keys and PCI IDE
-capabilities, it must be the IDE operations owner for any downstream device for
-a given RP. As the overall platform resources owner, the hosting Supervisor Domain
-software stack must register a RP for TEE I/O and IDE ownership with the TSM, by
-calling the `sbi_covh_register_rp()` `COVH` function. This function associates a
-RP id to its MMIO space (for the IDE capability configurations) and all the MMIO
-ranges that are routed through it. The TSM must compare these 2 arguments with
-the information it received from the platform ROT through the TEE I/O manifest.
-If both match, it can proceed into establishing an SPDM session with the RP.
+* As the owner of the PCIe configuration space for all RPs on the platform, the
+  RDSM configures all IDE streams extended capability on behalf of Supervisor
+  Domain Managers (host and TSMs).
 
 ===== PCIe Root Port IDE Key Programming
 
@@ -86,6 +76,21 @@ While provisioning the device is done using the standard PCIe IDE Key Management
 Protocol (IDE_KM), provisioning the Root Port is a platform-specific operation.
 This operation is delegated to the Root Domain Security Manager (RDSM), which
 the TSM accesses via the `COVT` SBI's PCIe Root Port IDE management functions.
+
+===== PCIe Root Port IDE Extended Capability
+
+Since the PCIe configuration space occupies exactly one 4KB page and MPT access
+controls operate at page granularity, the RDSM (as the platform security
+enforcer) must retain exclusive ownership of the entire configuration space for
+all RPs. Consequently, it enforces that Supervisor Domain Managers configure the
+IDE Extended Capability for their owned streams via the `COVT`
+SBI `sbi_covt_program_rp_ide_stream` function.
+
+When requested to establish a xref:device-connection[connection] with a TEE-IO
+capable device, the TSM receives the IDE Extended Capability configuration for
+the allocated IDE stream from the Host Supervisor Domain. After successfully
+establishing the connection, it configures the IDE stream capabilities via the
+`sbi_covt_program_rp_ide_cap` SBI function.
 
 === Device Initialization
 
@@ -268,9 +273,7 @@ and for binding or unbinding TDIs to or from a TVM.
 
 The hosting Supervisor Domain manager requires the TSM to establish a secured
 SPDM session with the physical device by calling the `sbi_covh_connect_device()`
-COVH function. Before proceeding into actually establishing the session, the TSM
-must check that the physical device is a downstream endpoint of a root port that
-the hosting Supervisor Domain manager has previously registered with the TSM.
+COVH function.
 
 The TSM establishes a secured SPDM session with the physical device DSM by going
 through the steps described in the Secured SPDM Session section.
