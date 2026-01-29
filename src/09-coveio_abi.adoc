@@ -906,3 +906,22 @@ stream described in `ide_stream_desc`.
                             inconsistent.
 | SBI_ERR_FAILED          | The operation failed for unknown reasons.
 |===
+
+== Summary Listing of CoVE functions
+
+=== Summary of CoVE IO Host Extension (COVH)
+
+|===
+
+| <<sbi_covh_connect_device, sbi_covh_connect_device>> |
+Establishes a secure SPDM session between the TSM and a device identified by
+`device_id`, and configure the PCIe IDE link between that device and its
+upstream Root Port. The TSM must configure the IDE link according to the IDE
+stream description in `ide_stream_desc`.
+
+
+|===
+
+=== Summary of CoVE IO Guest Extension (COVG)
+
+=== Summary of CoVE IO TSM Extension (COVT)
