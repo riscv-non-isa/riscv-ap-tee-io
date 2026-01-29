@@ -139,6 +139,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 | SBI_ERR_FAILED          | The operation failed for unknown reasons.
 |===
 
+[#sbi_covh_reclaim_tvm_interface_region]
 ===== Function: CoVE Host Reclaim TVM Interface Region (FID #1027)
 [source, C]
 -----
@@ -906,4 +907,129 @@ stream described in `ide_stream_desc`.
                             stream ID is unknown or if the descriptor data is
                             inconsistent.
 | SBI_ERR_FAILED          | The operation failed for unknown reasons.
+|===
+
+[#summary-listing-of-cove-io-functions]
+== Summary Listing of CoVE-IO Functions
+
+=== Summary of CoVE IO Host Extension (COVH)
+
+[cols="1,2"]
+|===
+
+| <<sbi_covh_connect_device, sbi_covh_connect_device>> |
+The TSM connects to a physical device by establishing a secure SPDM session
+with the DSM. The TSM also configures the PCIe IDE link between that device and
+its upstream Root Port. The TSM must configure the IDE link according to the
+provided IDE stream description.
+
+| <<sbi_covh_disconnect_device, sbi_covh_disconnect_device>> |
+Disconnects the TSM from a physical device. The TSM stops all TVM-bound
+interfaces, clears the IDE link and keys, and terminates the secure SPDM session
+with the DSM.
+
+| <<sbi_covh_bind_interface, sbi_covh_bind_interface>> |
+Binds a TVM and a TDI together. Upon success, the device interface moves to the
+TDISP `CONFIG_LOCKED` state.
+
+| <<sbi_covh_unbind_interface, sbi_covh_unbind_interface>> |
+Unbinds a TDI from a TVM. Upon success, the device interface moves back to the
+TDISP `CONFIG_UNLOCKED` state.
+
+| <<sbi_covh_add_tvm_interface_region, sbi_covh_add_tvm_interface_region>> |
+Adds a TDI MMIO region into a TVM address space. The TSM creates uncacheable
+G-stage mappings for the region, which are enabled only after the TVM accepts
+the TDI (through the <<sbi_covg_start_interface, sbi_covg_start_interface>> SBI).
+
+| <<sbi_covh_reclaim_tvm_interface_region, sbi_covh_reclaim_tvm_interface_region>> |
+Reclaims a TDI MMIO region previously added to a TVM address space. If the
+interface is still bound, the TSM unbinds it first.
+
+| <<sbi_covh_spdm_key_update, sbi_covh_spdm_key_update>> |
+Performs an SPDM key update for a SPDM connection between the TSM and a
+connected device.
+
+| <<sbi_covh_ide_key_refresh, sbi_covh_ide_key_refresh>> |
+Performs an IDE key refresh for a connected device IDE stream.
+
+| <<sbi_covh_spdm_heartbeat, sbi_covh_spdm_heartbeat>> |
+Performs an SPDM session heartbeat for a SPDM connection between the TSM and a
+connected device.
+
+| <<sbi_covh_spdm_data, sbi_covh_get_device_connection_transcript>> |
+Passes the device connection transcript data back to the TSM for a given
+connected device, allowing the TSM to reconstruct the connection state. The TSM
+must verify the transcript's digest against its internal transcript digests map
+to ensure integrity.
+
+|===
+
+=== Summary of CoVE IO Guest Extension (COVG)
+
+[cols="1,2"]
+|===
+
+| <<sbi_covg_get_device_link, sbi_covg_get_device_link>> |
+Gets the status of the link between a physical device hosting a TDI bound to a
+TVM. This status covers both the SPDM and IDE links.
+
+| <<sbi_covg_get_device_connection_transcript, sbi_covg_get_device_connection_transcript>> |
+Retrieves a specific element from the device connection transcript (such as
+certificates, measurements, or session keys) or the full transcript.
+
+| <<sbi_covg_get_device_measurements, sbi_covg_get_device_measurements>> |
+Gets the measurements of a physical device hosting a TDI bound to a TVM. The TSM
+returns the complete, signed SPDM measurement transcript.
+
+| <<sbi_covg_get_interface_report, sbi_covg_get_interface_report>> |
+Gets the TDISP interface report for a TDI as defined by the TDISP TDI Report
+Structure (See <<PCIE>>).
+
+| <<sbi_covg_get_interface_state, sbi_covg_get_interface_state>> |
+Gets the TDISP state (`Unlocked`, `Locked`, `Running`, or `Error`) for a TDI.
+
+| <<sbi_covg_map_interface_mmio, sbi_covg_map_interface_mmio>> |
+Maps a TVM MMIO region to a `TDISP`-reported physical region. This allows the
+TVM to verify that the MMIO regions exposed by the host are correctly mapped
+to trusted hardware regions.
+
+| <<sbi_covg_start_interface, sbi_covg_start_interface>> |
+Starts a bound TDI, moving its TDISP state from `CONFIG_LOCKED` to `RUN`. After
+this, the interface is ready for the TVM.
+
+| <<sbi_covg_stop_interface, sbi_covg_stop_interface>> |
+Stops a bound TDI. The TVM calls this to remove an interface from its TCB or to
+reject it.
+
+|===
+
+=== Summary of CoVE IO TSM Extension (COVT)
+
+[cols="1,2"]
+|===
+
+| <<sbi_covt_program_rp_ide_key, sbi_covt_program_rp_ide_key>> |
+Programs a PCIe IDE key into a PCIe Root Port. Equivalent to the PCIe IDE KM
+`KEY_PROG` command.
+
+| <<sbi_covt_clear_rp_ide_key, sbi_covt_clear_rp_ide_key>> |
+Clears all previously programmed IDE keys for a specific IDE stream managed by a
+PCIe Root Port.
+
+| <<sbi_covt_set_go_rp_ide_key, sbi_covt_set_go_rp_ide_key>> |
+Enables a previously programmed IDE key for a PCIe Root Port.
+Equivalent to the PCIe IDE KM `K_SET_GO` command.
+
+| <<sbi_covt_set_stop_rp_ide_key, sbi_covt_set_stop_rp_ide_key>> |
+Disables a previously enabled IDE key for a PCIe Root Port.
+Equivalent to the PCIe IDE KM `K_SET_STOP` command.
+
+| <<sbi_covt_rp_ide_key_status, sbi_covt_rp_ide_key_status>> |
+Gets the status of a PCIe Root Port IDE key (`Cleared`, `Programmed`, or
+`Enabled`).
+
+| <<sbi_covt_program_rp_ide_stream, sbi_covt_program_rp_ide_stream>> |
+Programs the IDE Extended Capability of a PCIe Root Port according to the
+provided IDE stream description.
+
 |===
