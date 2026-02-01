@@ -215,7 +215,8 @@ stack must:
 
 * Implement the <<CoVE>> Host Extension (`COVH`).
 * Support the RISC-V <<IOMMU>> programming interface with an IOMMU driver.
-* Implement the CoVE-IO host ABI, as described in Chapter 8 of this document.
+* Implement the CoVE-IO host
+  xref:09-coveio_abi.adoc#cove-io-host-extension-eid-0x434f5648-covh[COVH] ABI.
 
 ===== TSM
 
@@ -226,11 +227,28 @@ into TVMs, it must:
 * Support the <<CoVE>> Host Extension (`COVH`).
 * Implement the <<CoVE>> Guest Extension (`COVH` and `COVG`).
 * Support the RISC-V <<IOMMU>> programming interface with an IOMMU driver.
-* Support the CoVE-IO host ABI, as described in Chapter 8 of this document:
+* Support the CoVE-IO host ABI, as described in Chapter 9 of this document:
   ** Implement the SPDM requester protocol and flows.
   ** Implement the TDISP requester protocol and flows.
   ** Implement the PCIe IDE Key Management protocol.
-* Implement the CoVE-IO guest ABI, as described in Chapter 8 of this document.
+* Implement the CoVE-IO guest
+  xref:09-coveio_abi.adoc#cove-io-guest-extension-eid-0x434f5647-covg[COVG] ABI.
+
+===== RDSM
+
+The Root Domain Security Manager (RDSM) is an M-mode component that retains
+access to the entire physical address space and all platform resources.
+
+To support CoVE and CoVE-IO, the RDSM must implement the Supervisor Domain
+Access Protection privileged architecture extension (see <<Smmtt>>). This
+extension provides the hardware enforcement mechanism necessary for isolating
+security domains.
+
+Additionally, the RDSM must implement the CoVE-IO TSM Extension
+(xref:09-coveio_abi.adoc#cove-io-tsm-extension-eid-0x434f5654-covt[COVT]) ABI.
+This interface enables the TSM to request privileged I/O operations, such as
+programming PCIe IDE keys or configuring Root Ports, which typically require
+M-mode privileges.
 
 === Guest
 
