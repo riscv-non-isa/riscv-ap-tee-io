@@ -109,6 +109,12 @@ exchanging messages between devices over a variety of transports and physical
 media. In the CoVE-IO context, SPDM is used to exchange TDISP and IDE
 Key Management messages over PCIe DOE mailboxes.
 
+| Single-Root I/O Virtualization | SR-IOV | A PCIe specification that allows a
+single physical PCIe device (such as a network interface card, GPU, or storage
+controller) to present itself as multiple separate virtual devices to the
+system. This enables direct hardware access from virtual machines without
+requiring hypervisor intervention for I/O operations.
+
 | System TCB | TCB | System Trusted Computing Base, same as TCB.
 
 | TEE Device Interface Security Protocol | TDISP | A PCIe specified architecture

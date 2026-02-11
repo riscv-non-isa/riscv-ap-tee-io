@@ -8,7 +8,7 @@ addressing one of the major datacenter security challenges. By building a
 miminized Trusted Computing Base (TCB), the CoVE interfaces manage to isolate
 workloads from each others but also from untrusted domain host software
 components (e.g. the hypervisor). CoVE implementations create a Confidential
-Computing <<CC>> framework that allows for mitigating the risks that guest
+Computing (<<CC>>) framework that allows for mitigating the risks that guest
 owners are exposed to when running their workloads on shared infrastructures
 like e.g. public clouds.
 
@@ -73,8 +73,8 @@ the ability to securely:
   configure said devices.
 
 The CoVE I/O framework builds on top of the industry supported and ratified
-<<PCI-SIG>> TEE Device Interface Security Protocol <<TDISP>> specification,
-which itself relies on the <<DMTF>> Security Protocol and Data Model <<SPDM>>
+<<PCI-SIG>> TEE Device Interface Security Protocol (<<TDISP>>) specification,
+which itself relies on the <<DMTF>> Security Protocol and Data Model (<<SPDM>>)
 protocol.
 TDISP compliant devices, also known as TEE-IO devices, implement security
 protections for isolating guest workloads and confidential data from domains to
