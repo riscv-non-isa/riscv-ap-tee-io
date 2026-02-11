@@ -44,13 +44,10 @@ which generally includes attesting to the physical device the TDI belongs to.
 The device attestation process is specific to each TVM workload configuration,
 but it may be handled by the Trusted Device Manager (TDM).
 
-In order to protect the confidentiality and integrity of TVM data between the
-PCIe root port and a bound TDI, PCIe IDE streams are established between them.
-CoVE-IO relies on the TSM to generate and configure the IDE keys for both the
-PCIe physical device and the PCIe root port the device is attached to. For
-setting the device IDE keys up, the TSM must use the IDE Key Management
-(`IDE_KM`) protocol. For the PCIe root port, the TSM must protect the IDE keys
-exchange through e.g. a SPDM session with the platform Root-of-Trust (RoT) DOE
-mailbox, when it supports that mechanism. If the communication between TSM and
-the root port is protected by the platform, the TSM can program the IDE keys
-into the root port directly.
+To ensure the confidentiality and integrity of TVM data, PCIe IDE streams are
+established between the PCIe Root Port and its bound TDI. Under the CoVE-IO
+framework, the TSM is responsible for generating and configuring the necessary
+IDE keys. Specifically, the TSM configures the PCIe physical device using the
+PCIe IDE Key Management (`IDE_KM`) protocol. However, because PCIe Root Port key
+management is platform-specific, the TSM delegates those operations to the
+platform's RDSM.
