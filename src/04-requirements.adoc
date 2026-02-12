@@ -82,7 +82,7 @@ CoVE-IO compatible DSMs must support below traditional algorithms:
 2. For `DHE Group`, one or more of the following ones: `secp256r1`, `secp384r1`.
 
 If CoVE-IO compatible DSMs support SPDM version 1.4 or above, it must support
-below PQC algorithms:
+below PQC algorithms, as described in <<CMAPQC>>:
 
 1. For `PqcAsymAlgo`, `ML-DSA-87`.
 2. For `KEMAlg`, `ML-KEM-1024`.
