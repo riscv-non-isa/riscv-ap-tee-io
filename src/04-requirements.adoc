@@ -12,11 +12,11 @@ and only if they meet the following requirements:
 ==== PCIe or CXL.io
 
 A CoVE-IO supported device must be a PCIe or CXL.io compliant device with
-optional SR-IOV capabilities. When supporting SR-IOV, the device can be split
-into multiple Virtual Functions (VFs). A TVM-assigned interface can be the whole
-device, also known as the Physical Device (PF), or any of its VFs. In both
-cases, this unit of assignment is referred to as a TEE I/O Device Interface
-(TDI).
+optional Single-Root I/O Virtualization (SR-IOV) capabilities. When supporting
+SR-IOV, the device can be split into multiple Virtual Functions (VFs). A
+TVM-assigned interface can be the whole device, also known as the Physical
+Device (PF), or any of its VFs. In both cases, this unit of assignment is
+referred to as a TEE I/O Device Interface (TDI).
 
 A host enumerated TDI must provide the following PCIe capabilities:
 
@@ -24,8 +24,9 @@ A host enumerated TDI must provide the following PCIe capabilities:
 
 In order to interoperate with a RISC-V CoVE-IO implementation, PCIe devices must
 support the <<TDISP>> protocol version 1.0 or above, as defined in the latest
-TDISP ECN. CoVE-IO devices must support all required TDISP requests and may
-support the optional ones, as defined by the TDISP request code table.
+<<PCIE>> specification. CoVE-IO devices must support all required TDISP
+requests and may support the optional ones, as defined by the TDISP request code
+table.
 
 Moreover, CoVE-IO compatible device firmwares must run a Device Security Manager
 (DSM) to enforce the TDISP-defined security attributes and policies.
@@ -41,7 +42,7 @@ capability.
 ===== Data Object Exchange (DOE)
 
 The TDI implements the optional PCIe Data Object Exchange mechanism. The minimal
-supported version is 1.0 defined in <<PCIE>>.
+supported version is 1.0 as defined in the <<PCIE>> specification.
 
 A CoVE-IO supported device must support the following DOE object types:
 
@@ -55,9 +56,9 @@ A CoVE-IO supported device must support the following DOE object types:
 
 ====== Secure Protocol and Data Model (SPDM)
 
-RISC-V CoVE-IO compliant hosts use the Security Protocol and Data Model (<<SPDM>>)
-protocol to exchange TDISP and IDE Key Management (IDE_KM) messages with
-physical devices, over DOE mailboxes. CoVE-IO also relies on SPDM for
+RISC-V CoVE-IO compliant hosts use the Security Protocol and Data Model
+(<<SPDM>>) protocol to exchange TDISP and IDE Key Management (IDE_KM) messages
+with physical devices, over DOE mailboxes. CoVE-IO also relies on SPDM for
 gathering devices' certificates and measurements.
 
 As a consequence, a CoVE-IO supported DSM must support the SPDM specification
@@ -87,7 +88,8 @@ below PQC algorithms, as described in <<CMAPQC>>:
 1. For `PqcAsymAlgo`, `ML-DSA-87`.
 2. For `KEMAlg`, `ML-KEM-1024`.
 
-CoVE-IO compatible DSMs may support following combinations during PQC transition phase:
+CoVE-IO compatible DSMs may support following combinations during PQC transition
+phase:
 
 1. Both traditional algorithms and PQC algorithms
 2. Traditional algorithms only
@@ -99,7 +101,7 @@ The data that flows between a TDI and a TVM must be confidential and both
 integrity and replay attack protected. PCIe IDE provides this protection for all
 Transport Layer Packets (TLPs) moving between those two endpoints. As a
 consequence, CoVE-IO compatible devices must implement IDE and expose this PCIe
-capability defined in <<PCIE>>.
+capability defined in the <<PCIE>> specification.
 
 ====== Selective Streams
 
@@ -175,7 +177,7 @@ that originates from devices under its control.
 
 Each IOMMU offers a memory-mapped Register Programming Interface (RPI) that the
 associated TSM uses to configure and control the IOMMU. The RDSM, through the
-<<Smmmtt>> extension, enforces that this interface is access-restricted to the
+<<Smmtt>> extension, enforces that this interface is access-restricted to the
 TSM the IOMMU is assigned to. This guarantees that a TSM currently running on a
 RISC-V hart has exclusive access to the physical address of its IOMMU RPI.
 
