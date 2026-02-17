@@ -16,8 +16,7 @@ DOCS := \
 	riscv-cove-io.adoc
 
 DATE ?= $(shell date +%Y-%m-%d)
-VERSION ?= v0.2.0
-REVMARK ?= Draft
+VERSION ?= v0.3.0
 ifneq ($(SKIP_DOCKER),true)
 	DOCKER_CMD := docker run --rm -v ${PWD}:/build -w /build \
 	riscvintl/riscv-docs-base-container-image:latest \
@@ -39,7 +38,6 @@ OPTIONS := --trace \
            -a allow-uri-read \
            -a mathematical-format=svg \
            -a revnumber=${VERSION} \
-           -a revremark=${REVMARK} \
            -a revdate=${DATE} \
            -a pdf-fontsdir=docs-resources/fonts \
            -a pdf-theme=docs-resources/themes/riscv-pdf.yml \
