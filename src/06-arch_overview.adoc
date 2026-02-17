@@ -12,8 +12,8 @@ image::images/cove-io-architecture.svg[align="center"]
 
 The TEE Security Manager (TSM) orchestrates and manages TEE Virtual Machines
 (TVM), as defined by the <<CoVE>> specification. The TSM operates in HS-Mode
-and is the confidential Supervisor Domain manager. It uses the <<Smmtt>>
-specified Memory Tracking Table (MTT) to enforce TVM memory isolation from
+and is the confidential Supervisor Domain manager. It uses the <<Smmpt>>
+specified Memory Protection Table (MPT) to enforce TVM memory isolation from
 the host Supervisor Domain.
 
 As the confidential Supervisor Domain manager, the TSM provides the `COVH` ABI
@@ -30,11 +30,11 @@ With the CoVE-IO ABIs and flows, TDIs can access TVM confidential memory
 directly through DMA. Based on the TVM configuration, the DMA accessible
 confidential memory could be all TVM memory or a subset of the TVM memory. At
 least one platform IOMMU instance must be exclusively tied to each supervisor
-domains managing TVMs to which TDIs can be bound to. CoVE-IO uses the Smmtt MTT
-and I/O MTT extensions, together with the IOMMU instance memory-mapped register
-programming interface (`RPI` in figure 1) to grant TDIs with direct access to
-their bound TVM confidential memory and isolate it from DMA originating from any
-unbound TDI.
+domains managing TVMs to which TDIs can be bound to. CoVE-IO uses the <<Smmpt>>
+and <<IO-MPT>> extensions, together with the IOMMU instance memory-mapped
+register programming interface (`RPI` in figure 1) to grant TDIs with direct
+access to their bound TVM confidential memory and isolate it from DMA
+originating from any unbound TDI.
 
 With the CoVE-IO model, the TVM ultimately holds the decision to accept or
 reject a bound TDI into or from its TCB. Access to a TVM confidential memory

@@ -14,5 +14,7 @@
 - [[[IOMMU]]] RISC-V IOMMU, https://github.com/riscv-non-isa/riscv-iommu
 - [[[RATS]]] IETF RFC 9334 Remote ATtestation procedureS (RATS) Architecture, https://datatracker.ietf.org/doc/rfc9334/
 - [[[Smmtt]]] RISC-V Supervisor Domain Access Protection, https://github.com/riscv/riscv-smmtt
+- [[[Smmpt]]] RISC-V Supervisor Mode Memory Protection Table, https://github.com/riscv/riscv-smmtt/blob/main/chapter3.adoc
+- [[[IO-MPT]]] RISC-V Supervisor Mode I/O Memory Protection Table, https://github.com/riscv/riscv-smmtt/blob/main/chapter6.adoc
 
 bibliography::[]
