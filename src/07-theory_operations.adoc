@@ -29,7 +29,7 @@ as interrupts originating from TDIs assigned to TVMs under the TSM control.
 
 When creating a Supervisor Domain (SD), the RDSM can optionally establish
 exclusive access to an IOMMU RPI for the SD TSM, prior to loading and scheduling
-said TSM. The RDSM creates <<Smmpt>> mappings to assign the IOMMU RPI to the SD
+said TSM. The RDSM creates <<Smmtt>> mappings to assign the IOMMU RPI to the SD
 and isolate it from any other domain, including the hosting SD.
 
 When the hosting SD requests a TDI to be bound to a TVM, the RDSM programs the
@@ -40,7 +40,7 @@ maintain security, the TSM must not enable these mappings until the TVM has
 successfully verified and accepted the TDI, as detailed in the
 xref:tdi-verification-and-acceptation[TDI acceptance] section.
 
-==== PCIe Root Port Registration
+==== PCIe Root Port Management
 
 When the data link between the TDI and the TVM must be secured, trusted I/O
 relies on the PCIe IDE protocol. IDE provides confidentiality and integrity
@@ -119,25 +119,22 @@ details and the notification mechanism are out of the CoVE-IO scope.
 
 === SPDM Transport
 
-SPDM is the main transport protocol for securely setting both the RP and the
-physical device IDE keys and also for driving the TDI through the TDISP state
-machine.
+SPDM is the main transport protocol for securely setting both the physical
+device IDE keys and also for driving the TDI through the TDISP state machine.
 
 [[spdm_message]]
 .SPDM Message Layout
 image::images/SPDM_session.svg[align="center"]
 
+The TSM is the SPDM requester and it must reach and communicate with DOE
+mailboxes that are owned by the hosting Supervisor Domain manager. As a
+consequence, after requesting the TSM to establish an SPDM session with a device
+(through the `sbi_covh_connect_device()` `COVH` call), it acts as an untrusted
+SPDM messages proxy between the TSM and the device DSM.
 
-Whether the SPDM session is established with the ROT or the physical device, the
-TSM is the requester and it must reach and communicate with DOE mailboxes that
-are owned by the hosting Supervisor Domain manager. As a consequence, after
-requesting the TSM to establish an SPDM session with a device (through the
-`sbi_covh_connect_device()` `COVH` call), it acts as an untrusted SPDM messages
-proxy between the TSM and the device DSM.
-
-After a successful call to `sbi_covh_connect_device()`, hosting Supervisor Domain
-initiated CoVE-IO `COVH` calls that require SPDM requests to be sent to the device
-DOE mailbox follows the flow described below:
+After a successful call to `sbi_covh_connect_device()`, hosting Supervisor
+Domain initiated CoVE-IO `COVH` calls that require SPDM requests to be sent to
+the device DOE mailbox follows the flow described below:
 
 .SPDM Flow With CoVE
 [source,mermaid]
@@ -1158,6 +1155,20 @@ AES-GCM counter to resist the attack to AEAD algorithm.
 The TSM and DSM should support AEAD Limit Counter feature described in
 <<AEADLimit>>.
 
+=== Session Heartbeat
+
+A device may require SPDM session heartbeat to ensure the session is kept alive
+on the host side. If the both TSM and DSM support SPDM heartbeat,
+the device may return a non-zero `HeartbeatPeriod` in `KEY_EXCHANGE_RSP`
+response message.
+
+The host is required to send SPDM message within two successive
+`HeartbeatPeriod`s, otherwise the device will terminate the
+corresponding SPDM session.
+
+When a SPDM heartbeat is required, the VMM must initiate an SPDM heartbeat
+(through the `sbi_covh_spdm_heartbeat()` `COVH` call).
+
 === Device and Interface Lifecycle
 
 When combined together, the flows and ABIs described in the previous sections
@@ -1214,17 +1225,3 @@ TDI MMIO regions from the TVM address space (step 9).
 
 Finally, the hosting Supervisor Domain manager can fully reclaim the physical
 device by requesting the TSM to disconnect (step 10) from it.
-
-=== Session Heartbeat
-
-A device may require SPDM session heartbeat to ensure the session is kept alive
-on the host side. If the both TSM and DSM support SPDM heartbeat,
-the device may return a non-zero `HeartbeatPeriod` in `KEY_EXCHANGE_RSP`
-response message.
-
-The host is required to send SPDM message within two successive
-`HeartbeatPeriod`s, otherwise the device will terminate the
-corresponding SPDM session.
-
-When a SPDM heartbeat is required, the VMM must initiate an SPDM heartbeat
-(through the `sbi_covh_spdm_heartbeat()` `COVH` call).
