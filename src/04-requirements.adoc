@@ -177,11 +177,11 @@ that originates from devices under its control.
 
 Each IOMMU offers a memory-mapped Register Programming Interface (RPI) that the
 associated TSM uses to configure and control the IOMMU. The RDSM, through the
-<<Smmtt>> extension, enforces that this interface is access-restricted to the
+<<Smmpt>> extension, enforces that this interface is access-restricted to the
 TSM the IOMMU is assigned to. This guarantees that a TSM currently running on a
 RISC-V hart has exclusive access to the physical address of its IOMMU RPI.
 
-On platforms supporting the MTT and IO-MTT <<Smmtt>> extensions, any PCIe device
+On platforms supporting the <<Smmpt>> and <<IO-MPT>> extensions, any PCIe device
 (regardless of its TEE-IO compliance) can be assigned to any Supervisor Domain,
 as long as this domain has RDSM-enforced exclusive access to an IOMMU instance
 RPI.

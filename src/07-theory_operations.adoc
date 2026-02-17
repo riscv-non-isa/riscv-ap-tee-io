@@ -29,7 +29,7 @@ as interrupts originating from TDIs assigned to TVMs under the TSM control.
 
 When creating a Supervisor Domain (SD), the RDSM can optionally establish
 exclusive access to an IOMMU RPI for the SD TSM, prior to loading and scheduling
-said TSM. The RDSM creates <<Smmtt>> mappings to assign the IOMMU RPI to the SD
+said TSM. The RDSM creates <<Smmpt>> mappings to assign the IOMMU RPI to the SD
 and isolate it from any other domain, including the hosting SD.
 
 When the hosting SD requests a TDI to be bound to a TVM, the RDSM programs the
