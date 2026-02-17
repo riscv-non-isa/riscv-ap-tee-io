@@ -49,7 +49,7 @@ originating from the same corresponding physical device.
 Since the host VMM is not in the TCB, its role in the stream setup is limited to
 selecting an available stream ID and configuring the device IDE capability. The
 selective IDE stream keys, for both link endpoints, are managed and configured
-by TCB elements (the TSM, DSM, and platform RoT).
+by TCB elements (the TSM, DSM, and RDSM).
 
 The main security objective of the CoVE-IO security model is to protect a TVM's
 confidential data integrity and confidentiality while TDIs are assigned to it.
