@@ -36,8 +36,8 @@ are two possible use cases:
 
 ==== Local Verification
 With local verification, the endorsement and reference values are provisioned
-into the TVM. 
-  
+into the TVM.
+
 Static provisioning means the data is built into the TVM image at build time,
 while dynamic provisioning means the data is provisioned into the TVM at runtime.
 
@@ -197,7 +197,7 @@ the proxy connecting to the verifier service. It should also include the remote
 service URL and the public certificate as the trust anchor.
 
 The detailed, up-to-date endorsement or reference value is *not* required to be
-part of the TVM report. 
+part of the TVM report.
 
 Although the device measurement and certificate are not required to be included
 in the TVM report, the TVM should provide a mechanism to return the device
@@ -240,4 +240,3 @@ Providing the signed <<SPDM>> measurement transcript has multiple benefits:
 | Device Policy Update in TVM report | Signer of Update (as trust anchor) | N/A
 | Device identity NOT in TVM report  | Device Measurement and Certifcate  | Device Measurement and Certifcate
 |===
-
