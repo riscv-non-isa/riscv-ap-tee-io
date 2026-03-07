@@ -23,7 +23,7 @@ RISC-V IOMMU Register Programming Interface (RPI), which could range from an
 actual IOMMU instance to an MPT-enforced, memory-mapped access to a physically
 partitioned IOMMU.
 
-This exclusvely assigned IOMMU RPI allows the TSM to enforce the integrity of
+This exclusively assigned IOMMU RPI allows the TSM to enforce the integrity of
 address translations and protection from DMA into confidential memory, as well
 as interrupts originating from TDIs assigned to TVMs under the TSM control.
 
@@ -243,7 +243,7 @@ DSM running in either the platform ROT or a physical PCIe device.
 The secured control plane is based on the SPDM protocol and is an encrypted,
 integrity-protected software session that is used for passing TDISP and IDE_KM
 messages between the TSM and the DSM.
-The data place is a hardware session based on the PCIe Integrity and Data
+The data plane is a hardware session based on the PCIe Integrity and Data
 Encryption (IDE) specification and is used to secure the PCIe TLPs.
 
 When the hosting Supervisor Domain detects a new TEE-IO capable device, it must
@@ -263,7 +263,7 @@ IDE link between the device and the TSM.
 ==== SPDM Session
 
 The first step for initializing a TEE-IO capable device is to establish a
-secured SPDM session between the TSM an the device. The secured SPDM sessions
+secured SPDM session between the TSM and the device. The secured SPDM sessions
 will then be used to carry `TDISP` and `IDE_KM` messages, in order to
 respectively secure the physical link between the device and its PCIe root port,
 and for binding or unbinding TDIs to or from a TVM.
@@ -394,7 +394,7 @@ The TSM handles these requests sent by the TVM via the
 1. Retrieving the full device connection transcript from the host, through
    the `sbi_covh_get_device_connection_transcript()` ABI.
 
-2. Verifying the transcript's digest against the its internal map to ensure
+2. Verifying the transcript's digest against its internal map to ensure
    integrity.
 
 3. Returning the requested data based on the `transcript_element_id` value.
@@ -436,7 +436,7 @@ The hosting Supervisor Domain manager is responsible for:
 
 1. Generating and managing system wide PCIe stream IDs.
 2. Setting the device PCIe device IDE PCI Extended Capability.
-3. Programing the PCIe switch between the device and PCIe root port, such as
+3. Programming the PCIe switch between the device and PCIe root port, such as
    IDE Control Register - Flow-Through IDE Stream Enabled.
 4. Initiating the IDE link setup.
 5. Initiating IDE keys refresh.
@@ -666,7 +666,7 @@ Loop 3 times - TSM requests the Device to stop using the IDE stream Rx key (For 
      VMM ->> TSM: [COVH] - spdm_resp(IDE_KM_K_GOSTOP_ACK)
 end
 
-Loop 3 times - TSM requests the TP to stop using the IDE stream Rx key (For each sub-stream)
+Loop 3 times - TSM requests the RP to stop using the IDE stream Rx key (For each sub-stream)
      TSM ->> RDSM: [COVT] - sbi_covt_set_stop_rp_ide_key(rp_id, key_desc)
      RDSM ->> RootPort: Clear IDE Rx key
 end
@@ -858,7 +858,7 @@ into its TCB:
    across a secured SPDM and physical link is mandatory but not sufficient. The
    TVM must also attest to the physical device trustworthiness in order to
    decide if it can accept one of its TDIs into its TCB. A TVM can trust a PCIe
-   device by first authentictating it. Once authenticated, the TVM challenges
+   device by first authenticating it. Once authenticated, the TVM challenges
    the device and then verifies its measurements:
    a. First the TVM must first verify the authenticity of the device by getting
       its certificate chain from the TSM, through the
@@ -1113,12 +1113,12 @@ end
 In TEE-IO architecture, when connecting to a device, a TSM establishes an SPDM
 session and an IDE session. Both sessions use AES-GCM-256 keys to protect the
 data. As such, the hosting Supervisor Domain manager needs to update the session
-keys before the use of keys reach to the limit.
+keys before the use of keys reach the limit.
 
 ==== SPDM Session Key Update
 
 SPDM session key update is managed by SPDM KEY_UPDATE command.
-The TSM shall count the usage of SPDM session keys, also knowns as the 64bit
+The TSM shall count the usage of SPDM session keys, also known as the 64bit
 `sequence number` defined in <<SecuredSPDM>>.
 
 Whenever the TSM generates and encrypts SPDM messages to support the host
@@ -1158,7 +1158,7 @@ The TSM and DSM should support AEAD Limit Counter feature described in
 === Session Heartbeat
 
 A device may require SPDM session heartbeat to ensure the session is kept alive
-on the host side. If the both TSM and DSM support SPDM heartbeat,
+on the host side. If both the TSM and DSM support SPDM heartbeat,
 the device may return a non-zero `HeartbeatPeriod` in `KEY_EXCHANGE_RSP`
 response message.
 
@@ -1173,7 +1173,7 @@ When a SPDM heartbeat is required, the VMM must initiate an SPDM heartbeat
 
 When combined together, the flows and ABIs described in the previous sections
 are used to build the lifecycle of a TDISP capable device on a CoVE-IO
-compatible platform, as illustrated in the follwing figure:
+compatible platform, as illustrated in the following figure:
 
 [[COVE_IO_LIFECYCLE]]
 .Device and Interface Lifecycle
@@ -1201,7 +1201,7 @@ must first require the TSM to connect (step 1) to the physical device through
 secured SPDM. As part of servicing that request, the TSM also protects the
  physical link with PCIe IDE.
 
-The hosting Supervisor Domain manager is also required to explictly add the TDI
+The hosting Supervisor Domain manager is also required to explicitly add the TDI
 MMIO regions to the TDI (step 2). The TSM can prepare and allocate the TVM
 second stage page tables and map those I/O regions into the guest physical
 address space. The TSM does not enable those tables until the TVM starts the
