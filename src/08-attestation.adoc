@@ -238,5 +238,5 @@ Providing the signed <<SPDM>> measurement transcript has multiple benefits:
 | Device Verifier Code in TVM report | TVM Verifier                       | TVM Verifier or Stub Function to Verifier Service
 | Device Policy Data in TVM report   | Endorsement and Reference Value    | Remote Service URL and Public Cert (trust anchor)
 | Device Policy Update in TVM report | Signer of Update (as trust anchor) | N/A
-| Device identity NOT in TVM report  | Device Measurement and Certifcate  | Device Measurement and Certifcate
+| Device identity NOT in TVM report  | Device Measurement and Certificate  | Device Measurement and Certificate
 |===

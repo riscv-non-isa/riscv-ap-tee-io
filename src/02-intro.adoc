@@ -5,8 +5,8 @@
 The RISC-V Confidential VM Extension <<CoVE>> specification provides
 application and virtualized workloads with data confidentiality and integrity,
 addressing one of the major datacenter security challenges. By building a
-miminized Trusted Computing Base (TCB), the CoVE interfaces manage to isolate
-workloads from each others but also from untrusted domain host software
+minimized Trusted Computing Base (TCB), the CoVE interfaces manage to isolate
+workloads from each other but also from untrusted domain host software
 components (e.g. the hypervisor). CoVE implementations create a Confidential
 Computing (<<CC>>) framework that allows for mitigating the risks that guest
 owners are exposed to when running their workloads on shared infrastructures
@@ -48,7 +48,7 @@ may also degrade I/O performance even further.
 
 Ideally, a secure and performant CoVE I/O framework would rely on the ability
 for hypervisor-assigned devices to directly access TVMs confidential memory,
-while maintaining the guest confidentality and integrity protection already
+while maintaining the guest confidentiality and integrity protection already
 provided by the CoVE security model. Building such a framework requires
 enhancing both the host software stack and the assigned devices with new
 protection mechanisms. In addition to the existing CoVE defined capabilities,

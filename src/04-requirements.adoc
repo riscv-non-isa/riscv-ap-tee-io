@@ -201,7 +201,7 @@ IOMMUs:: For each IOMMU present in the platform:
 PCIe Root Ports:: For each PCIe Root Ports present in the platform:
 * A PCIe Segment:Bus:Device:Function identifier.
 * The IOMMU identifier the RP is bound to.
-* The list of all MMIO ranges routed throught that RP.
+* The list of all MMIO ranges routed through that RP.
 * The RP ECAM base address.
 * All downstream PCIe Endpoints linked to that RP, identified by their PCIe RID
 (i.e. the device PCIe Bus:Device:Function triplet).
@@ -254,7 +254,7 @@ M-mode privileges.
 
 === Guest
 
-A TVM guest must verify and explictly accept any TDI into their TCBs. The TSM
+A TVM guest must verify and explicitly accept any TDI into their TCBs. The TSM
 prevents TDIs from directly accessing the TVM confidential memory and prevents
 the TVM from doing memory mapped I/O with TDIs, unless the TVM guest accepts
 the TDI.

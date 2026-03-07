@@ -192,7 +192,7 @@ from the following adversaries:
      - The TSM must not enable Trusted MMIO mappings for an assigned TDI until
        the TVM accepts it.
      - The TVM receives the TDI device interface report through TDISP, via the
-       the TSM CoVE-IO guest ABI. This report is trusted by the TVM and contains
+       TSM CoVE-IO guest ABI. This report is trusted by the TVM and contains
        the trusted MMIO ranges and order in which they must be mapped to the TVM
        address space.
      - The TVM must explicitly accept the reported MMIO ranges, and the TSM must
@@ -288,7 +288,7 @@ from the following adversaries:
 
      - The TSM must ensure a TDI is assigned to only one TVM. Once the
        TDI is assigned, it cannot be assigned to the other TVM. The TDI can be
-       assigned to the other one, only after it is stoped.
+       assigned to the other one, only after it is stopped.
      - The TSM must ensure Trusted MMIO is mapped to only one TVM. Once the
        MMIO is mapped, it cannot be mapped to the other TVM. The MMIO can be
        mapped to the other one, only after it is unmapped.
@@ -312,7 +312,7 @@ from the following adversaries:
 
 5+^| **Description**
 5+| A skilled hardware adversary with system physical access probes or places an
-    interposer in the PCIe physical link. It can then eavesdrop, replay or event
+    interposer in the PCIe physical link. It can then eavesdrop, replay or even
     tamper with a TVM confidential data.
 
 5+^| **Mitigations**
@@ -437,7 +437,7 @@ from the following adversaries:
     address (GPA) to host physical address (HPA) mappings to create
     inconsistencies between the TVM and its assigned TDI mappings for the same
     GPA ranges. +
-    The TDI writes physical adresses that are different than the ones the TVM
+    The TDI writes physical addresses that are different than the ones the TVM
     programmed it with, and tampers the TVM confidential memory. +
     Moreover, the TVM memory reads from the intended GPA return results that are
     inconsistent with the actual device operation.
@@ -451,7 +451,7 @@ from the following adversaries:
     - The TSM must guarantee that the DMA translation table for a TDI under its
       control is consistent with the G-stage tables for the TVM the TDI is
       bound to.
-    - The TVM must accept the DMA translation table explictely.
+    - The TVM must accept the DMA translation table explicitly.
     - The TSM must not enable DMA translation table until the TVM accepts the TDI.
 
 |===

@@ -188,7 +188,7 @@ Binds a TVM and a device interface together.
 The TSM returns an error if a secured SPDM session is not established with the
 DSM or if a stream IDE link is not set up.
 
-After this calls completes successfully, the `device_id_interface` is in the
+After this call completes successfully, the `device_id_interface` is in the
 TDISP `CONFIG_LOCKED` state.
 
 The possible error codes returned in `sbiret.error` are shown below.
@@ -212,7 +212,7 @@ struct sbiret sbi_covh_unbind_interface()(unsigned long tvm_id,
 
 Unbinds a device interface from a TVM.
 
-After this calls completes successfully, the `device_id_interface` is moved
+After this call completes successfully, the `device_id_interface` is moved
 back to the TDISP `CONFIG_UNLOCKED` state, from one of the `CONFIG_LOCKED`,
 `CONFIG_UNLOCKED` or `CONFIG_ERROR` states.
 
@@ -334,7 +334,7 @@ struct sbiret sbi_covg_get_device_link(unsigned long device_if_id);
 Gets the status of the link between the physical device hosting `device_if_id`
 and the TVM. This covers both the SPDM and IDE links.
 
-Returns the a link status bitmap through `sbiret.value`.
+Returns a link status bitmap through `sbiret.value`.
 
 [source, C]
 -------
@@ -422,7 +422,7 @@ enum sbi_covg_transcript_element {
       * `device_if_id`.
       * This is the concatenation of the `TDISP_GET_VERSION`, `TDISP_VERSION`,
       * `TDISP_GET_CAPABILITIES` and `TDISP_CAPABILITIES` TDISP messages from
-      * the trasncript.
+      * the transcript.
       * It includes the `TSM_CAPS`, `DSM_CAPS`, `REQ_MSGS_SUPPORTED`, and
       * `LOCK_INTERFACE_FLAGS_SUPPORTED`, etc.
       */
@@ -474,8 +474,8 @@ nonce on behalf of the TVM.
 
 `msmt_req_attr` is used as the measurement request attributes in SPDM
 `GET_MEASUREMENT` request `param1` field. Only `RawBitStreamRequested` bit is
-valid and the rest bits are igored. The last `GET_MEASUREMENT` request must
-set `SignatureRequested` bit to request the digital signaure of the measurement
+valid and the rest bits are ignored. The last `GET_MEASUREMENT` request must
+set `SignatureRequested` bit to request the digital signature of the measurement
 transcript.
 
 Both `msmt_addr_out` and `nonce_addr` must be 4KB-aligned.
@@ -580,7 +580,7 @@ Maps a TVM MMIO region (from `gpa_address`, `size` bytes long) to a
 The TVM uses that function to verify from the TSM that all the device interface
 MMIO regions exposed by the host Supervisor Domain manager are correctly mapped to
 the trusted `TDISP`-reported MMIO regions. The TSM will enable those mappings
-if the TVM calls the starts the device interface through the
+if the TVM starts the device interface through the
 `sbi_covg_start_interface` function.
 
 All of `gpa_addr`, `hpa_addr` and `size` values must be 4KB-aligned.
@@ -609,7 +609,7 @@ The TVM calls this function in order to accept a bound device interface into its
 TCB. While servicing this request, the TSM moves the device interface TDISP
 state from `CONFIG_LOCKED` to `RUN`.
 
-After this calls completes successfully, the device interface I/O is ready and
+After this call completes successfully, the device interface I/O is ready and
 available for the bound TVM.
 
 The possible error codes returned in `sbiret.error` are shown below.
@@ -636,7 +636,7 @@ Stops a bound device interface.
 The TVM calls this function for either removing a bound device interface from
 its TCB or initially rejecting it.
 
-After this calls completes successfully, the device interface and the TVM are
+After this call completes successfully, the device interface and the TVM are
 no longer bound together.
 
 The possible error codes returned in `sbiret.error` are shown below.
@@ -782,7 +782,7 @@ content to encrypt transmitted PCIe TLPs for the corresponding stream and
 sub-streams combination.
 
 If the enabled key is a receiver key, the `rp_id` Root Port prepares for
-receiving and decrypting PCIe TLPs on the the corresponding stream and
+receiving and decrypting PCIe TLPs on the corresponding stream and
 sub-streams combination.
 
 Once enabled, a key can not be cleared or reprogrammed. It must be
