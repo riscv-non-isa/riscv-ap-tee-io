@@ -16,7 +16,7 @@ must be in the `[1024:1087]` range.
 [source, C]
 -----
 struct sbiret sbi_covh_connect_device(unsigned long device_id,
-                                      unsigned long ide_stream_desc,
+                                      unsigned long ide_stream_desc_addr,
                                       unsigned long connection_data_addr_out,
                                       unsigned long connection_data_size);
 -----
@@ -24,7 +24,7 @@ struct sbiret sbi_covh_connect_device(unsigned long device_id,
 Establishes a secure SPDM session between the TSM and a device identified by
 `device_id`, and configure the PCIe IDE link between that device and its
 upstream Root Port. The TSM must configure the IDE link according to the IDE
-stream description in `ide_stream_desc`.
+stream description in the `ide_stream_desc` structure at `ide_stream_desc_addr`.
 
 The `ide_stream_desc` IDE stream descriptor must be structured as follows:
 
@@ -498,16 +498,16 @@ The possible error codes returned in `sbiret.error` are shown below.
 [source, C]
 -----
 struct sbiret sbi_covg_get_interface_report(unsigned long device_if_id,
-                                           unsigned long if_report_out,
+                                           unsigned long if_report_addr_out,
                                            unsigned long if_report_size);
 -----
 
 Gets the TDISP interface report for the device interface.
 
 The TSM returns the interface report, as defined by the <<TDISP>> TDI Report
-Structure, at the `if_report_out` address.
+Structure, at the `if_report_addr_out` address.
 
-`if_report_out` must be 4KB-aligned.
+`if_report_addr_out` must be 4KB-aligned.
 
 The possible error codes returned in `sbiret.error` are shown below.
 
@@ -660,14 +660,15 @@ The possible error codes returned in `sbiret.error` are shown below.
 [source, C]
 -----
 struct sbiret sbi_covt_program_rp_ide_key(unsigned long rp_id,
-                                          unsigned long key_desc,
+                                          unsigned long key_desc_addr,
                                           unsigned long key_data_addr);
 -----
 
 Programs a PCIe IDE key into the `rp_id` PCIe Root Port. This is functionally
 equivalent to the PCIe IDE KM `KEY_PROG` command.
 
-The `key_desc` IDE key descriptor must be structured as follows:
+The `key_desc` structure at the `key_desc_addr` address is an IDE key descriptor
+and it must be structured as follows:
 
 [#table_sbi_covt_rp_ide_key_desc]
 .CoVE IDE Key Descriptor
@@ -769,7 +770,7 @@ its status is `Unknown`.
 [source, C]
 -----
 struct sbiret sbi_covt_set_go_rp_ide_key(unsigned long rp_id,
-                                         unsigned long key_desc);
+                                         unsigned long key_desc_addr);
 -----
 
 Enables a previously programmed IDE key for the `rp_id` PCIe Root Port. This
@@ -805,7 +806,7 @@ disabled first.
 [source, C]
 -----
 struct sbiret sbi_covt_set_stop_rp_ide_key(unsigned long rp_id,
-                                           unsigned long key_desc);
+                                           unsigned long key_desc_addr);
 -----
 
 Disables a previously enabled IDE key for the `rp_id` PCIe Root Port. This
@@ -831,7 +832,7 @@ Once disabled, a key status moves back to the `Programmed` state.
 [source, C]
 -----
 struct sbiret sbi_covt_rp_ide_key_status(unsigned long rp_id,
-                                         unsigned long key_desc);
+                                         unsigned long key_desc_addr);
 -----
 
 Gets the status of a PCIe Root Port IDE key.
@@ -890,11 +891,12 @@ The possible error codes returned in `sbiret.error` are shown below.
 [source, C]
 -----
 struct sbiret sbi_covt_program_rp_ide_stream(unsigned long rp_id,
-                                             unsigned long ide_stream_desc);
+                                             unsigned long ide_stream_desc_addr);
 -----
 
-Programs the IDE Extended Capability of PCIe Root Port `rp_id` for the IDE
-stream described in `ide_stream_desc`.
+Programs the IDE Extended Capability of PCIe Root Port `rp_id` based on the
+<<table_sbi_covt_rp_ide_stream_desc, IDE stream descriptor>> structure at the
+`ide_stream_desc_addr` address.
 
 [#table_sbi_covt_program_rp_ide_stream]
 .CoVE TSM Program PCIe Root Port IDE Stream
