@@ -449,8 +449,7 @@ The possible error codes returned in `sbiret.error` are shown below.
 [source, C]
 -----
 struct sbiret sbi_covg_get_device_measurements(unsigned long device_if_id,
-                                               unsigned long nonce_addr,
-                                               unsigned long msmt_req_attr,
+                                               unsigned long msmt_req_addr,
                                                unsigned long msmt_out_addr,
                                                unsigned long msmt_size);
 -----
@@ -465,20 +464,23 @@ pairs that are exchanged between the SPDM measurement requester and the
 responder. Only the last `MEASUREMENTS` shall include the digital signature of
 the measurement transcript.
 
-The `nonce_addr` parameter points at an optional 32 bytes long buffer holding a
-cryptographic nonce.
+The `msmt_req_addr` parameter points at a measurement request descriptor,
+structured as follows:
 
-For any non zero value, the nonce is used as the SPDM `GET_MEASUREMENTS` request
-`Nonce` field. When set to `0x0`, the TSM ignores this argument and generates a
-nonce on behalf of the TVM.
+[#table_sbi_covh_measurement_request]
+.CoVE Measurement Request Descriptor
+[options=header]
+|===
+| *Byte Offset* | *Field*           | *Size (bytes)* | *Description*
+| 00h           | COVEIOVersion     | 1              | CoVE-IO version
+| 01h           | DescriptorLength  | 4              | Total size of this descriptor, in bytes
+| 05h           | MsmtReqAttr       | 1              | SPDM `GET_MEASUREMENTS` request attributes (`Param1` field). All bits defined as valid by the <<SPDM>> `GET_MEASUREMENTS` request `Param1` field are supported, except for the `SignatureRequested` bit which is reserved and must be 0. The TSM sets the `SignatureRequested` bit in the last `GET_MEASUREMENTS` request on behalf of the TVM.
+| 06h           | SlotID            | 1              | SPDM `GET_MEASUREMENTS` request `SlotIDParam`. Identifies the slot number of the certificate chain to use for signing the measurement transcript. This field is optional: if all bits are 0, the TSM uses the default slot ID 0. Only bits 3:0 are valid; bits 7:4 are reserved and must be 0.
+| 07h           | Nonce             | 32             | Cryptographic nonce to use as the SPDM `GET_MEASUREMENTS` request `Nonce` field. If all 32 bytes are zero, the TSM generates a nonce on behalf of the TVM and ignores this field.
+|===
 
-`msmt_req_attr` is used as the measurement request attributes in SPDM
-`GET_MEASUREMENT` request `param1` field. Only `RawBitStreamRequested` bit is
-valid and the rest bits are ignored. The last `GET_MEASUREMENT` request must
-set `SignatureRequested` bit to request the digital signature of the measurement
-transcript.
-
-Both `msmt_out_addr` and `nonce_addr` must be 4KB-aligned.
+Both `msmt_out_addr` and `msmt_req_addr` must be 4KB-aligned, and both must
+point to memory regions accessible to both the TVM and the TSM.
 
 The possible error codes returned in `sbiret.error` are shown below.
 
@@ -488,6 +490,8 @@ The possible error codes returned in `sbiret.error` are shown below.
 |===
 | Error code              | Description
 | SBI_SUCCESS             | The operation completed successfully.
+| SBI_ERR_INVALID_PARAM   | `MsmtReqAttr` contains reserved bits that are set, `SlotID` contains reserved bits that are set, or `DescriptorLength` is inconsistent with the `COVEIOVersion`.
+| SBI_ERR_INVALID_ADDRESS | `msmt_req_addr` or `msmt_out_addr` is invalid, misaligned, or not accessible to both the TVM and the TSM.
 | SBI_ERR_FAILED          | The operation failed for unknown reasons.
 |===
 
