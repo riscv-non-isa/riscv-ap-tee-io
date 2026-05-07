@@ -75,8 +75,8 @@ Domain manager at `connection_data_out_addr`, structured as follows:
 | 5             | ConnectionTranscript       | `ConnectionTranscriptLength` | Device connection transcript
 |===
 
-`connection_data_out_addr` must be 4KB-aligned and point to a memory region
-that is accessible to both the host Supervisor Domain manager and the TSM.
+`connection_data_out_addr` must point to a memory region that is accessible to
+both the host Supervisor Domain manager and the TSM.
 
 The possible error codes returned in `sbiret.error` are shown below.
 
@@ -320,8 +320,8 @@ device. The data is formatted according to the
 [Device Connection Transcript](#function-cove-host-connect-device-fid-1026)
 structure.
 
-`transcript_data_out_addr` must be 4KB-aligned and points to a memory region
-that is accessible to both the host Supervisor Domain manager and the TSM.
+`transcript_data_out_addr` must point to a memory region that is accessible to
+both the host Supervisor Domain manager and the TSM.
 
 The possible error codes returned in `sbiret.error` are shown below.
 
@@ -447,7 +447,7 @@ enum sbi_covg_transcript_element {
 };
 -----
 
-`data_out_addr` must be 4KB-aligned.
+`data_out_addr` must point to memory regions accessible to both the TVM and the TSM.
 
 The possible error codes returned in `sbiret.error` are shown below.
 
@@ -498,8 +498,8 @@ structured as follows:
 | 07h           | Nonce             | 32             | Cryptographic nonce to use as the SPDM `GET_MEASUREMENTS` request `Nonce` field. It is the TVM's responsibility to generate and provide a valid nonce through that field.
 |===
 
-Both `msmt_out_addr` and `msmt_req_addr` must be 4KB-aligned, and both must
-point to memory regions accessible to both the TVM and the TSM.
+Both `msmt_out_addr` and `msmt_req_addr` must point to memory regions accessible
+to both the TVM and the TSM.
 
 The possible error codes returned in `sbiret.error` are shown below.
 
@@ -531,7 +531,8 @@ Gets the TDISP interface report for the device interface.
 The TSM returns the interface report, as defined by the <<TDISP>> TDI Report
 Structure, at the `if_report_out_addr` address.
 
-`if_report_out_addr` must be 4KB-aligned.
+`if_report_out_addr` must point to memory regions accessible to both the TVM and
+the TSM..
 
 The possible error codes returned in `sbiret.error` are shown below.
 
