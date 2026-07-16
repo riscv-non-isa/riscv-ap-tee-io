@@ -70,9 +70,8 @@ Domain manager at `connection_data_out_addr`, structured as follows:
 [options=header]
 |===
 | *Byte Offset* | *Field*                    | *Size (bytes)*               | *Description*
-| 0             | COVEIOVersion              | 1                            | CoVE-IO version
-| 1             | ConnectionTranscriptLength | 4                            | Size of the `ConnectionTranscript` field that follows, in bytes
-| 5             | ConnectionTranscript       | `ConnectionTranscriptLength` | Device connection transcript
+| 00h           | ConnectionTranscriptLength | 4                            | Size of the `ConnectionTranscript` field that follows, in bytes
+| 04h           | ConnectionTranscript       | `ConnectionTranscriptLength` | Device connection transcript
 |===
 
 `connection_data_out_addr` must point to a memory region that is accessible to
@@ -491,11 +490,9 @@ structured as follows:
 [options=header]
 |===
 | *Byte Offset* | *Field*           | *Size (bytes)* | *Description*
-| 00h           | COVEIOVersion     | 1              | CoVE-IO version
-| 01h           | DescriptorLength  | 4              | Total size of this descriptor, in bytes
-| 05h           | MsmtReqAttr       | 1              | SPDM `GET_MEASUREMENTS` request attributes (`Param1` field). All bits defined as valid by the <<SPDM>> `GET_MEASUREMENTS` request `Param1` field are supported, except for the `SignatureRequested` bit which is reserved and must be 0. The TSM sets the `SignatureRequested` bit in the last `GET_MEASUREMENTS` request on behalf of the TVM.
-| 06h           | SlotID            | 1              | SPDM `GET_MEASUREMENTS` request `SlotIDParam`. Identifies the slot number of the certificate chain to use for signing the measurement transcript. This field is optional: if all bits are 0, the TSM uses the default slot ID 0. Only bits 3:0 are valid; bits 7:4 are reserved and must be 0.
-| 07h           | Nonce             | 32             | Cryptographic nonce to use as the SPDM `GET_MEASUREMENTS` request `Nonce` field. It is the TVM's responsibility to generate and provide a valid nonce through that field.
+| 00h           | MsmtReqAttr       | 1              | SPDM `GET_MEASUREMENTS` request attributes (`Param1` field). All bits defined as valid by the <<SPDM>> `GET_MEASUREMENTS` request `Param1` field are supported, except for the `SignatureRequested` bit which is reserved and must be 0. The TSM sets the `SignatureRequested` bit in the last `GET_MEASUREMENTS` request on behalf of the TVM.
+| 01h           | SlotID            | 1              | SPDM `GET_MEASUREMENTS` request `SlotIDParam`. Identifies the slot number of the certificate chain to use for signing the measurement transcript. This field is optional: if all bits are 0, the TSM uses the default slot ID 0. Only bits 3:0 are valid; bits 7:4 are reserved and must be 0.
+| 02h           | Nonce             | 32             | Cryptographic nonce to use as the SPDM `GET_MEASUREMENTS` request `Nonce` field. It is the TVM's responsibility to generate and provide a valid nonce through that field.
 |===
 
 Both `msmt_out_addr` and `msmt_req_addr` must point to memory regions accessible
