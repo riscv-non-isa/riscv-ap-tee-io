@@ -16,7 +16,7 @@ DOCS := \
 	riscv-cove-io.adoc
 
 DATE ?= $(shell date +%Y-%m-%d)
-VERSION ?= v0.3.0
+VERSION ?= v0.4.0
 ifneq ($(SKIP_DOCKER),true)
 	DOCKER_CMD := docker run --rm -v ${PWD}:/build -w /build \
 	ghcr.io/riscv/riscv-docs-base-container-image:latest \
