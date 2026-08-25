@@ -17,8 +17,17 @@ DOCS := \
 
 DATE ?= $(shell date +%Y-%m-%d)
 VERSION ?= v0.4.0
+# Kroki server used to render diagrams (mermaid, etc.).
+# Overridable so CI can point at a locally-hosted Kroki instead of the
+# flaky public kroki.io. Defaults to public for local builds.
+KROKI_SERVER_URL ?= https://kroki.io
+
+# Extra flags for the build container's `docker run`.
+# In CI we set DOCKER_NET=--network=host so the container can reach a
+# Kroki service published on the runner at localhost:8000.
+DOCKER_NET ?=
 ifneq ($(SKIP_DOCKER),true)
-	DOCKER_CMD := docker run --rm -v ${PWD}:/build -w /build \
+	DOCKER_CMD := docker run --rm $(DOCKER_NET) -v ${PWD}:/build -w /build \
 	ghcr.io/riscv/riscv-docs-base-container-image:latest \
 	/bin/sh -c
 	DOCKER_QUOTE := "
@@ -36,6 +45,8 @@ ASCIIDOCTOR_HTML := asciidoctor
 OPTIONS := --trace \
            -a compress \
            -a allow-uri-read \
+           -a kroki-server-url=$(KROKI_SERVER_URL) \
+           -a kroki-default-format=png \
            -a mathematical-format=svg \
            -a revnumber=${VERSION} \
            -a revdate=${DATE} \
